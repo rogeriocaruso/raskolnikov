@@ -18,7 +18,10 @@ class DevelopmentConfig(Config):
 
 class ProductionConfig(Config):
     DEBUG = False
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
+    # Railway fornece DATABASE_URL com prefixo "postgres://" (sem ql),
+    # mas SQLAlchemy exige "postgresql://". Corrige automaticamente.
+    _db_url = os.environ.get('DATABASE_URL', 'sqlite:///raskolnikov.db')
+    SQLALCHEMY_DATABASE_URI = _db_url.replace('postgres://', 'postgresql://', 1)
 
 
 config_map = {
