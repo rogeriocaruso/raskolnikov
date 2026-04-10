@@ -1,5 +1,5 @@
 import os
-from flask import Flask
+from flask import Flask, jsonify
 from flask_jwt_extended import JWTManager
 from flask_migrate import Migrate
 from config import config_map
@@ -19,6 +19,10 @@ def create_app(env=None):
     from routes.patients import patients_bp
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(patients_bp, url_prefix='/patients')
+
+    @app.route('/health')
+    def health():
+        return jsonify(status='ok'), 200
 
     with app.app_context():
         db.create_all()

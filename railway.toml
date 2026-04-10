@@ -1,0 +1,7 @@
+[deploy]
+startCommand = "gunicorn \"app:create_app('production')\" --bind 0.0.0.0:$PORT"
+healthcheckPath = "/health"
+healthcheckTimeout = 30
+
+[build]
+builder = "NIXPACKS"
