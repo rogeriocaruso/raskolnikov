@@ -2,6 +2,7 @@ import os
 from flask import Flask, jsonify
 from flask_jwt_extended import JWTManager
 from flask_migrate import Migrate
+from flask_cors import CORS
 from config import config_map
 from models import db
 
@@ -14,6 +15,7 @@ def create_app(env=None):
     db.init_app(app)
     JWTManager(app)
     Migrate(app, db)
+    CORS(app)
 
     from routes.auth import auth_bp
     from routes.patients import patients_bp
