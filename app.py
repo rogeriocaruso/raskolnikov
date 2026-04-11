@@ -25,6 +25,9 @@ def create_app(env=None):
         return jsonify(status='ok'), 200
 
     with app.app_context():
-        db.create_all()
+        try:
+            db.create_all()
+        except Exception as e:
+            app.logger.error(f'Erro ao criar tabelas: {e}')
 
     return app
