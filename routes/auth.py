@@ -16,7 +16,7 @@ def login():
 
     usuario = Usuario.query.filter_by(email=email, ativo=True).first()
     if not usuario or not usuario.check_senha(senha):
-        return jsonify(erro='Credenciais inválidas'), 401
+        return jsonify(erro='Credenciais inválidas', v='v3'), 401
 
     additional_claims = {
         'perfil': usuario.perfil,
