@@ -64,24 +64,7 @@ def create_app(env=None):
     with app.app_context():
         try:
             db.create_all()
-            _criar_admin_inicial()
         except Exception as e:
-            app.logger.error(f'Erro ao inicializar banco: {e}')
+            app.logger.error(f'Erro ao criar tabelas: {e}')
 
     return app
-
-
-def _criar_admin_inicial():
-    from models import Usuario
-    if not Usuario.query.filter_by(email='admin@cet.gov.br').first():
-        admin = Usuario(
-            nome='Administrador CET',
-            email='admin@cet.gov.br',
-            perfil='cet_admin',
-        )
-        admin.set_senha('senha123')
-        from models import db
-        db.session.add(admin)
-        db.session.commit()
-        import logging
-        logging.getLogger(__name__).info('Usuário admin criado automaticamente.')
