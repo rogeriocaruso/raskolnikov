@@ -12,6 +12,7 @@ STATUS_PACIENTE = (
     'nao_doador',
     'arquivado',
 )
+TURNOS = ('manha', 'tarde', 'noite', 'plantao')
 
 
 class OPO(db.Model):
@@ -192,5 +193,40 @@ class PacienteHistorico(db.Model):
             valor_anterior=self.valor_anterior,
             valor_novo=self.valor_novo,
             observacao=self.observacao,
+            created_at=self.created_at.isoformat(),
+        )
+
+
+class Ronda(db.Model):
+    __tablename__ = 'ronda'
+
+    id = db.Column(db.Integer, primary_key=True)
+    edot_id = db.Column(db.Integer, db.ForeignKey('edot.id'), nullable=False)
+    usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False)
+    setor_id = db.Column(db.Integer, db.ForeignKey('setor.id'), nullable=True)
+    turno = db.Column(db.String(20), nullable=False, default='plantao')
+    data_inicio = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    data_fim = db.Column(db.DateTime, nullable=True)
+    observacoes = db.Column(db.Text, nullable=True)
+    leitos_visitados = db.Column(db.Integer, nullable=True)
+    potenciais_encontrados = db.Column(db.Integer, nullable=False, default=0)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    edot = db.relationship('EDOT')
+    usuario = db.relationship('Usuario')
+    setor = db.relationship('Setor')
+
+    def to_dict(self):
+        return dict(
+            id=self.id,
+            edot_id=self.edot_id,
+            usuario_id=self.usuario_id,
+            setor_id=self.setor_id,
+            turno=self.turno,
+            data_inicio=self.data_inicio.isoformat(),
+            data_fim=self.data_fim.isoformat() if self.data_fim else None,
+            observacoes=self.observacoes,
+            leitos_visitados=self.leitos_visitados,
+            potenciais_encontrados=self.potenciais_encontrados,
             created_at=self.created_at.isoformat(),
         )
