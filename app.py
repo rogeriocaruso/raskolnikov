@@ -61,10 +61,14 @@ def create_app(env=None):
         except Exception as e:
             return jsonify(erro=str(e)), 500
 
-    with app.app_context():
-        try:
-            db.create_all()
-        except Exception as e:
-            app.logger.error(f'Erro ao criar tabelas: {e}')
+    @app.before_request
+    def _init_db():
+        # Inicializa o banco na primeira requisição, não no startup
+        if not getattr(app, '_db_initialized', False):
+            try:
+                db.create_all()
+                app._db_initialized = True
+            except Exception as e:
+                app.logger.error(f'Erro ao criar tabelas: {e}')
 
     return app
