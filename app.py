@@ -24,7 +24,7 @@ def create_app(env=None):
 
     @app.route('/health')
     def health():
-        return jsonify(status='ok'), 200
+        return jsonify(status='ok', version='v2'), 200
 
     @app.route('/debug')
     def debug():
