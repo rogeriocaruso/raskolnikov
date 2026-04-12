@@ -180,8 +180,23 @@ def _gerar_sigla(nome, existentes):
 def seed():
     app = create_app()  # usa FLASK_ENV do ambiente (production no Railway)
     with app.app_context():
+        # Sempre garante que o admin existe, independente do resto
+        admin = Usuario.query.filter_by(email='admin@cet.gov.br').first()
+        if not admin:
+            admin = Usuario(
+                nome='Administrador CET',
+                email='admin@cet.gov.br',
+                perfil='cet_admin',
+            )
+            admin.set_senha('senha123')
+            db.session.add(admin)
+            db.session.commit()
+            print('Usuário admin criado: admin@cet.gov.br / senha123')
+        else:
+            print('Usuário admin já existe.')
+
         if OPO.query.first():
-            print('Seed já executado. Abortando para não duplicar dados.')
+            print('OPOs já existem. Pulando criação de hospitais.')
             return
 
         siglas_usadas = set()
@@ -210,17 +225,8 @@ def seed():
 
             print(f'OPO criada: {opo.nome} ({len(opo_data["hospitais"])} hospitais)')
 
-        admin = Usuario(
-            nome='Administrador CET',
-            email='admin@cet.gov.br',
-            perfil='cet_admin',
-        )
-        admin.set_senha('senha123')
-        db.session.add(admin)
-
         db.session.commit()
         print(f'\nTotal: {len(OPOS)} OPOs, {total_edots} EDOTs criadas.')
-        print('Usuário admin: admin@cet.gov.br / senha123')
 
 
 if __name__ == '__main__':
