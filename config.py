@@ -8,6 +8,11 @@ class Config:
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=8)
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     JSON_SORT_KEYS = False
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        'connect_args': {'connect_timeout': 5},
+        'pool_pre_ping': True,
+        'pool_timeout': 5,
+    }
 
 
 class DevelopmentConfig(Config):
