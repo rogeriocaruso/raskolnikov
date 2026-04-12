@@ -61,4 +61,15 @@ def create_app(env=None):
         except Exception as e:
             return jsonify(erro=str(e)), 500
 
+    @app.route('/rodar-seed')
+    def rodar_seed():
+        try:
+            from seed import seed
+            seed()
+            from models import OPO
+            total = OPO.query.count()
+            return jsonify(mensagem=f'Seed concluído! {total} OPOs no banco.'), 200
+        except Exception as e:
+            return jsonify(erro=str(e)), 500
+
     return app
