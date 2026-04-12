@@ -1,10 +1,12 @@
 import os
-from flask import Flask, jsonify
+from flask import Flask, jsonify, send_from_directory
 from flask_jwt_extended import JWTManager
 from flask_migrate import Migrate
 from flask_cors import CORS
 from config import config_map
 from models import db
+
+FRONTEND_DIR = os.path.join(os.path.dirname(__file__), 'frontend')
 
 
 def create_app(env=None):
@@ -66,6 +68,28 @@ def create_app(env=None):
             return jsonify(mensagem='Admin criado com sucesso!'), 201
         except Exception as e:
             return jsonify(erro=str(e)), 500
+
+    # ── Frontend estático ──────────────────────────────────────────────────
+    @app.route('/')
+    def index():
+        return send_from_directory(FRONTEND_DIR, 'index.html')
+
+    @app.route('/dashboard')
+    @app.route('/ronda')
+    @app.route('/paciente')
+    @app.route('/stats')
+    @app.route('/admin')
+    def frontend_pages():
+        page = request.path.lstrip('/') or 'dashboard'
+        return send_from_directory(FRONTEND_DIR, f'{page}.html')
+
+    @app.route('/static/css/<path:filename>')
+    def static_css(filename):
+        return send_from_directory(os.path.join(FRONTEND_DIR, 'css'), filename)
+
+    @app.route('/static/js/<path:filename>')
+    def static_js(filename):
+        return send_from_directory(os.path.join(FRONTEND_DIR, 'js'), filename)
 
     @app.route('/rodar-seed')
     def rodar_seed():

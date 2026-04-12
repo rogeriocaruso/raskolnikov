@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EDOT System — Login</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="page-login">
+
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="icone">
+        <!-- Ícone coração médico -->
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.27 2 8.5
+                   2 5.41 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.08
+                   C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.41 22 8.5
+                   c0 3.77-3.4 6.86-8.55 11.53L12 21.35z"/>
+        </svg>
+      </div>
+      <h1>EDOT System</h1>
+      <p>Sistema de Gestão de Doação de Órgãos</p>
+    </div>
+
+    <div id="alerta-login" class="alerta" role="alert"></div>
+
+    <form id="form-login" novalidate>
+      <div class="form-grupo">
+        <label for="email">E-mail</label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          placeholder="seu@email.com"
+          autocomplete="username"
+          required
+        >
+      </div>
+
+      <div class="form-grupo">
+        <label for="senha">Senha</label>
+        <input
+          type="password"
+          id="senha"
+          name="senha"
+          placeholder="••••••••"
+          autocomplete="current-password"
+          required
+        >
+      </div>
+
+      <button type="submit" class="btn btn-primario btn-bloco" style="margin-top:.5rem">
+        <span id="spinner" class="spinner" style="display:none"></span>
+        <span id="btn-texto">Entrar</span>
+      </button>
+    </form>
+
+    <p style="text-align:center;margin-top:1.25rem;font-size:.8rem;color:var(--texto-leve)">
+      Sistema restrito ao uso da equipe autorizada.<br>
+      Em caso de problemas, contate o administrador.
+    </p>
+  </div>
+
+  <script src="/static/js/api.js"></script>
+  <script src="/static/js/auth.js"></script>
+</body>
+</html>
