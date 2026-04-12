@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EDOT System — Administração</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="page-main">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-topo">
+      <h2>EDOT System</h2>
+      <p>Gestão de Doação de Órgãos</p>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="/dashboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Dashboard
+      </a>
+      <a href="/paciente">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Pacientes
+      </a>
+      <a href="/ronda">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Rondas
+      </a>
+      <a href="/stats">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        Estatísticas
+      </a>
+      <a href="/admin" class="ativo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Administração
+      </a>
+    </nav>
+    <div class="sidebar-rodape">
+      <div class="usuario-info">
+        <strong id="sidebar-nome">—</strong>
+        <span id="sidebar-perfil">—</span>
+      </div>
+      <button class="btn btn-secundario" onclick="Api.limparSessao(); window.location.href='/';" style="width:100%;font-size:.8rem;padding:.4rem">
+        Sair
+      </button>
+    </div>
+  </aside>
+
+  <main class="conteudo">
+    <div class="page-header">
+      <h1>Administração</h1>
+    </div>
+
+    <!-- Abas -->
+    <div style="display:flex;gap:.25rem;margin-bottom:1.5rem;border-bottom:2px solid var(--cinza-borda)">
+      <button class="aba aba-ativa" data-aba="usuarios">Usuários</button>
+      <button class="aba" data-aba="edots" id="aba-edots">EDOTs / Hospitais</button>
+      <button class="aba" data-aba="setores">Setores</button>
+    </div>
+
+    <!-- Painel: Usuários -->
+    <div id="painel-usuarios">
+      <div style="display:flex;justify-content:flex-end;margin-bottom:1rem">
+        <button class="btn btn-sucesso" id="btn-novo-usuario">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Novo Usuário
+        </button>
+      </div>
+      <div class="card">
+        <div id="loading-usuarios" style="color:var(--texto-leve);font-size:.9rem">Carregando...</div>
+        <div class="tabela-wrapper" id="wrapper-usuarios" style="display:none">
+          <table>
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>E-mail</th>
+                <th>Perfil</th>
+                <th>EDOT / OPO</th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="tbody-usuarios"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Painel: EDOTs -->
+    <div id="painel-edots" style="display:none">
+      <div style="display:flex;justify-content:flex-end;margin-bottom:1rem" id="toolbar-edots">
+        <button class="btn btn-sucesso" id="btn-novo-edot">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Nova EDOT
+        </button>
+      </div>
+      <div class="card">
+        <div id="loading-edots" style="color:var(--texto-leve);font-size:.9rem">Carregando...</div>
+        <div class="tabela-wrapper" id="wrapper-edots" style="display:none">
+          <table>
+            <thead>
+              <tr>
+                <th>Sigla</th>
+                <th>Hospital</th>
+                <th>OPO</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-edots"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Painel: Setores -->
+    <div id="painel-setores" style="display:none">
+      <div style="display:flex;gap:.75rem;align-items:flex-end;margin-bottom:1rem;flex-wrap:wrap">
+        <div class="form-grupo" style="margin:0;min-width:200px">
+          <label>Filtrar por EDOT</label>
+          <select id="filtro-edot-setor">
+            <option value="">Todas as EDOTs</option>
+          </select>
+        </div>
+        <button class="btn btn-sucesso" id="btn-novo-setor">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Novo Setor
+        </button>
+      </div>
+      <div class="card">
+        <div id="loading-setores" style="color:var(--texto-leve);font-size:.9rem">Carregando...</div>
+        <div class="tabela-wrapper" id="wrapper-setores" style="display:none">
+          <table>
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>EDOT</th>
+                <th>Descrição</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-setores"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Modal: Usuário -->
+  <div id="modal-usuario" class="modal-overlay" style="display:none">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2 class="modal-titulo" id="titulo-usuario">Novo Usuário</h2>
+        <button class="modal-fechar" onclick="fecharModalUsuario()">&times;</button>
+      </div>
+      <div id="alerta-usuario" class="alerta"></div>
+      <form id="form-usuario">
+        <input type="hidden" id="u-id">
+        <div class="form-grupo">
+          <label for="u-nome">Nome completo *</label>
+          <input type="text" id="u-nome" required>
+        </div>
+        <div class="form-grupo">
+          <label for="u-email">E-mail *</label>
+          <input type="email" id="u-email" required>
+        </div>
+        <div class="form-grupo" id="grupo-senha">
+          <label for="u-senha">Senha *</label>
+          <input type="password" id="u-senha" placeholder="Mínimo 6 caracteres">
+        </div>
+        <div class="form-grupo" id="grupo-perfil">
+          <label for="u-perfil">Perfil *</label>
+          <select id="u-perfil" required>
+            <option value="">Selecione...</option>
+            <option value="cet_admin">CET Admin</option>
+            <option value="opo_auditor">OPO Auditor</option>
+            <option value="edot_coord">EDOT Coordenador</option>
+            <option value="edot_membro">EDOT Membro</option>
+          </select>
+        </div>
+        <div class="form-grupo" id="grupo-edot">
+          <label for="u-edot">EDOT</label>
+          <select id="u-edot">
+            <option value="">Nenhuma</option>
+          </select>
+        </div>
+        <div class="form-grupo" id="grupo-opo">
+          <label for="u-opo">OPO</label>
+          <select id="u-opo">
+            <option value="">Nenhuma</option>
+          </select>
+        </div>
+        <div style="display:flex;gap:.75rem;justify-content:flex-end">
+          <button type="button" class="btn btn-secundario" onclick="fecharModalUsuario()">Cancelar</button>
+          <button type="button" class="btn btn-perigo" id="btn-desativar-usuario" style="display:none">Desativar</button>
+          <button type="submit" class="btn btn-sucesso">
+            <span id="spinner-usuario" class="spinner" style="display:none"></span>
+            Salvar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: EDOT -->
+  <div id="modal-edot" class="modal-overlay" style="display:none">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2 class="modal-titulo">Nova EDOT</h2>
+        <button class="modal-fechar" onclick="fecharModalEdot()">&times;</button>
+      </div>
+      <div id="alerta-edot" class="alerta"></div>
+      <form id="form-edot">
+        <div class="form-grupo">
+          <label for="edot-nome">Nome do Hospital *</label>
+          <input type="text" id="edot-nome" required>
+        </div>
+        <div class="form-grupo">
+          <label for="edot-sigla">Sigla *</label>
+          <input type="text" id="edot-sigla" required placeholder="Ex: HPS">
+        </div>
+        <div class="form-grupo">
+          <label for="edot-opo">OPO *</label>
+          <select id="edot-opo" required>
+            <option value="">Selecione...</option>
+          </select>
+        </div>
+        <div style="display:flex;gap:.75rem;justify-content:flex-end">
+          <button type="button" class="btn btn-secundario" onclick="fecharModalEdot()">Cancelar</button>
+          <button type="submit" class="btn btn-sucesso">
+            <span id="spinner-edot" class="spinner" style="display:none"></span>
+            Salvar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Setor -->
+  <div id="modal-setor" class="modal-overlay" style="display:none">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2 class="modal-titulo">Novo Setor</h2>
+        <button class="modal-fechar" onclick="fecharModalSetor()">&times;</button>
+      </div>
+      <div id="alerta-setor" class="alerta"></div>
+      <form id="form-setor">
+        <div class="form-grupo">
+          <label for="setor-nome">Nome do Setor *</label>
+          <input type="text" id="setor-nome" required placeholder="Ex: UTI Adulto">
+        </div>
+        <div class="form-grupo">
+          <label for="setor-edot">EDOT *</label>
+          <select id="setor-edot" required>
+            <option value="">Selecione...</option>
+          </select>
+        </div>
+        <div class="form-grupo">
+          <label for="setor-descricao">Descrição</label>
+          <input type="text" id="setor-descricao" placeholder="Descrição opcional">
+        </div>
+        <div style="display:flex;gap:.75rem;justify-content:flex-end">
+          <button type="button" class="btn btn-secundario" onclick="fecharModalSetor()">Cancelar</button>
+          <button type="submit" class="btn btn-sucesso">
+            <span id="spinner-setor" class="spinner" style="display:none"></span>
+            Salvar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="/static/js/api.js"></script>
+  <script src="/static/js/admin.js"></script>
+</body>
+</html>

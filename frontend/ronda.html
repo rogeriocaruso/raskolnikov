@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EDOT System — Rondas</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="page-main">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-topo">
+      <h2>EDOT System</h2>
+      <p>Gestão de Doação de Órgãos</p>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="/dashboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Dashboard
+      </a>
+      <a href="/paciente">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Pacientes
+      </a>
+      <a href="/ronda" class="ativo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Rondas
+      </a>
+      <a href="/stats" id="nav-stats" style="display:none">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        Estatísticas
+      </a>
+      <a href="/admin" id="nav-admin" style="display:none">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Administração
+      </a>
+    </nav>
+    <div class="sidebar-rodape">
+      <div class="usuario-info">
+        <strong id="sidebar-nome">—</strong>
+        <span id="sidebar-perfil">—</span>
+      </div>
+      <button class="btn btn-secundario" onclick="Api.limparSessao(); window.location.href='/';" style="width:100%;font-size:.8rem;padding:.4rem">
+        Sair
+      </button>
+    </div>
+  </aside>
+
+  <main class="conteudo">
+    <div class="page-header">
+      <h1>Rondas</h1>
+      <button class="btn btn-sucesso" id="btn-nova-ronda">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        Nova Ronda
+      </button>
+    </div>
+
+    <!-- Modal nova ronda -->
+    <div id="modal-ronda" class="modal-overlay" style="display:none">
+      <div class="modal-box">
+        <div class="modal-header">
+          <h2 class="modal-titulo">Iniciar Nova Ronda</h2>
+          <button class="modal-fechar" onclick="fecharModal()">&times;</button>
+        </div>
+        <div id="alerta-ronda" class="alerta"></div>
+        <form id="form-ronda">
+          <div class="form-grupo">
+            <label for="r-turno">Turno</label>
+            <select id="r-turno" required>
+              <option value="">Selecione...</option>
+              <option value="manha">Manhã</option>
+              <option value="tarde">Tarde</option>
+              <option value="noite">Noite</option>
+            </select>
+          </div>
+          <div class="form-grupo" id="grupo-setor">
+            <label for="r-setor">Setor (opcional)</label>
+            <select id="r-setor">
+              <option value="">Todos os setores</option>
+            </select>
+          </div>
+          <div class="form-grupo">
+            <label for="r-obs">Observações iniciais</label>
+            <textarea id="r-obs" placeholder="Observações sobre a ronda..."></textarea>
+          </div>
+          <div style="display:flex;gap:.75rem;justify-content:flex-end">
+            <button type="button" class="btn btn-secundario" onclick="fecharModal()">Cancelar</button>
+            <button type="submit" class="btn btn-sucesso" id="btn-iniciar">
+              <span id="spinner-ronda" class="spinner" style="display:none"></span>
+              Iniciar Ronda
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal encerrar ronda -->
+    <div id="modal-encerrar" class="modal-overlay" style="display:none">
+      <div class="modal-box">
+        <div class="modal-header">
+          <h2 class="modal-titulo">Encerrar Ronda</h2>
+          <button class="modal-fechar" onclick="fecharModalEncerrar()">&times;</button>
+        </div>
+        <div id="alerta-encerrar" class="alerta"></div>
+        <form id="form-encerrar">
+          <input type="hidden" id="encerrar-id">
+          <div class="form-grupo">
+            <label for="e-leitos">Leitos Visitados</label>
+            <input type="number" id="e-leitos" min="0" placeholder="0" required>
+          </div>
+          <div class="form-grupo">
+            <label for="e-potenciais">Potenciais Encontrados</label>
+            <input type="number" id="e-potenciais" min="0" placeholder="0" required>
+          </div>
+          <div class="form-grupo">
+            <label for="e-obs">Observações finais</label>
+            <textarea id="e-obs" placeholder="Resumo da ronda..."></textarea>
+          </div>
+          <div style="display:flex;gap:.75rem;justify-content:flex-end">
+            <button type="button" class="btn btn-secundario" onclick="fecharModalEncerrar()">Cancelar</button>
+            <button type="submit" class="btn btn-perigo" id="btn-encerrar">
+              <span id="spinner-encerrar" class="spinner" style="display:none"></span>
+              Encerrar Ronda
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Lista de rondas -->
+    <div class="card">
+      <div id="loading-rondas" style="color:var(--texto-leve);font-size:.9rem">Carregando...</div>
+      <div class="tabela-wrapper" id="wrapper-rondas" style="display:none">
+        <table>
+          <thead>
+            <tr>
+              <th>EDOT / Hospital</th>
+              <th>Turno</th>
+              <th>Início</th>
+              <th>Término</th>
+              <th>Leitos</th>
+              <th>Potenciais</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="tbody-rondas"></tbody>
+        </table>
+      </div>
+      <div id="sem-rondas" style="display:none;color:var(--texto-leve);font-size:.9rem;padding:.5rem 0">
+        Nenhuma ronda registrada.
+      </div>
+    </div>
+  </main>
+
+  <script src="/static/js/api.js"></script>
+  <script src="/static/js/ronda.js"></script>
+</body>
+</html>

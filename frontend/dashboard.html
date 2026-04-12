@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EDOT System — Dashboard</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="page-main">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-topo">
+      <h2>EDOT System</h2>
+      <p>Gestão de Doação de Órgãos</p>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="/dashboard" class="ativo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Dashboard
+      </a>
+      <a href="/paciente">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Pacientes
+      </a>
+      <a href="/ronda">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Rondas
+      </a>
+      <a href="/stats" id="nav-stats" style="display:none">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        Estatísticas
+      </a>
+      <a href="/admin" id="nav-admin" style="display:none">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Administração
+      </a>
+    </nav>
+    <div class="sidebar-rodape">
+      <div class="usuario-info">
+        <strong id="sidebar-nome">—</strong>
+        <span id="sidebar-perfil">—</span>
+      </div>
+      <button class="btn btn-secundario" onclick="Api.limparSessao(); window.location.href='/';" style="width:100%;font-size:.8rem;padding:.4rem">
+        Sair
+      </button>
+    </div>
+  </aside>
+
+  <!-- Conteúdo -->
+  <main class="conteudo">
+    <div class="page-header">
+      <h1>Dashboard</h1>
+      <div id="filtro-dias" style="display:flex;gap:.5rem;align-items:center">
+        <label style="font-size:.875rem;color:var(--texto-leve)">Período:</label>
+        <select id="sel-dias" class="form-grupo" style="margin:0;width:auto">
+          <option value="7">7 dias</option>
+          <option value="30" selected>30 dias</option>
+          <option value="90">90 dias</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Stats cards -->
+    <div class="stats-grid" id="stats-grid">
+      <div class="stat-card"><div class="stat-valor" id="s-potencial">—</div><div class="stat-label">Potenciais Doadores</div></div>
+      <div class="stat-card verde"><div class="stat-valor" id="s-confirmado">—</div><div class="stat-label">Doadores Confirmados</div></div>
+      <div class="stat-card amarelo"><div class="stat-valor" id="s-avaliacao">—</div><div class="stat-label">Em Avaliação</div></div>
+      <div class="stat-card vermelho"><div class="stat-valor" id="s-nao-doador">—</div><div class="stat-label">Não Doadores</div></div>
+      <div class="stat-card"><div class="stat-valor" id="s-rondas">—</div><div class="stat-label">Rondas Realizadas</div></div>
+      <div class="stat-card verde"><div class="stat-valor" id="s-leitos">—</div><div class="stat-label">Leitos Visitados</div></div>
+    </div>
+
+    <!-- Pacientes ativos -->
+    <div class="card">
+      <div class="card-titulo">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+        Pacientes Ativos
+      </div>
+      <div id="loading-pacientes" style="color:var(--texto-leve);font-size:.9rem">Carregando...</div>
+      <div class="tabela-wrapper" id="wrapper-pacientes" style="display:none">
+        <table>
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Prontuário</th>
+              <th>Status</th>
+              <th>EDOT</th>
+              <th>Internação</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="tbody-pacientes"></tbody>
+        </table>
+      </div>
+      <div id="sem-pacientes" style="display:none;color:var(--texto-leve);font-size:.9rem;padding:.5rem 0">
+        Nenhum paciente ativo no momento.
+      </div>
+    </div>
+
+    <!-- Rondas recentes -->
+    <div class="card">
+      <div class="card-titulo">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Rondas Recentes
+      </div>
+      <div id="loading-rondas" style="color:var(--texto-leve);font-size:.9rem">Carregando...</div>
+      <div class="tabela-wrapper" id="wrapper-rondas" style="display:none">
+        <table>
+          <thead>
+            <tr>
+              <th>EDOT</th>
+              <th>Turno</th>
+              <th>Início</th>
+              <th>Leitos</th>
+              <th>Potenciais</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-rondas"></tbody>
+        </table>
+      </div>
+      <div id="sem-rondas" style="display:none;color:var(--texto-leve);font-size:.9rem;padding:.5rem 0">
+        Nenhuma ronda recente.
+      </div>
+    </div>
+  </main>
+
+  <script src="/static/js/api.js"></script>
+  <script src="/static/js/dashboard.js"></script>
+</body>
+</html>

@@ -329,6 +329,104 @@ tbody tr:hover { background: #f8fafc; }
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
+/* ── Modal ────────────────────────────────────────────────────────────────── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  padding: 1rem;
+}
+
+.modal-box {
+  background: #fff;
+  border-radius: var(--raio);
+  box-shadow: 0 8px 32px rgba(0,0,0,.25);
+  width: 100%;
+  max-width: 480px;
+  padding: 1.75rem;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+
+.modal-titulo {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--azul-escuro);
+}
+
+.modal-fechar {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--texto-leve);
+  line-height: 1;
+  padding: 0 .25rem;
+}
+.modal-fechar:hover { color: var(--texto); }
+
+/* ── Abas ─────────────────────────────────────────────────────────────────── */
+.aba {
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  padding: .6rem 1.25rem;
+  font-size: .9rem;
+  font-weight: 600;
+  color: var(--texto-leve);
+  cursor: pointer;
+  margin-bottom: -2px;
+  font-family: var(--fonte);
+  transition: color .15s, border-color .15s;
+}
+
+.aba:hover { color: var(--texto); }
+.aba.aba-ativa { color: var(--azul); border-bottom-color: var(--azul); }
+
+/* ── Barra de progresso (stats) ───────────────────────────────────────────── */
+.barra-status {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: .875rem;
+}
+.barra-status-label { min-width: 160px; color: var(--texto); font-weight: 500; }
+.barra-status-trilho {
+  flex: 1;
+  height: 12px;
+  background: var(--cinza-bg);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.barra-status-fill { height: 100%; border-radius: 6px; transition: width .4s; }
+.barra-status-valor { min-width: 32px; text-align: right; font-weight: 700; color: var(--azul-escuro); }
+
+/* ── Botão pequeno ────────────────────────────────────────────────────────── */
+.btn-sm { font-size: .8rem; padding: .4rem .8rem; }
+
+/* ── Linha de histórico ───────────────────────────────────────────────────── */
+.historico-item {
+  padding: .6rem 0;
+  border-bottom: 1px solid var(--cinza-borda);
+  display: flex;
+  gap: .75rem;
+}
+.historico-item:last-child { border-bottom: none; }
+.historico-data { color: var(--texto-leve); font-size: .8rem; min-width: 110px; }
+.historico-corpo { flex: 1; }
+.historico-campo { font-weight: 600; color: var(--azul-escuro); }
+
 /* ── Responsivo ───────────────────────────────────────────────────────────── */
 @media (max-width: 768px) {
   .sidebar { transform: translateX(-100%); transition: transform .25s; }
