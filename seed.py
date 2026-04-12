@@ -178,7 +178,7 @@ def _gerar_sigla(nome, existentes):
 
 
 def seed():
-    app = create_app('development')
+    app = create_app()  # usa FLASK_ENV do ambiente (production no Railway)
     with app.app_context():
         if OPO.query.first():
             print('Seed já executado. Abortando para não duplicar dados.')
