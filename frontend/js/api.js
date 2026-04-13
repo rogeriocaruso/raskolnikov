@@ -97,6 +97,27 @@ function exigirLogin() {
   }
 }
 
+// ── Geolocalização ────────────────────────────────────────────────────────
+/**
+ * Captura a posição GPS atual do dispositivo.
+ * Resolve com { geo_lat, geo_lng, geo_precisao } ou null se negada/indisponível.
+ * Timeout de 12 segundos; alta precisão habilitada.
+ */
+function capturarGeolocalizacao() {
+  return new Promise(resolve => {
+    if (!navigator.geolocation) { resolve(null); return; }
+    navigator.geolocation.getCurrentPosition(
+      pos => resolve({
+        geo_lat:      pos.coords.latitude,
+        geo_lng:      pos.coords.longitude,
+        geo_precisao: Math.round(pos.coords.accuracy),
+      }),
+      ()  => resolve(null),
+      { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
+    );
+  });
+}
+
 // ── Utilitários de data/hora ───────────────────────────────────────────────
 // O backend armazena tudo em UTC (datetime.utcnow). Para exibir corretamente
 // no fuso de Brasília (UTC-3 / America/Sao_Paulo) é preciso:

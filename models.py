@@ -221,6 +221,14 @@ class Ronda(db.Model):
     potenciais_encontrados = db.Column(db.Integer, nullable=False, default=0)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+    # Geolocalização — capturada pelo navegador ao iniciar e ao encerrar a ronda
+    geo_lat_inicio = db.Column(db.Float, nullable=True)
+    geo_lng_inicio = db.Column(db.Float, nullable=True)
+    geo_precisao_inicio = db.Column(db.Float, nullable=True)   # metros
+    geo_lat_fim = db.Column(db.Float, nullable=True)
+    geo_lng_fim = db.Column(db.Float, nullable=True)
+    geo_precisao_fim = db.Column(db.Float, nullable=True)
+
     edot = db.relationship('EDOT')
     usuario = db.relationship('Usuario')
     setor = db.relationship('Setor')
@@ -232,6 +240,7 @@ class Ronda(db.Model):
             edot_nome=self.edot.hospital_nome if self.edot else None,
             edot_sigla=self.edot.sigla if self.edot else None,
             usuario_id=self.usuario_id,
+            usuario_nome=self.usuario.nome if self.usuario else None,
             setor_id=self.setor_id,
             turno=self.turno,
             data_inicio=self.data_inicio.isoformat(),
@@ -240,4 +249,10 @@ class Ronda(db.Model):
             leitos_visitados=self.leitos_visitados,
             potenciais_encontrados=self.potenciais_encontrados,
             created_at=self.created_at.isoformat(),
+            geo_lat_inicio=self.geo_lat_inicio,
+            geo_lng_inicio=self.geo_lng_inicio,
+            geo_precisao_inicio=self.geo_precisao_inicio,
+            geo_lat_fim=self.geo_lat_fim,
+            geo_lng_fim=self.geo_lng_fim,
+            geo_precisao_fim=self.geo_precisao_fim,
         )

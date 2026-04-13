@@ -9,6 +9,35 @@ from models import db
 FRONTEND_DIR = os.path.join(os.path.dirname(__file__), 'frontend')
 
 
+def _migrar_colunas(db):
+    """Adiciona colunas novas a tabelas já existentes (idempotente)."""
+    from sqlalchemy import inspect, text
+    try:
+        inspector = inspect(db.engine)
+        novas = {
+            'ronda': [
+                ('geo_lat_inicio',    'FLOAT'),
+                ('geo_lng_inicio',    'FLOAT'),
+                ('geo_precisao_inicio', 'FLOAT'),
+                ('geo_lat_fim',       'FLOAT'),
+                ('geo_lng_fim',       'FLOAT'),
+                ('geo_precisao_fim',  'FLOAT'),
+            ],
+        }
+        with db.engine.begin() as conn:
+            for tabela, colunas in novas.items():
+                try:
+                    existentes = {c['name'] for c in inspector.get_columns(tabela)}
+                except Exception:
+                    continue
+                for col, tipo in colunas:
+                    if col not in existentes:
+                        conn.execute(text(f'ALTER TABLE {tabela} ADD COLUMN {col} {tipo}'))
+                        print(f'[migração] {tabela}.{col} adicionada')
+    except Exception as e:
+        print(f'[migração] erro (ignorado): {e}')
+
+
 def create_app(env=None):
     app = Flask(__name__)
     env = env or os.environ.get('FLASK_ENV', 'default')
@@ -19,12 +48,13 @@ def create_app(env=None):
     Migrate(app, db)
     CORS(app)
 
-    # Cria tabelas que ainda não existem (seguro — não apaga dados existentes)
+    # Cria tabelas que ainda não existem e adiciona colunas novas
     with app.app_context():
         try:
             db.create_all()
+            _migrar_colunas(db)
         except Exception as e:
-            print(f'[startup] db.create_all() erro (ignorado): {e}')
+            print(f'[startup] db setup erro (ignorado): {e}')
 
     from routes.auth import auth_bp
     from routes.patients import patients_bp

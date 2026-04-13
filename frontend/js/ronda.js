@@ -118,6 +118,9 @@ async function abrirDetalhe(rondaId) {
       alerta.className = 'alerta alerta-aviso visivel';
     }
 
+    // Painel de geolocalização para auditoria
+    renderizarGeo(rondaAtual);
+
     // Carregar setores para formulários
     await carregarSetoresDaEdot();
 
@@ -196,6 +199,65 @@ function voltarLista() {
 }
 window.voltarLista = voltarLista;
 
+// ── Geolocalização — painel de auditoria ────────────────────────────────────
+function renderizarGeo(r) {
+  // Remove painel anterior se existir
+  const anterior = document.getElementById('painel-geo');
+  if (anterior) anterior.remove();
+
+  const painel = document.createElement('div');
+  painel.id = 'painel-geo';
+  painel.className = 'card';
+  painel.style.cssText = 'padding:1rem 1.25rem;margin-bottom:1rem';
+
+  const linhaInicio = geoLinha(
+    'Início', r.geo_lat_inicio, r.geo_lng_inicio, r.geo_precisao_inicio
+  );
+  const linhaFim = r.data_fim
+    ? geoLinha('Encerramento', r.geo_lat_fim, r.geo_lng_fim, r.geo_precisao_fim)
+    : '';
+
+  painel.innerHTML = `
+    <div class="card-titulo" style="margin-bottom:.75rem">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+        <circle cx="12" cy="9" r="2.5"/>
+      </svg>
+      Geolocalização de Auditoria
+    </div>
+    <div style="display:flex;flex-direction:column;gap:.5rem;font-size:.875rem">
+      ${linhaInicio}
+      ${linhaFim}
+    </div>`;
+
+  // Inserir antes do card de pacientes
+  const cardPacientes = document.querySelector('#view-detalhe .card:last-child');
+  cardPacientes?.parentNode?.insertBefore(painel, cardPacientes);
+}
+
+function geoLinha(rotulo, lat, lng, precisao) {
+  if (lat == null || lng == null) {
+    return `<div style="display:flex;align-items:center;gap:.5rem">
+      <span class="badge badge-nao-doador">${rotulo}</span>
+      <span style="color:var(--texto-leve)">Localização não capturada</span>
+      <span style="font-size:.78rem;color:var(--vermelho)">(permissão negada ou GPS indisponível)</span>
+    </div>`;
+  }
+  const mapsUrl = `https://www.google.com/maps?q=${lat},${lng}`;
+  const latFmt  = lat.toFixed(6);
+  const lngFmt  = lng.toFixed(6);
+  const precFmt = precisao != null ? `±${Math.round(precisao)} m` : '';
+  return `<div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap">
+    <span class="badge badge-confirmado">${rotulo}</span>
+    <span style="font-family:monospace;font-size:.82rem">${latFmt}, ${lngFmt}</span>
+    ${precFmt ? `<span style="color:var(--texto-leve);font-size:.8rem">precisão ${precFmt}</span>` : ''}
+    <a href="${mapsUrl}" target="_blank" rel="noopener"
+       style="font-size:.8rem;color:var(--azul-claro)">
+       Ver no mapa ↗
+    </a>
+  </div>`;
+}
+
 // ── Setores da EDOT ──────────────────────────────────────────────────────────
 async function carregarSetoresDaEdot() {
   const edotId = rondaAtual?.edot_id || usuario?.edot_id;
@@ -266,10 +328,17 @@ document.getElementById('form-ronda').addEventListener('submit', async e => {
 
   btn.disabled = true;
   spinner.style.display = 'inline-block';
+  btn.textContent = '';
+  spinner.style.display = 'inline-block';
+  // Tenta capturar localização antes de enviar
+  alerta.textContent = 'Capturando localização GPS...';
+  alerta.className = 'alerta alerta-aviso visivel';
+  const geo = await capturarGeolocalizacao();
+  alerta.className = 'alerta';
   try {
-    const resp = await Api.iniciarRonda({ turno, setor_id: setorId ? +setorId : null, observacoes: obs });
+    const payload = { turno, setor_id: setorId ? +setorId : null, observacoes: obs, ...geo };
+    const resp = await Api.iniciarRonda(payload);
     fecharModal();
-    // Abrir direto no detalhe da ronda recém criada
     const novaRonda = resp.ronda || resp;
     if (novaRonda?.id) {
       abrirDetalhe(novaRonda.id);
@@ -282,6 +351,7 @@ document.getElementById('form-ronda').addEventListener('submit', async e => {
   } finally {
     btn.disabled = false;
     spinner.style.display = 'none';
+    btn.textContent = 'Iniciar Ronda';
   }
 });
 
@@ -324,10 +394,14 @@ document.getElementById('form-encerrar').addEventListener('submit', async e => {
 
   btn.disabled = true;
   spinner.style.display = 'inline-block';
+  alerta.textContent = 'Capturando localização GPS...';
+  alerta.className = 'alerta alerta-aviso visivel';
+  const geo = await capturarGeolocalizacao();
+  alerta.className = 'alerta';
   try {
-    await Api.encerrarRonda(id, { leitos_visitados: leitos, potenciais_encontrados: pot, observacoes: obs });
+    const payload = { leitos_visitados: leitos, potenciais_encontrados: pot, observacoes: obs, ...geo };
+    await Api.encerrarRonda(id, payload);
     fecharModalEncerrar();
-    // Reabrir o detalhe já encerrado
     await abrirDetalhe(id);
   } catch(err) {
     alerta.textContent = err.erro || err.message || 'Erro ao encerrar ronda.';

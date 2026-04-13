@@ -81,6 +81,9 @@ def iniciar_ronda():
         turno=turno,
         data_inicio=datetime.utcnow(),
         observacoes=data.get('observacoes'),
+        geo_lat_inicio=data.get('geo_lat'),
+        geo_lng_inicio=data.get('geo_lng'),
+        geo_precisao_inicio=data.get('geo_precisao'),
     )
     db.session.add(ronda)
     db.session.commit()
@@ -119,5 +122,8 @@ def encerrar_ronda(ronda_id):
     ronda.leitos_visitados = data.get('leitos_visitados')
     ronda.potenciais_encontrados = data.get('potenciais_encontrados', 0)
     ronda.observacoes = data.get('observacoes', ronda.observacoes)
+    ronda.geo_lat_fim = data.get('geo_lat')
+    ronda.geo_lng_fim = data.get('geo_lng')
+    ronda.geo_precisao_fim = data.get('geo_precisao')
     db.session.commit()
     return jsonify(ronda=ronda.to_dict()), 200
