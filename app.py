@@ -19,6 +19,13 @@ def create_app(env=None):
     Migrate(app, db)
     CORS(app)
 
+    # Cria tabelas que ainda não existem (seguro — não apaga dados existentes)
+    with app.app_context():
+        try:
+            db.create_all()
+        except Exception as e:
+            print(f'[startup] db.create_all() erro (ignorado): {e}')
+
     from routes.auth import auth_bp
     from routes.patients import patients_bp
     from routes.rounds import rounds_bp

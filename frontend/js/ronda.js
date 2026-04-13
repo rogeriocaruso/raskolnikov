@@ -77,7 +77,8 @@ async function carregarRondas() {
         </tr>`;
     }).join('');
   } catch(e) {
-    loading.textContent = 'Erro ao carregar rondas.';
+    loading.style.display = 'none';
+    vazio.style.display = '';
   }
 }
 

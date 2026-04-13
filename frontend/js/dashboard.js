@@ -89,7 +89,8 @@ async function carregarRondas() {
           : '<span class="badge badge-avaliacao">Em andamento</span>'}</td>
       </tr>`).join('');
   } catch(e) {
-    loading.textContent = 'Erro ao carregar rondas.';
+    loading.style.display = 'none';
+    vazio.style.display = '';
   }
 }
 
