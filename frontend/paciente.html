@@ -85,7 +85,7 @@
           <table>
             <thead>
               <tr>
-                <th>Nome</th>
+                <th>Iniciais</th>
                 <th>Prontuário</th>
                 <th>Nascimento</th>
                 <th>Status</th>
@@ -120,8 +120,8 @@
           <input type="hidden" id="p-id">
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
             <div class="form-grupo">
-              <label for="p-nome">Nome completo *</label>
-              <input type="text" id="p-nome" required placeholder="Nome do paciente">
+              <label for="p-nome">Iniciais do Paciente * <span style="font-weight:400;font-size:.8rem;color:var(--texto-leve)">(LGPD — não registrar nome completo)</span></label>
+              <input type="text" id="p-nome" required placeholder="Ex.: J.C.S.">
             </div>
             <div class="form-grupo">
               <label for="p-prontuario">Prontuário *</label>

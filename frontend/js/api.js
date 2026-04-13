@@ -97,6 +97,45 @@ function exigirLogin() {
   }
 }
 
+// ── Menu mobile (hambúrguer) ──────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  const sidebar = document.getElementById('sidebar');
+  if (!sidebar) return;
+
+  // Botão hambúrguer
+  const btn = document.createElement('button');
+  btn.id = 'btn-menu';
+  btn.setAttribute('aria-label', 'Abrir menu');
+  btn.innerHTML = '&#9776;';
+  document.body.appendChild(btn);
+
+  // Overlay escuro atrás da sidebar
+  const overlay = document.createElement('div');
+  overlay.id = 'sidebar-overlay';
+  document.body.appendChild(overlay);
+
+  function abrirMenu() {
+    sidebar.classList.add('aberta');
+    overlay.classList.add('visivel');
+    btn.setAttribute('aria-expanded', 'true');
+  }
+  function fecharMenu() {
+    sidebar.classList.remove('aberta');
+    overlay.classList.remove('visivel');
+    btn.setAttribute('aria-expanded', 'false');
+  }
+
+  btn.addEventListener('click', () =>
+    sidebar.classList.contains('aberta') ? fecharMenu() : abrirMenu()
+  );
+  overlay.addEventListener('click', fecharMenu);
+
+  // Fecha ao navegar (clique em link da sidebar)
+  sidebar.querySelectorAll('a').forEach(a =>
+    a.addEventListener('click', fecharMenu)
+  );
+});
+
 // ── Geolocalização ────────────────────────────────────────────────────────
 /**
  * Captura a posição GPS atual do dispositivo.

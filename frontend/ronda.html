@@ -121,7 +121,7 @@
           <table>
             <thead>
               <tr>
-                <th>Nome</th>
+                <th>Iniciais</th>
                 <th>Prontuário</th>
                 <th>Status atual</th>
                 <th>Setor</th>
@@ -229,14 +229,23 @@
       </div>
       <div id="alerta-paciente" class="alerta"></div>
       <form id="form-paciente-ronda">
-        <div class="form-grupo">
-          <label for="rp-nome">Nome completo *</label>
-          <input type="text" id="rp-nome" required placeholder="Nome do paciente">
-        </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+          <div class="form-grupo" style="grid-column:1/-1">
+            <label for="rp-nome">Iniciais do Paciente * <span style="font-weight:400;font-size:.8rem;color:var(--texto-leve)">(LGPD — não registrar nome completo)</span></label>
+            <input type="text" id="rp-nome" required placeholder="Ex.: J.C.S.">
+          </div>
           <div class="form-grupo">
             <label for="rp-prontuario">Prontuário *</label>
             <input type="text" id="rp-prontuario" required placeholder="Nº do prontuário">
+          </div>
+          <div class="form-grupo">
+            <label for="rp-status">Status inicial *</label>
+            <select id="rp-status" required>
+              <option value="potencial_doador">Potencial Doador</option>
+              <option value="em_avaliacao">Em Avaliação</option>
+              <option value="doador_confirmado">Doador Confirmado</option>
+              <option value="nao_doador">Não Doador</option>
+            </select>
           </div>
           <div class="form-grupo">
             <label for="rp-nascimento">Nascimento</label>
@@ -261,9 +270,6 @@
           <label for="rp-obs">Observações clínicas</label>
           <textarea id="rp-obs" rows="2" placeholder="Dados relevantes para acompanhamento..."></textarea>
         </div>
-        <p style="font-size:.8rem;color:var(--texto-leve);margin-bottom:1rem">
-          O status inicial será <strong>Potencial Doador</strong>. Atualize conforme evolução clínica.
-        </p>
         <div style="display:flex;gap:.75rem;justify-content:flex-end">
           <button type="button" class="btn btn-secundario" onclick="fecharModalPaciente()">Cancelar</button>
           <button type="submit" class="btn btn-sucesso" id="btn-salvar-paciente">

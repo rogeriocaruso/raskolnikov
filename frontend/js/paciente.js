@@ -17,7 +17,7 @@ if (perfil === 'cet_admin') {
   document.getElementById('nav-admin').style.display = '';
 }
 
-const podeEscrever = ['cet_admin','edot_coord'].includes(perfil);
+const podeEscrever = ['cet_admin','edot_coord','edot_membro'].includes(perfil);
 if (!podeEscrever) {
   document.getElementById('btn-novo-paciente').style.display = 'none';
 }
@@ -180,6 +180,7 @@ document.getElementById('form-paciente').addEventListener('submit', async e => {
   const dados = {
     nome:            document.getElementById('p-nome').value.trim(),
     prontuario:      document.getElementById('p-prontuario').value.trim(),
+    edot_id:         pacienteAtual?.edot_id || usuario?.edot_id,
     status:          document.getElementById('p-status').value,
     causa_morte:     document.getElementById('p-causa').value.trim() || null,
     observacoes:     document.getElementById('p-obs').value.trim() || null,

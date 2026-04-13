@@ -147,21 +147,54 @@ async function abrirDetalhe(rondaId) {
 window.abrirDetalhe = abrirDetalhe;
 
 function renderizarPacientes(pacientes, rondaAberta) {
-  const tbody = document.getElementById('tbody-pacientes-ronda');
-  tbody.innerHTML = pacientes.map(p => {
-    const botoesStatus = rondaAberta && podeEscrever
-      ? botoesAtualizacaoStatus(p)
-      : `<span style="font-size:.8rem;color:var(--texto-leve)">Somente leitura</span>`;
-    return `
-      <tr id="linha-pac-${p.id}">
-        <td><strong>${esc(p.nome)}</strong></td>
-        <td>${esc(p.prontuario)}</td>
-        <td>${badgeStatus(p.status)}</td>
-        <td>${esc(p.setor_nome || '—')}</td>
-        <td>${dataFmt(p.data_internacao)}</td>
-        <td>${botoesStatus}</td>
-      </tr>`;
-  }).join('');
+  const isMobile = window.innerWidth <= 768;
+
+  if (isMobile) {
+    // Esconde tabela e usa cartões
+    document.getElementById('wrapper-pacientes-ronda').style.display = 'none';
+    let container = document.getElementById('cards-pacientes-ronda');
+    if (!container) {
+      container = document.createElement('div');
+      container.id = 'cards-pacientes-ronda';
+      document.getElementById('wrapper-pacientes-ronda').insertAdjacentElement('afterend', container);
+    }
+    container.innerHTML = pacientes.map(p => {
+      const acoes = rondaAberta && podeEscrever ? botoesAtualizacaoStatus(p) : '';
+      return `
+        <div class="pac-card" id="linha-pac-${p.id}">
+          <div class="pac-card-header">
+            <div>
+              <div class="pac-card-nome">${esc(p.nome)}</div>
+              <div class="pac-card-meta">Pron.: ${esc(p.prontuario)} · ${esc(p.setor_nome || 'Setor não informado')}</div>
+              <div class="pac-card-meta">Internação: ${dataFmt(p.data_internacao)}</div>
+            </div>
+            ${badgeStatus(p.status)}
+          </div>
+          ${acoes ? `<div class="pac-card-acoes">${acoes.replace(/<div[^>]*>|<\/div>/g,'')}</div>` : ''}
+        </div>`;
+    }).join('');
+    container.style.display = '';
+  } else {
+    // Desktop: tabela normal
+    const container = document.getElementById('cards-pacientes-ronda');
+    if (container) container.style.display = 'none';
+    document.getElementById('wrapper-pacientes-ronda').style.display = '';
+    const tbody = document.getElementById('tbody-pacientes-ronda');
+    tbody.innerHTML = pacientes.map(p => {
+      const botoesStatus = rondaAberta && podeEscrever
+        ? botoesAtualizacaoStatus(p)
+        : `<span style="font-size:.8rem;color:var(--texto-leve)">Somente leitura</span>`;
+      return `
+        <tr id="linha-pac-${p.id}">
+          <td><strong>${esc(p.nome)}</strong></td>
+          <td>${esc(p.prontuario)}</td>
+          <td>${badgeStatus(p.status)}</td>
+          <td>${esc(p.setor_nome || '—')}</td>
+          <td>${dataFmt(p.data_internacao)}</td>
+          <td>${botoesStatus}</td>
+        </tr>`;
+    }).join('');
+  }
 }
 
 function botoesAtualizacaoStatus(p) {
@@ -443,7 +476,8 @@ document.getElementById('form-paciente-ronda').addEventListener('submit', async 
   const dados = {
     nome:            document.getElementById('rp-nome').value.trim(),
     prontuario:      document.getElementById('rp-prontuario').value.trim(),
-    status:          'potencial_doador',
+    edot_id:         rondaAtual?.edot_id || usuario?.edot_id,
+    status:          document.getElementById('rp-status').value || 'potencial_doador',
     data_nascimento: document.getElementById('rp-nascimento').value || null,
     data_internacao: document.getElementById('rp-internacao').value || null,
     setor_id:        document.getElementById('rp-setor').value ? +document.getElementById('rp-setor').value : null,
@@ -498,14 +532,11 @@ async function confirmarStatus(pacienteId, novoStatus) {
   const obs    = document.getElementById('status-obs').value.trim() || null;
   alerta.className = 'alerta';
   try {
-    const dados = { status: novoStatus };
-    if (obs) dados.observacoes = obs;
-    await Api.atualizarPaciente(pacienteId, dados);
-
-    // Se arquivando, usar endpoint de arquivar
     if (novoStatus === 'arquivado') {
       await Api.arquivarPaciente(pacienteId, obs || 'Arquivado durante ronda');
     } else {
+      const dados = { status: novoStatus };
+      if (obs) dados.observacoes = obs;
       await Api.atualizarPaciente(pacienteId, dados);
     }
 
