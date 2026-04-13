@@ -71,9 +71,15 @@ def dashboard_stats():
         Paciente.query
         .filter(
             Paciente.edot_id.in_(edot_ids),
-            Paciente.status == 'doador_confirmado',
+            Paciente.status == 'me_com_doacao',
         )
         .count()
+    )
+
+    total_leitos = (
+        db.session.query(func.sum(Ronda.leitos_visitados))
+        .filter(Ronda.edot_id.in_(edot_ids), Ronda.data_inicio >= desde)
+        .scalar() or 0
     )
 
     return jsonify(
@@ -81,6 +87,7 @@ def dashboard_stats():
         total_pacientes_ativos=total_pacientes,
         pacientes_por_status={s: c for s, c in por_status},
         rondas_no_periodo=rondas_periodo,
+        total_leitos_visitados=int(total_leitos),
         potenciais_encontrados_periodo=int(potenciais_periodo),
         novos_pacientes_periodo=novos_pacientes_periodo,
         doadores_confirmados=doadores_confirmados,
@@ -104,13 +111,19 @@ def stats_por_edot():
         if not edot:
             continue
         ativos = Paciente.query.filter_by(edot_id=edot_id, arquivado=False).count()
-        doadores = Paciente.query.filter_by(edot_id=edot_id, status='doador_confirmado').count()
+        doadores = Paciente.query.filter_by(edot_id=edot_id, status='me_com_doacao').count()
         rondas = Ronda.query.filter_by(edot_id=edot_id).count()
+        leitos = (
+            db.session.query(func.sum(Ronda.leitos_visitados))
+            .filter(Ronda.edot_id == edot_id)
+            .scalar() or 0
+        )
         resultado.append(dict(
             edot=edot.to_dict(),
             pacientes_ativos=ativos,
             doadores_confirmados=doadores,
             total_rondas=rondas,
+            total_leitos=int(leitos),
         ))
 
     return jsonify(edots=resultado), 200

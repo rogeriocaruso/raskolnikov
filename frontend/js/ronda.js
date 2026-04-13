@@ -467,6 +467,8 @@ document.getElementById('btn-novo-paciente-ronda').addEventListener('click', () 
     opt.textContent = s.nome;
     sel.appendChild(opt);
   });
+  // Pré-selecionar setor da ronda atual
+  if (rondaAtual?.setor_id) sel.value = rondaAtual.setor_id;
   document.getElementById('modal-paciente').style.display = 'flex';
 });
 

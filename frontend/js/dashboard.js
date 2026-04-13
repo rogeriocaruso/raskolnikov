@@ -27,13 +27,13 @@ function labelPerfil(p) {
 async function carregarStats(dias) {
   try {
     const d = await Api.dashboardStats(dias);
-    const por = d.por_status || {};
-    document.getElementById('s-potencial').textContent  = por.potencial_doador  ?? 0;
-    document.getElementById('s-confirmado').textContent = por.doador_confirmado  ?? 0;
-    document.getElementById('s-avaliacao').textContent  = por.em_avaliacao       ?? 0;
-    document.getElementById('s-nao-doador').textContent = por.nao_doador         ?? 0;
-    document.getElementById('s-rondas').textContent     = d.total_rondas         ?? 0;
-    document.getElementById('s-leitos').textContent     = d.total_leitos_visitados ?? 0;
+    const por = d.pacientes_por_status || {};
+    document.getElementById('s-sedacao').textContent     = (por.sedacao_continua ?? 0) + (por.sedacao_pausada ?? 0);
+    document.getElementById('s-protocolo').textContent   = por.protocolo_me        ?? 0;
+    document.getElementById('s-me-confirmado').textContent = por.me_confirmado     ?? 0;
+    document.getElementById('s-com-doacao').textContent  = por.me_com_doacao       ?? 0;
+    document.getElementById('s-rondas').textContent      = d.rondas_no_periodo     ?? 0;
+    document.getElementById('s-leitos').textContent      = d.total_leitos_visitados ?? 0;
   } catch(e) {
     console.error('Erro ao carregar stats', e);
   }
@@ -97,18 +97,21 @@ async function carregarRondas() {
 // ── Helpers ─────────────────────────────────────────────────────────────────
 function badgeStatus(s) {
   const m = {
-    potencial_doador: ['badge-potencial','Potencial Doador'],
-    em_avaliacao:     ['badge-avaliacao','Em Avaliação'],
-    doador_confirmado:['badge-confirmado','Confirmado'],
-    nao_doador:       ['badge-nao-doador','Não Doador'],
-    arquivado:        ['badge-arquivado','Arquivado'],
+    sedacao_continua:   ['badge-sedacao-continua', 'Sedação Contínua'],
+    sedacao_pausada:    ['badge-sedacao-pausada',  'Sedação Pausada'],
+    protocolo_me:       ['badge-protocolo-me',     'Protocolo M.E.'],
+    me_sem_confirmacao: ['badge-me-sem-conf',      'M.E. Sem Confirmação'],
+    me_confirmado:      ['badge-me-confirmado',    'M.E. Confirmado'],
+    me_com_doacao:      ['badge-me-com-doacao',    'M.E. Com Doação'],
+    me_sem_doacao:      ['badge-me-sem-doacao',    'M.E. Sem Doação'],
+    arquivado:          ['badge-arquivado',         'Arquivado'],
   };
   const [cls, txt] = m[s] || ['badge-arquivado', s];
   return `<span class="badge ${cls}">${txt}</span>`;
 }
 
 function labelTurno(t) {
-  return { manha:'Manhã', tarde:'Tarde', noite:'Noite' }[t] || t;
+  return { manha:'Manhã', tarde:'Tarde', noite:'Noite', plantao:'Plantão' }[t] || t;
 }
 
 // dataFmt e dataHoraFmt definidas globalmente em api.js (fuso América/São_Paulo)

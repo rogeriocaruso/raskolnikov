@@ -28,32 +28,36 @@ function labelPerfil(p) {
 async function carregarStats(dias) {
   try {
     const d = await Api.dashboardStats(dias);
-    const por = d.por_status || {};
+    const por = d.pacientes_por_status || {};
 
     const total = Object.values(por).reduce((a, b) => a + b, 0);
-    document.getElementById('s-total').textContent      = total;
-    document.getElementById('s-confirmados').textContent = por.doador_confirmado ?? 0;
-    document.getElementById('s-rondas').textContent     = d.total_rondas ?? 0;
-    document.getElementById('s-leitos').textContent     = d.total_leitos_visitados ?? 0;
+    document.getElementById('s-total').textContent       = d.total_pacientes_ativos ?? total;
+    document.getElementById('s-confirmados').textContent = por.me_com_doacao ?? 0;
+    document.getElementById('s-rondas').textContent      = d.rondas_no_periodo      ?? 0;
+    document.getElementById('s-leitos').textContent      = d.total_leitos_visitados  ?? 0;
 
-    const confirmados = por.doador_confirmado ?? 0;
-    const potenciais  = (por.potencial_doador ?? 0) + (por.em_avaliacao ?? 0) + confirmados + (por.nao_doador ?? 0);
-    const conv = potenciais > 0 ? ((confirmados / potenciais) * 100).toFixed(1) + '%' : '—';
+    // Taxa de conversão: M.E. Com Doação / total de M.E. confirmados (com ou sem doação)
+    const totalMe = (por.me_confirmado ?? 0) + (por.me_com_doacao ?? 0) + (por.me_sem_doacao ?? 0);
+    const conv = totalMe > 0
+      ? (((por.me_com_doacao ?? 0) / totalMe) * 100).toFixed(1) + '%'
+      : '—';
     document.getElementById('s-conv').textContent = conv;
 
     // Barras por status
     const statusList = [
-      { key: 'potencial_doador',  label: 'Potencial Doador',  cor: '#2980b9' },
-      { key: 'em_avaliacao',      label: 'Em Avaliação',      cor: '#f39c12' },
-      { key: 'doador_confirmado', label: 'Doador Confirmado', cor: '#17a589' },
-      { key: 'nao_doador',        label: 'Não Doador',        cor: '#e74c3c' },
-      { key: 'arquivado',         label: 'Arquivado',         cor: '#95a5a6' },
+      { key: 'sedacao_continua',   label: 'Sedação Contínua',          cor: '#1a6fa3' },
+      { key: 'sedacao_pausada',    label: 'Sedação Pausada',            cor: '#b26a00' },
+      { key: 'protocolo_me',       label: 'Protocolo M.E. em Andamento',cor: '#7b2fa8' },
+      { key: 'me_sem_confirmacao', label: 'M.E. Sem Confirmação',       cor: '#5d6d7e' },
+      { key: 'me_confirmado',      label: 'M.E. Confirmado',            cor: '#9a5c00' },
+      { key: 'me_com_doacao',      label: 'M.E. Com Doação',            cor: '#1a6b3c' },
+      { key: 'me_sem_doacao',      label: 'M.E. Sem Doação',            cor: '#c0392b' },
     ];
     const maxVal = Math.max(1, ...statusList.map(s => por[s.key] ?? 0));
     const barras = document.getElementById('status-bars');
     barras.innerHTML = statusList.map(s => {
-      const val  = por[s.key] ?? 0;
-      const pct  = ((val / maxVal) * 100).toFixed(1);
+      const val = por[s.key] ?? 0;
+      const pct = ((val / maxVal) * 100).toFixed(1);
       return `
         <div class="barra-status">
           <div class="barra-status-label">${s.label}</div>
@@ -81,12 +85,12 @@ async function carregarEdots() {
     const tbody = document.getElementById('tbody-edots');
     tbody.innerHTML = itens.map(e => `
       <tr>
-        <td>${esc(e.edot_nome || e.nome || '—')}</td>
-        <td>${esc(e.opo_sigla || e.opo_nome || '—')}</td>
-        <td>${e.ativos ?? 0}</td>
-        <td>${e.doadores_confirmados ?? e.confirmados ?? 0}</td>
-        <td>${e.total_rondas ?? e.rondas ?? 0}</td>
-        <td>${e.total_leitos ?? e.leitos ?? 0}</td>
+        <td>${esc(e.edot?.nome || '—')}</td>
+        <td>${esc(e.edot?.opo_sigla || e.edot?.opo_nome || '—')}</td>
+        <td>${e.pacientes_ativos ?? 0}</td>
+        <td>${e.doadores_confirmados ?? 0}</td>
+        <td>${e.total_rondas ?? 0}</td>
+        <td>${e.total_leitos ?? 0}</td>
       </tr>`).join('');
   } catch(e) {
     loading.textContent = 'Erro ao carregar dados por EDOT.';
