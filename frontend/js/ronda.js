@@ -128,6 +128,9 @@ async function abrirDetalhe(rondaId) {
 
     if (!pacientes.length) {
       document.getElementById('sem-pacientes-ronda').style.display = '';
+      // Mostrar/esconder box de "sem PD" conforme ronda aberta ou não
+      const boxSemPd = document.getElementById('box-sem-pd');
+      if (boxSemPd) boxSemPd.style.display = aberta && podeEscrever ? '' : 'none';
       return;
     }
     document.getElementById('wrapper-pacientes-ronda').style.display = '';
@@ -283,13 +286,23 @@ document.getElementById('form-ronda').addEventListener('submit', async e => {
 });
 
 // ── Modal: Encerrar ronda ────────────────────────────────────────────────────
-function abrirModalEncerrar(id) {
+function abrirModalEncerrar(id, semPd = false) {
   document.getElementById('encerrar-id').value = id;
-  document.getElementById('form-encerrar').reset();
-  document.getElementById('encerrar-id').value = id; // reset limpa hidden
+  document.getElementById('e-leitos').value = '0';
+  document.getElementById('e-potenciais').value = '0';
+  document.getElementById('e-obs').value = semPd
+    ? 'Nenhum potencial doador identificado nesta ronda.'
+    : '';
   document.getElementById('alerta-encerrar').className = 'alerta';
   document.getElementById('modal-encerrar').style.display = 'flex';
 }
+
+// Botão "Registrar ronda sem PD" no estado vazio
+document.addEventListener('click', e => {
+  if (e.target && e.target.id === 'btn-encerrar-sem-pd') {
+    abrirModalEncerrar(rondaAtual.id, true);
+  }
+});
 window.abrirModalEncerrar = abrirModalEncerrar;
 
 function fecharModalEncerrar() {
@@ -305,8 +318,8 @@ document.getElementById('form-encerrar').addEventListener('submit', async e => {
   alerta.className = 'alerta';
 
   const id     = +document.getElementById('encerrar-id').value;
-  const leitos = +document.getElementById('e-leitos').value;
-  const pot    = +document.getElementById('e-potenciais').value;
+  const leitos = +(document.getElementById('e-leitos').value || 0);
+  const pot    = +(document.getElementById('e-potenciais').value || 0);
   const obs    = document.getElementById('e-obs').value.trim() || null;
 
   btn.disabled = true;

@@ -134,7 +134,14 @@
         </div>
         <div id="sem-pacientes-ronda" style="display:none;padding:.75rem 0">
           <p style="color:var(--texto-leve);font-size:.9rem">Nenhum paciente em acompanhamento neste hospital.</p>
-          <p style="color:var(--texto-leve);font-size:.85rem;margin-top:.25rem">Use <strong>"Registrar Potencial"</strong> para adicionar um caso encontrado durante a ronda.</p>
+          <p style="color:var(--texto-leve);font-size:.85rem;margin-top:.25rem">Use <strong>"Registrar Potencial"</strong> para adicionar um caso encontrado nesta ronda.</p>
+          <div style="margin-top:1.25rem;padding:1rem;background:#f8fafc;border-radius:var(--raio);border:1.5px solid var(--cinza-borda)" id="box-sem-pd">
+            <p style="font-size:.9rem;font-weight:600;color:var(--texto);margin-bottom:.5rem">Nenhum Potencial Doador encontrado nesta ronda?</p>
+            <p style="font-size:.85rem;color:var(--texto-leve);margin-bottom:.75rem">Registre a passagem mesmo sem PD para fins de auditoria.</p>
+            <button class="btn btn-primario" id="btn-encerrar-sem-pd">
+              Registrar ronda sem PD e encerrar
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -191,12 +198,12 @@
       <form id="form-encerrar">
         <input type="hidden" id="encerrar-id">
         <div class="form-grupo">
-          <label for="e-leitos">Leitos Visitados *</label>
-          <input type="number" id="e-leitos" min="0" placeholder="0" required>
+          <label for="e-leitos">Leitos Visitados</label>
+          <input type="number" id="e-leitos" min="0" value="0">
         </div>
         <div class="form-grupo">
-          <label for="e-potenciais">Potenciais Encontrados (esta ronda) *</label>
-          <input type="number" id="e-potenciais" min="0" placeholder="0" required>
+          <label for="e-potenciais">Potenciais Doadores encontrados nesta ronda</label>
+          <input type="number" id="e-potenciais" min="0" value="0">
         </div>
         <div class="form-grupo">
           <label for="e-obs">Observações finais</label>
