@@ -121,12 +121,13 @@ function preencherForm(p) {
   document.getElementById('p-prontuario').value = p?.prontuario || '';
   document.getElementById('p-nascimento').value = p?.data_nascimento?.slice(0,10) || '';
   document.getElementById('p-internacao').value = p?.data_internacao?.slice(0,10) || '';
-  document.getElementById('p-status').value     = p?.status || 'potencial_doador';
+  document.getElementById('p-status').value     = p?.status || 'sedacao_continua';
   document.getElementById('p-causa').value      = p?.causa_morte || '';
   document.getElementById('p-obs').value        = p?.observacoes || '';
 
+  const STATUS_ARQUIVAVEIS = ['me_sem_confirmacao','me_confirmado','me_com_doacao','me_sem_doacao'];
   const btnArq = document.getElementById('btn-arquivar');
-  if (p && p.status !== 'arquivado' && podeEscrever) {
+  if (p && STATUS_ARQUIVAVEIS.includes(p.status) && podeEscrever) {
     btnArq.style.display = '';
   } else {
     btnArq.style.display = 'none';
@@ -291,11 +292,14 @@ document.getElementById('busca').addEventListener('keydown', e => { if (e.key ==
 // ── Helpers ─────────────────────────────────────────────────────────────────
 function badgeStatus(s) {
   const m = {
-    potencial_doador: ['badge-potencial','Potencial Doador'],
-    em_avaliacao:     ['badge-avaliacao','Em Avaliação'],
-    doador_confirmado:['badge-confirmado','Confirmado'],
-    nao_doador:       ['badge-nao-doador','Não Doador'],
-    arquivado:        ['badge-arquivado','Arquivado'],
+    sedacao_continua:   ['badge-sedacao-continua', 'Sedação Contínua'],
+    sedacao_pausada:    ['badge-sedacao-pausada',  'Sedação Pausada'],
+    protocolo_me:       ['badge-protocolo-me',     'Protocolo M.E.'],
+    me_sem_confirmacao: ['badge-me-sem-conf',      'M.E. Sem Confirmação'],
+    me_confirmado:      ['badge-me-confirmado',    'M.E. Confirmado'],
+    me_com_doacao:      ['badge-me-com-doacao',    'M.E. Com Doação'],
+    me_sem_doacao:      ['badge-me-sem-doacao',    'M.E. Sem Doação'],
+    arquivado:          ['badge-arquivado',         'Arquivado'],
   };
   const [cls, txt] = m[s] || ['badge-arquivado', s];
   return `<span class="badge ${cls}">${txt}</span>`;

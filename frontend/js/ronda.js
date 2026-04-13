@@ -199,20 +199,30 @@ function renderizarPacientes(pacientes, rondaAberta) {
 
 function botoesAtualizacaoStatus(p) {
   const acoes = {
-    potencial_doador:  [
-      { status: 'em_avaliacao',     label: 'Em Avaliação',  cls: 'btn-aviso'    },
-      { status: 'nao_doador',       label: 'Não Doador',    cls: 'btn-perigo'   },
+    sedacao_continua: [
+      { status: 'sedacao_pausada', label: 'Pausar Sedação',       cls: 'btn-aviso'    },
+      { status: 'protocolo_me',    label: 'Iniciar Protocolo M.E.',cls: 'btn-primario' },
     ],
-    em_avaliacao: [
-      { status: 'doador_confirmado',label: 'Confirmado',    cls: 'btn-sucesso'  },
-      { status: 'nao_doador',       label: 'Não Doador',    cls: 'btn-perigo'   },
+    sedacao_pausada: [
+      { status: 'sedacao_continua', label: 'Retomar Sedação',     cls: 'btn-secundario' },
+      { status: 'protocolo_me',     label: 'Iniciar Protocolo M.E.',cls: 'btn-primario' },
     ],
-    doador_confirmado: [
-      { status: 'arquivado',        label: 'Arquivar',      cls: 'btn-secundario' },
+    protocolo_me: [
+      { status: 'me_sem_confirmacao', label: 'Sem Confirmação M.E.', cls: 'btn-aviso'   },
+      { status: 'me_confirmado',      label: 'M.E. Confirmado',      cls: 'btn-sucesso' },
     ],
-    nao_doador: [
-      { status: 'potencial_doador', label: 'Reativar',      cls: 'btn-primario' },
-      { status: 'arquivado',        label: 'Arquivar',      cls: 'btn-secundario' },
+    me_sem_confirmacao: [
+      { status: 'arquivado', label: 'Arquivar Caso', cls: 'btn-secundario' },
+    ],
+    me_confirmado: [
+      { status: 'me_com_doacao', label: 'Com Doação',  cls: 'btn-sucesso' },
+      { status: 'me_sem_doacao', label: 'Sem Doação',  cls: 'btn-perigo'  },
+    ],
+    me_com_doacao: [
+      { status: 'arquivado', label: 'Arquivar Caso', cls: 'btn-secundario' },
+    ],
+    me_sem_doacao: [
+      { status: 'arquivado', label: 'Arquivar Caso', cls: 'btn-secundario' },
     ],
   };
   const opcoes = acoes[p.status] || [];
@@ -552,11 +562,14 @@ async function confirmarStatus(pacienteId, novoStatus) {
 // ── Helpers ──────────────────────────────────────────────────────────────────
 function badgeStatus(s) {
   const m = {
-    potencial_doador:  ['badge-potencial', 'Potencial Doador'],
-    em_avaliacao:      ['badge-avaliacao',  'Em Avaliação'],
-    doador_confirmado: ['badge-confirmado', 'Doador Confirmado'],
-    nao_doador:        ['badge-nao-doador', 'Não Doador'],
-    arquivado:         ['badge-arquivado',  'Arquivado'],
+    sedacao_continua:    ['badge-sedacao-continua', 'Sedação Contínua'],
+    sedacao_pausada:     ['badge-sedacao-pausada',  'Sedação Pausada'],
+    protocolo_me:        ['badge-protocolo-me',     'Protocolo M.E.'],
+    me_sem_confirmacao:  ['badge-me-sem-conf',      'M.E. Sem Confirmação'],
+    me_confirmado:       ['badge-me-confirmado',    'M.E. Confirmado'],
+    me_com_doacao:       ['badge-me-com-doacao',    'M.E. Com Doação'],
+    me_sem_doacao:       ['badge-me-sem-doacao',    'M.E. Sem Doação'],
+    arquivado:           ['badge-arquivado',         'Arquivado'],
   };
   const [cls, txt] = m[s] || ['badge-arquivado', s];
   return `<span class="badge ${cls}">${txt}</span>`;

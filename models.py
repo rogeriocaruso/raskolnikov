@@ -6,12 +6,21 @@ db = SQLAlchemy()
 
 PERFIS = ('cet_admin', 'opo_auditor', 'edot_coord', 'edot_membro')
 STATUS_PACIENTE = (
-    'potencial_doador',
-    'em_avaliacao',
-    'doador_confirmado',
-    'nao_doador',
+    'sedacao_continua',
+    'sedacao_pausada',
+    'protocolo_me',
+    'me_sem_confirmacao',
+    'me_confirmado',
+    'me_com_doacao',
+    'me_sem_doacao',
     'arquivado',
 )
+STATUS_ARQUIVAVEIS = {
+    'me_sem_confirmacao',
+    'me_confirmado',
+    'me_com_doacao',
+    'me_sem_doacao',
+}
 TURNOS = ('manha', 'tarde', 'noite', 'plantao')
 
 

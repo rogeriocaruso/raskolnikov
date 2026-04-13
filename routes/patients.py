@@ -4,7 +4,7 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 from sqlalchemy import or_
 
-from models import db, Paciente, PacienteHistorico, Setor, Usuario, EDOT, STATUS_PACIENTE
+from models import db, Paciente, PacienteHistorico, Setor, Usuario, EDOT, STATUS_PACIENTE, STATUS_ARQUIVAVEIS
 
 patients_bp = Blueprint('patients', __name__)
 
@@ -221,6 +221,8 @@ def arquivar_paciente(paciente_id):
         return jsonify(erro='Sem acesso'), 403
     if paciente.arquivado:
         return jsonify(erro='Paciente já arquivado'), 409
+    if paciente.status not in STATUS_ARQUIVAVEIS:
+        return jsonify(erro='Paciente só pode ser arquivado quando em status: M.E. Sem Confirmação, M.E. Confirmado, M.E. Com Doação ou M.E. Sem Doação'), 409
 
     data = request.get_json(silent=True) or {}
     _write_historico(
