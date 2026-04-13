@@ -155,8 +155,9 @@ async function carregarSetoresForm(setorAtual) {
   const edotId = usuario?.edot_id || pacienteAtual?.edot_id;
   if (!edotId) return;
   try {
-    const setores = await Api.listarSetores(edotId);
-    (setores || []).forEach(s => {
+    const resp = await Api.listarSetores(edotId);
+    const setores = resp.setores || resp || [];
+    setores.forEach(s => {
       const opt = document.createElement('option');
       opt.value = s.id;
       opt.textContent = s.nome;

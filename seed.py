@@ -6,7 +6,7 @@ Uso:
 """
 import re
 from app import create_app
-from models import db, OPO, EDOT, Usuario
+from models import db, OPO, EDOT, Setor, Usuario
 
 OPOS = [
     {
@@ -229,5 +229,30 @@ def seed():
         print(f'\nTotal: {len(OPOS)} OPOs, {total_edots} EDOTs criadas.')
 
 
+SETORES_PADRAO = [
+    'UTI Adulto',
+    'UTI Neonatal',
+    'Pronto-Socorro / Emergência',
+]
+
+
+def seed_setores():
+    """Cria setores padrão (UTI e Emergência) para todos os hospitais que ainda não os têm."""
+    app = create_app()
+    with app.app_context():
+        edots = EDOT.query.all()
+        criados = 0
+        for edot in edots:
+            nomes_existentes = {s.nome for s in Setor.query.filter_by(edot_id=edot.id).all()}
+            for nome_setor in SETORES_PADRAO:
+                if nome_setor not in nomes_existentes:
+                    db.session.add(Setor(nome=nome_setor, edot_id=edot.id))
+                    criados += 1
+        db.session.commit()
+        print(f'Setores criados: {criados} (em {len(edots)} EDOTs)')
+        return criados
+
+
 if __name__ == '__main__':
     seed()
+    seed_setores()

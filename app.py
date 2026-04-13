@@ -94,11 +94,15 @@ def create_app(env=None):
     @app.route('/rodar-seed')
     def rodar_seed():
         try:
-            from seed import seed
+            from seed import seed, seed_setores
             seed()
-            from models import OPO
-            total = OPO.query.count()
-            return jsonify(mensagem=f'Seed concluído! {total} OPOs no banco.'), 200
+            setores_criados = seed_setores()
+            from models import OPO, EDOT
+            total_opos  = OPO.query.count()
+            total_edots = EDOT.query.count()
+            return jsonify(
+                mensagem=f'Seed concluído! {total_opos} OPOs, {total_edots} EDOTs, {setores_criados} setores criados.'
+            ), 200
         except Exception as e:
             return jsonify(erro=str(e)), 500
 

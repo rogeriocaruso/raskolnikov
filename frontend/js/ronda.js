@@ -33,9 +33,10 @@ async function carregarSetores() {
   const edotId = usuario?.edot_id;
   if (!edotId) return;
   try {
-    const setores = await Api.listarSetores(edotId);
+    const resp = await Api.listarSetores(edotId);
+    const setores = resp.setores || resp || [];
     const sel = document.getElementById('r-setor');
-    (setores || []).forEach(s => {
+    setores.forEach(s => {
       const opt = document.createElement('option');
       opt.value = s.id;
       opt.textContent = s.nome;
@@ -82,6 +83,10 @@ async function carregarRondas() {
 
 // ── Modal nova ronda ────────────────────────────────────────────────────────
 document.getElementById('btn-nova-ronda').addEventListener('click', () => {
+  if (!usuario?.edot_id) {
+    alert('Seu usuário não está vinculado a uma EDOT. Peça ao administrador para corrigir seu cadastro e faça login novamente.');
+    return;
+  }
   document.getElementById('form-ronda').reset();
   document.getElementById('alerta-ronda').className = 'alerta';
   document.getElementById('modal-ronda').style.display = 'flex';
