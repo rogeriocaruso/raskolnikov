@@ -136,6 +136,15 @@ async function abrirModalUsuario(u) {
   preencherSelectEdot(document.getElementById('u-edot'), u?.edot_id);
   preencherSelectOpo(document.getElementById('u-opo'), u?.opo_id);
 
+  // Quando EDOT muda, preenche OPO automaticamente
+  const selEdot = document.getElementById('u-edot');
+  selEdot.onchange = function() {
+    const edot = _edots.find(e => e.id === +this.value);
+    if (edot?.opo_id) {
+      document.getElementById('u-opo').value = edot.opo_id;
+    }
+  };
+
   document.getElementById('modal-usuario').style.display = 'flex';
 }
 

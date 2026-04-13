@@ -229,6 +229,8 @@ class Ronda(db.Model):
         return dict(
             id=self.id,
             edot_id=self.edot_id,
+            edot_nome=self.edot.hospital_nome if self.edot else None,
+            edot_sigla=self.edot.sigla if self.edot else None,
             usuario_id=self.usuario_id,
             setor_id=self.setor_id,
             turno=self.turno,
