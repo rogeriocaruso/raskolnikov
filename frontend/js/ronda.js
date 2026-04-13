@@ -204,8 +204,7 @@ function botoesAtualizacaoStatus(p) {
       { status: 'protocolo_me',    label: 'Iniciar Protocolo M.E.',cls: 'btn-primario' },
     ],
     sedacao_pausada: [
-      { status: 'sedacao_continua', label: 'Retomar Sedação',     cls: 'btn-secundario' },
-      { status: 'protocolo_me',     label: 'Iniciar Protocolo M.E.',cls: 'btn-primario' },
+      { status: 'protocolo_me', label: 'Iniciar Protocolo M.E.', cls: 'btn-primario' },
     ],
     protocolo_me: [
       { status: 'me_sem_confirmacao', label: 'Sem Confirmação M.E.', cls: 'btn-aviso'   },
