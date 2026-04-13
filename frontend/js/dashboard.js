@@ -111,17 +111,7 @@ function labelTurno(t) {
   return { manha:'Manhã', tarde:'Tarde', noite:'Noite' }[t] || t;
 }
 
-function dataFmt(iso) {
-  if (!iso) return '—';
-  const d = new Date(iso + (iso.length === 10 ? 'T00:00:00' : ''));
-  return d.toLocaleDateString('pt-BR');
-}
-
-function dataHoraFmt(iso) {
-  if (!iso) return '—';
-  const d = new Date(iso);
-  return d.toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
-}
+// dataFmt e dataHoraFmt definidas globalmente em api.js (fuso América/São_Paulo)
 
 function esc(str) {
   if (!str) return '—';

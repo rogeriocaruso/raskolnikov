@@ -96,3 +96,38 @@ function exigirLogin() {
     window.location.href = '/';
   }
 }
+
+// ── Utilitários de data/hora ───────────────────────────────────────────────
+// O backend armazena tudo em UTC (datetime.utcnow). Para exibir corretamente
+// no fuso de Brasília (UTC-3 / America/Sao_Paulo) é preciso:
+//  1. Informar ao JS que o ISO string é UTC adicionando 'Z' quando ausente
+//  2. Converter para o fuso correto via Intl / toLocaleString
+
+function _utcIso(iso) {
+  // Adiciona 'Z' se o string não tiver indicador de fuso (naive UTC do Python)
+  if (!iso) return iso;
+  return (iso.includes('Z') || iso.includes('+')) ? iso : iso + 'Z';
+}
+
+// Formata timestamp (data + hora) em horário de Brasília
+function dataHoraFmt(iso) {
+  if (!iso) return '—';
+  return new Date(_utcIso(iso)).toLocaleString('pt-BR', {
+    timeZone: 'America/Sao_Paulo',
+    day: '2-digit', month: '2-digit',
+    hour: '2-digit', minute: '2-digit',
+  });
+}
+
+// Formata data (sem hora). Strings YYYY-MM-DD são tratadas literalmente
+// para evitar deslocamento de dia por fuso horário.
+function dataFmt(iso) {
+  if (!iso) return '—';
+  if (iso.length === 10) {
+    const [y, m, d] = iso.split('-');
+    return `${d}/${m}/${y}`;
+  }
+  return new Date(_utcIso(iso)).toLocaleDateString('pt-BR', {
+    timeZone: 'America/Sao_Paulo',
+  });
+}
