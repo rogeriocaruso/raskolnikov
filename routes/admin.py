@@ -146,7 +146,7 @@ def criar_edot():
         return jsonify(erro='Apenas cet_admin pode criar EDOTs'), 403
 
     data = request.get_json(silent=True) or {}
-    required = ('nome', 'sigla', 'hospital_nome', 'opo_id')
+    required = ('nome', 'sigla', 'opo_id')
     missing = [f for f in required if not data.get(f)]
     if missing:
         return jsonify(erro=f'Campos obrigatórios: {", ".join(missing)}'), 400
@@ -154,7 +154,7 @@ def criar_edot():
     edot = EDOT(
         nome=data['nome'],
         sigla=data['sigla'].upper(),
-        hospital_nome=data['hospital_nome'],
+        hospital_nome=data.get('hospital_nome') or data['nome'],
         opo_id=data['opo_id'],
     )
     db.session.add(edot)

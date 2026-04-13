@@ -47,11 +47,17 @@ let _edots = [];
 let _opos  = [];
 
 async function garantirEdots() {
-  if (!_edots.length) _edots = await Api.listarEdots().catch(() => []);
+  if (!_edots.length) {
+    const d = await Api.listarEdots().catch(() => ({}));
+    _edots = d.edots || [];
+  }
   return _edots;
 }
 async function garantirOpos() {
-  if (!_opos.length) _opos = await Api.listarOpos().catch(() => []);
+  if (!_opos.length) {
+    const d = await Api.listarOpos().catch(() => ({}));
+    _opos = d.opos || [];
+  }
   return _opos;
 }
 
@@ -72,7 +78,7 @@ async function carregarUsuarios() {
         <td>${esc(u.nome)}</td>
         <td>${esc(u.email)}</td>
         <td>${labelPerfil(u.perfil)}</td>
-        <td>${esc(u.edot_nome || u.opo_nome || '—')}</td>
+        <td>${esc(u.edot_nome || u.opo_nome || (u.edot_id ? `EDOT #${u.edot_id}` : '—'))}</td>
         <td>${u.ativo
           ? '<span class="badge badge-confirmado">Ativo</span>'
           : '<span class="badge badge-arquivado">Inativo</span>'}</td>
@@ -198,7 +204,7 @@ async function carregarEdots() {
     tbody.innerHTML = itens.map(e => `
       <tr>
         <td>${esc(e.sigla)}</td>
-        <td>${esc(e.nome || e.hospital_nome)}</td>
+        <td>${esc(e.hospital_nome || e.nome)}</td>
         <td>${esc(e.opo_sigla || e.opo_nome || '—')}</td>
         <td>${e.ativo
           ? '<span class="badge badge-confirmado">Ativo</span>'
@@ -228,10 +234,12 @@ document.getElementById('form-edot').addEventListener('submit', async e => {
   const alerta  = document.getElementById('alerta-edot');
   alerta.className = 'alerta';
 
+  const nomeHospital = document.getElementById('edot-nome').value.trim();
   const dados = {
-    nome:   document.getElementById('edot-nome').value.trim(),
-    sigla:  document.getElementById('edot-sigla').value.trim().toUpperCase(),
-    opo_id: +document.getElementById('edot-opo').value,
+    nome:         nomeHospital,
+    hospital_nome: nomeHospital,
+    sigla:        document.getElementById('edot-sigla').value.trim().toUpperCase(),
+    opo_id:       +document.getElementById('edot-opo').value,
   };
 
   btn.disabled = true;
@@ -320,13 +328,12 @@ document.getElementById('form-setor').addEventListener('submit', async e => {
 
 // ── Helpers de select ───────────────────────────────────────────────────────
 function preencherSelectEdot(sel, valorAtual) {
-  const atual = sel.value;
   // Manter primeira opção
   while (sel.options.length > 1) sel.remove(1);
   _edots.forEach(e => {
     const opt = document.createElement('option');
     opt.value = e.id;
-    opt.textContent = `${e.sigla} — ${e.nome || e.hospital_nome}`;
+    opt.textContent = `${e.sigla} — ${e.hospital_nome || e.nome}`;
     if (valorAtual && e.id === valorAtual) opt.selected = true;
     sel.appendChild(opt);
   });

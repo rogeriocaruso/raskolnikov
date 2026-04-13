@@ -59,6 +59,8 @@ class EDOT(db.Model):
             sigla=self.sigla,
             hospital_nome=self.hospital_nome,
             opo_id=self.opo_id,
+            opo_nome=self.opo.nome if self.opo else None,
+            opo_sigla=self.opo.sigla if self.opo else None,
             ativo=self.ativo,
         )
 
@@ -80,6 +82,8 @@ class Setor(db.Model):
             nome=self.nome,
             descricao=self.descricao,
             edot_id=self.edot_id,
+            edot_nome=self.edot.hospital_nome if self.edot else None,
+            edot_sigla=self.edot.sigla if self.edot else None,
             ativo=self.ativo,
         )
 
@@ -103,6 +107,9 @@ class Usuario(db.Model):
     def check_senha(self, senha):
         return check_password_hash(self.senha_hash, senha)
 
+    edot = db.relationship('EDOT', foreign_keys=[edot_id])
+    opo  = db.relationship('OPO',  foreign_keys=[opo_id])
+
     def to_dict(self):
         return dict(
             id=self.id,
@@ -110,7 +117,9 @@ class Usuario(db.Model):
             email=self.email,
             perfil=self.perfil,
             edot_id=self.edot_id,
+            edot_nome=self.edot.hospital_nome if self.edot else None,
             opo_id=self.opo_id,
+            opo_nome=self.opo.nome if self.opo else None,
             ativo=self.ativo,
         )
 
