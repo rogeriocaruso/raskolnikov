@@ -47,6 +47,7 @@ async function carregarStats(dias) {
     const statusList = [
       { key: 'sedacao_continua',   label: 'Sedação Contínua',          cor: '#1a6fa3' },
       { key: 'sedacao_pausada',    label: 'Sedação Pausada',            cor: '#b26a00' },
+      { key: 'acompanhamento',     label: 'Acompanhamento',             cor: '#148f77' },
       { key: 'protocolo_me',       label: 'Protocolo M.E. em Andamento',cor: '#7b2fa8' },
       { key: 'me_sem_confirmacao', label: 'M.E. Sem Confirmação',       cor: '#5d6d7e' },
       { key: 'me_confirmado',      label: 'M.E. Confirmado',            cor: '#9a5c00' },

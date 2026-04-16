@@ -125,7 +125,7 @@ function preencherForm(p) {
   document.getElementById('p-causa').value      = p?.causa_morte || '';
   document.getElementById('p-obs').value        = p?.observacoes || '';
 
-  const STATUS_ARQUIVAVEIS = ['me_sem_confirmacao','me_confirmado','me_com_doacao','me_sem_doacao'];
+  const STATUS_ARQUIVAVEIS = ['acompanhamento','me_sem_confirmacao','me_confirmado','me_com_doacao','me_sem_doacao'];
   const btnArq = document.getElementById('btn-arquivar');
   if (p && STATUS_ARQUIVAVEIS.includes(p.status) && podeEscrever) {
     btnArq.style.display = '';
@@ -294,6 +294,7 @@ function badgeStatus(s) {
   const m = {
     sedacao_continua:   ['badge-sedacao-continua', 'Sedação Contínua'],
     sedacao_pausada:    ['badge-sedacao-pausada',  'Sedação Pausada'],
+    acompanhamento:     ['badge-acompanhamento',   'Acompanhamento'],
     protocolo_me:       ['badge-protocolo-me',     'Protocolo M.E.'],
     me_sem_confirmacao: ['badge-me-sem-conf',      'M.E. Sem Confirmação'],
     me_confirmado:      ['badge-me-confirmado',    'M.E. Confirmado'],

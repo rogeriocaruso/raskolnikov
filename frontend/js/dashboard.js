@@ -99,6 +99,7 @@ function badgeStatus(s) {
   const m = {
     sedacao_continua:   ['badge-sedacao-continua', 'Sedação Contínua'],
     sedacao_pausada:    ['badge-sedacao-pausada',  'Sedação Pausada'],
+    acompanhamento:     ['badge-acompanhamento',   'Acompanhamento'],
     protocolo_me:       ['badge-protocolo-me',     'Protocolo M.E.'],
     me_sem_confirmacao: ['badge-me-sem-conf',      'M.E. Sem Confirmação'],
     me_confirmado:      ['badge-me-confirmado',    'M.E. Confirmado'],

@@ -297,6 +297,7 @@ tbody tr:hover { background: #f8fafc; }
 
 .badge-sedacao-continua { background: #e8f4fd; color: #1a6fa3; }
 .badge-sedacao-pausada  { background: #fff3e0; color: #b26a00; }
+.badge-acompanhamento   { background: #e8f8f5; color: #148f77; }
 .badge-protocolo-me     { background: #f3e8fd; color: #7b2fa8; }
 .badge-me-sem-conf      { background: #f2f3f4; color: #5d6d7e; }
 .badge-me-confirmado    { background: #fef5e7; color: #9a5c00; }

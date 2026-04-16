@@ -204,7 +204,12 @@ function botoesAtualizacaoStatus(p) {
       { status: 'protocolo_me',    label: 'Iniciar Protocolo M.E.',cls: 'btn-primario' },
     ],
     sedacao_pausada: [
-      { status: 'protocolo_me', label: 'Iniciar Protocolo M.E.', cls: 'btn-primario' },
+      { status: 'protocolo_me',   label: 'TE Ausentes → Protocolo M.E.',  cls: 'btn-primario' },
+      { status: 'acompanhamento', label: 'TE Presentes → Acompanhamento', cls: 'btn-aviso'    },
+    ],
+    acompanhamento: [
+      { status: 'protocolo_me', label: 'Iniciar Protocolo M.E.', cls: 'btn-primario'   },
+      { status: 'arquivado',    label: 'Arquivar Caso',          cls: 'btn-secundario' },
     ],
     protocolo_me: [
       { status: 'me_sem_confirmacao', label: 'Sem Confirmação M.E.', cls: 'btn-aviso'   },
@@ -565,6 +570,7 @@ function badgeStatus(s) {
   const m = {
     sedacao_continua:    ['badge-sedacao-continua', 'Sedação Contínua'],
     sedacao_pausada:     ['badge-sedacao-pausada',  'Sedação Pausada'],
+    acompanhamento:      ['badge-acompanhamento',   'Acompanhamento'],
     protocolo_me:        ['badge-protocolo-me',     'Protocolo M.E.'],
     me_sem_confirmacao:  ['badge-me-sem-conf',      'M.E. Sem Confirmação'],
     me_confirmado:       ['badge-me-confirmado',    'M.E. Confirmado'],

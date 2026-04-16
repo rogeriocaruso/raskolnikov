@@ -8,6 +8,7 @@ PERFIS = ('cet_admin', 'opo_auditor', 'edot_coord', 'edot_membro')
 STATUS_PACIENTE = (
     'sedacao_continua',
     'sedacao_pausada',
+    'acompanhamento',
     'protocolo_me',
     'me_sem_confirmacao',
     'me_confirmado',
@@ -16,6 +17,7 @@ STATUS_PACIENTE = (
     'arquivado',
 )
 STATUS_ARQUIVAVEIS = {
+    'acompanhamento',
     'me_sem_confirmacao',
     'me_confirmado',
     'me_com_doacao',
