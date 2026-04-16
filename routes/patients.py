@@ -115,7 +115,7 @@ def listar_pacientes():
 def criar_paciente():
     """Cria um novo paciente. Apenas edot_coord, edot_membro e cet_admin."""
     claims = _get_claims()
-    if claims.get('perfil') not in ('cet_admin', 'edot_coord', 'edot_membro'):
+    if claims.get('perfil') not in ('edot_coord', 'edot_membro'):
         return jsonify(erro='Sem permissão'), 403
 
     data = request.get_json(silent=True) or {}
@@ -171,7 +171,7 @@ def obter_paciente(paciente_id):
 def atualizar_paciente(paciente_id):
     """Atualiza campos do paciente e registra histórico por campo alterado."""
     claims = _get_claims()
-    if claims.get('perfil') not in ('cet_admin', 'edot_coord', 'edot_membro'):
+    if claims.get('perfil') not in ('edot_coord', 'edot_membro'):
         return jsonify(erro='Sem permissão'), 403
 
     paciente = Paciente.query.get_or_404(paciente_id)
@@ -213,7 +213,7 @@ def atualizar_paciente(paciente_id):
 def arquivar_paciente(paciente_id):
     """Arquiva (soft delete) um paciente."""
     claims = _get_claims()
-    if claims.get('perfil') not in ('cet_admin', 'edot_coord', 'edot_membro'):
+    if claims.get('perfil') not in ('edot_coord', 'edot_membro'):
         return jsonify(erro='Sem permissão'), 403
 
     paciente = Paciente.query.get_or_404(paciente_id)

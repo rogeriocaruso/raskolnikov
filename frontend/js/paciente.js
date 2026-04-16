@@ -17,7 +17,7 @@ if (perfil === 'cet_admin') {
   document.getElementById('nav-admin').style.display = '';
 }
 
-const podeEscrever = ['cet_admin','edot_coord','edot_membro'].includes(perfil);
+const podeEscrever = ['edot_coord','edot_membro'].includes(perfil);
 if (!podeEscrever) {
   document.getElementById('btn-novo-paciente').style.display = 'none';
 }
