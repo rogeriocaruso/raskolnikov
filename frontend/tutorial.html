@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EDOT System — Tutorial</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <style>
+    .tut-secao { margin-bottom: 2.5rem; }
+    .tut-secao h2 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--azul-escuro);
+      border-left: 4px solid var(--azul-claro);
+      padding-left: .75rem;
+      margin-bottom: 1rem;
+    }
+    .tut-secao h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--texto);
+      margin: 1.25rem 0 .5rem;
+    }
+    .tut-secao p, .tut-secao li {
+      font-size: .9rem;
+      color: var(--texto-leve);
+      line-height: 1.7;
+    }
+    .tut-secao ul, .tut-secao ol {
+      padding-left: 1.5rem;
+      margin: .5rem 0;
+    }
+    .tut-secao li { margin-bottom: .3rem; }
+    .tut-passo {
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+      margin-bottom: 1rem;
+      background: #f8fafc;
+      border-radius: var(--raio);
+      padding: .9rem 1rem;
+      border: 1px solid var(--cinza-borda);
+    }
+    .tut-passo-num {
+      background: var(--azul-claro);
+      color: #fff;
+      border-radius: 50%;
+      width: 2rem;
+      height: 2rem;
+      min-width: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: .9rem;
+    }
+    .tut-passo-corpo strong { display: block; font-size: .9rem; color: var(--texto); margin-bottom: .25rem; }
+    .tut-passo-corpo span { font-size: .85rem; color: var(--texto-leve); }
+    /* Fluxo de status */
+    .fluxo {
+      display: flex;
+      flex-direction: column;
+      gap: .5rem;
+      font-size: .85rem;
+    }
+    .fluxo-linha {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      flex-wrap: wrap;
+    }
+    .fluxo-seta { color: var(--texto-leve); font-size: 1.1rem; }
+    .fluxo-cond {
+      font-size: .78rem;
+      color: var(--texto-leve);
+      background: #f0f0f0;
+      border-radius: 4px;
+      padding: .1rem .4rem;
+    }
+    .fluxo-sub {
+      margin-left: 2rem;
+      border-left: 2px solid var(--cinza-borda);
+      padding-left: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: .4rem;
+    }
+    .aviso-lgpd {
+      background: #fff8e1;
+      border: 1.5px solid #ffd54f;
+      border-radius: var(--raio);
+      padding: .9rem 1.1rem;
+      font-size: .875rem;
+      color: #5d4037;
+      margin: 1rem 0;
+    }
+    .aviso-lgpd strong { color: #bf360c; }
+    @media (max-width: 600px) {
+      .tut-passo { flex-direction: column; gap: .5rem; }
+    }
+  </style>
+</head>
+<body class="page-main">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-topo">
+      <h2>EDOT System</h2>
+      <p>Gestão de Doação de Órgãos</p>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="/dashboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Dashboard
+      </a>
+      <a href="/paciente">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Pacientes
+      </a>
+      <a href="/ronda">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Rondas
+      </a>
+      <a href="/stats" id="nav-stats" style="display:none">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        Estatísticas
+      </a>
+      <a href="/admin" id="nav-admin" style="display:none">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Administração
+      </a>
+      <a href="/tutorial" class="ativo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        Tutorial
+      </a>
+    </nav>
+    <div class="sidebar-rodape">
+      <div class="usuario-info">
+        <strong id="sidebar-nome">—</strong>
+        <span id="sidebar-perfil">—</span>
+      </div>
+      <button class="btn btn-secundario" onclick="Api.limparSessao(); window.location.href='/';" style="width:100%;font-size:.8rem;padding:.4rem">
+        Sair
+      </button>
+    </div>
+  </aside>
+
+  <main class="conteudo">
+    <div class="page-header">
+      <h1>Tutorial — EDOT System</h1>
+    </div>
+
+    <!-- ── 1. O que é o sistema ──────────────────────────────────────────── -->
+    <div class="card tut-secao">
+      <h2>O que é o EDOT System?</h2>
+      <p>
+        O EDOT System é uma plataforma de apoio à <strong>busca ativa de potenciais doadores de órgãos</strong>
+        em ambiente hospitalar. Ele permite que a equipe da EDOT registre e acompanhe, ronda a ronda,
+        os pacientes com potencial para doação — desde a sedação até o desfecho clínico — garantindo
+        rastreabilidade completa para auditoria.
+      </p>
+      <p style="margin-top:.5rem">
+        A hierarquia do sistema é: <strong>CET → OPO → EDOT → Pacientes</strong>.
+        Cada equipe de EDOT gerencia os pacientes do seu hospital.
+      </p>
+
+      <h3>Perfis de acesso</h3>
+      <ul>
+        <li><strong>Coordenador EDOT</strong> — acesso completo: rondas, pacientes, edição e arquivamento</li>
+        <li><strong>Membro EDOT</strong> — mesmo acesso que o coordenador para rondas e pacientes do seu hospital</li>
+        <li><strong>OPO Auditor</strong> — somente leitura nos hospitais da sua OPO</li>
+        <li><strong>CET Admin</strong> — auditoria geral e gestão administrativa do sistema</li>
+      </ul>
+    </div>
+
+    <!-- ── 2. Primeiro acesso ────────────────────────────────────────────── -->
+    <div class="card tut-secao">
+      <h2>Primeiro acesso</h2>
+      <div class="tut-passo">
+        <div class="tut-passo-num">1</div>
+        <div class="tut-passo-corpo">
+          <strong>Receba suas credenciais</strong>
+          <span>O administrador do sistema irá criar seu usuário e informar o e-mail e senha iniciais.</span>
+        </div>
+      </div>
+      <div class="tut-passo">
+        <div class="tut-passo-num">2</div>
+        <div class="tut-passo-corpo">
+          <strong>Acesse o sistema</strong>
+          <span>Abra o navegador (Chrome ou Firefox recomendados) e acesse o endereço do sistema. Na tela de login, informe seu e-mail e senha.</span>
+        </div>
+      </div>
+      <div class="tut-passo">
+        <div class="tut-passo-num">3</div>
+        <div class="tut-passo-corpo">
+          <strong>Autorize a localização</strong>
+          <span>O sistema solicita acesso ao GPS do dispositivo para registrar a geolocalização das rondas (fins de auditoria). <strong>Clique em "Permitir"</strong>. Caso negue, a ronda ainda pode ser registrada, porém sem coordenadas.</span>
+        </div>
+      </div>
+      <div class="tut-passo">
+        <div class="tut-passo-num">4</div>
+        <div class="tut-passo-corpo">
+          <strong>Acesse pelo celular</strong>
+          <span>O sistema funciona em dispositivos móveis. Adicione o endereço à tela inicial do celular para acesso rápido (no Chrome: menu ⋮ → "Adicionar à tela inicial").</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 3. Fluxo principal: Busca Ativa ─────────────────────────────── -->
+    <div class="card tut-secao">
+      <h2>Fluxo principal: Busca Ativa (Rondas)</h2>
+      <p>
+        A <strong>ronda</strong> representa uma passagem física da equipe pelos leitos do hospital
+        em busca de potenciais doadores. Cada ronda deve ser aberta ao sair para os setores e
+        encerrada ao término da visita.
+      </p>
+
+      <h3>Como realizar uma ronda</h3>
+
+      <div class="tut-passo">
+        <div class="tut-passo-num">1</div>
+        <div class="tut-passo-corpo">
+          <strong>Acesse "Rondas" no menu lateral</strong>
+          <span>A lista mostra todas as rondas do seu hospital, da mais recente para a mais antiga.</span>
+        </div>
+      </div>
+
+      <div class="tut-passo">
+        <div class="tut-passo-num">2</div>
+        <div class="tut-passo-corpo">
+          <strong>Clique em "Nova Ronda"</strong>
+          <span>Selecione o turno (Manhã, Tarde, Noite ou Plantão) e o setor, se a ronda for restrita a um setor específico. O sistema irá capturar a geolocalização automaticamente. Clique em "Iniciar Ronda".</span>
+        </div>
+      </div>
+
+      <div class="tut-passo">
+        <div class="tut-passo-num">3</div>
+        <div class="tut-passo-corpo">
+          <strong>Acompanhe os pacientes já cadastrados</strong>
+          <span>Ao abrir a ronda, o sistema exibe todos os pacientes ativos do seu hospital. Atualize o status de cada um conforme a evolução clínica observada nesta visita.</span>
+        </div>
+      </div>
+
+      <div class="tut-passo">
+        <div class="tut-passo-num">4</div>
+        <div class="tut-passo-corpo">
+          <strong>Registre novos casos encontrados</strong>
+          <span>Se identificar um novo potencial doador durante a ronda, clique em <strong>"Registrar Potencial"</strong>. Informe as iniciais, prontuário, setor e status inicial. O setor é pré-preenchido com o setor da ronda.</span>
+        </div>
+      </div>
+
+      <div class="tut-passo">
+        <div class="tut-passo-num">5</div>
+        <div class="tut-passo-corpo">
+          <strong>Encerre a ronda</strong>
+          <span>Ao final da visita, clique em <strong>"Encerrar Ronda"</strong>, informe o número de leitos visitados e o total de potenciais doadores encontrados nesta passagem. O sistema registrará a geolocalização do encerramento.</span>
+        </div>
+      </div>
+
+      <div class="tut-passo">
+        <div class="tut-passo-num">6</div>
+        <div class="tut-passo-corpo">
+          <strong>Ronda sem Potencial Doador</strong>
+          <span>Se nenhum caso for encontrado, use o botão <strong>"Registrar ronda sem PD e encerrar"</strong> para registrar a passagem para fins de auditoria — a ronda aparecerá com 0 potenciais.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 4. Fluxo de status ────────────────────────────────────────────── -->
+    <div class="card tut-secao">
+      <h2>Fluxo de Status Clínico</h2>
+      <p>Cada paciente percorre um fluxo clínico. Os botões de ação disponíveis na ronda mudam conforme o status atual do paciente. Siga o caminho indicado pelos botões — não é possível pular etapas.</p>
+
+      <div style="margin-top:1.25rem" class="fluxo">
+
+        <div class="fluxo-linha">
+          <span class="badge badge-sedacao-continua">Sedação Contínua</span>
+          <span class="fluxo-seta">→</span>
+          <span class="badge badge-sedacao-pausada">Sedação Pausada</span>
+        </div>
+        <p style="margin:.25rem 0 .75rem 0;font-size:.82rem;color:var(--texto-leve)">
+          Paciente sedado em monitoramento. Quando a sedação for interrompida para avaliação, avance para <em>Sedação Pausada</em>.
+        </p>
+
+        <div class="fluxo-linha">
+          <span class="badge badge-sedacao-pausada">Sedação Pausada</span>
+          <span class="fluxo-seta">→</span>
+          <span style="display:flex;flex-direction:column;gap:.4rem">
+            <span class="fluxo-linha">
+              <span class="fluxo-cond">Reflexos do Tronco Encefálico AUSENTES</span>
+              <span class="fluxo-seta">→</span>
+              <span class="badge badge-protocolo-me">Protocolo M.E. em Andamento</span>
+            </span>
+            <span class="fluxo-linha">
+              <span class="fluxo-cond">Reflexos do Tronco Encefálico PRESENTES</span>
+              <span class="fluxo-seta">→</span>
+              <span class="badge badge-acompanhamento">Acompanhamento</span>
+            </span>
+          </span>
+        </div>
+        <p style="margin:.25rem 0 .75rem 0;font-size:.82rem;color:var(--texto-leve)">
+          Com a sedação pausada, avalie os reflexos do tronco encefálico. O resultado determina o próximo passo.
+        </p>
+
+        <div class="fluxo-linha">
+          <span class="badge badge-acompanhamento">Acompanhamento</span>
+          <span class="fluxo-seta">→</span>
+          <span style="display:flex;flex-direction:column;gap:.4rem">
+            <span class="fluxo-linha">
+              <span class="fluxo-cond">Evolução para TE ausentes</span>
+              <span class="fluxo-seta">→</span>
+              <span class="badge badge-protocolo-me">Protocolo M.E. em Andamento</span>
+            </span>
+            <span class="fluxo-linha">
+              <span class="fluxo-cond">Caso encerrado</span>
+              <span class="fluxo-seta">→</span>
+              <span class="badge badge-arquivado">Arquivar Caso</span>
+            </span>
+          </span>
+        </div>
+        <p style="margin:.25rem 0 .75rem 0;font-size:.82rem;color:var(--texto-leve)">
+          O paciente em acompanhamento é reavaliado nas próximas rondas.
+        </p>
+
+        <div class="fluxo-linha">
+          <span class="badge badge-protocolo-me">Protocolo M.E. em Andamento</span>
+          <span class="fluxo-seta">→</span>
+          <span style="display:flex;flex-direction:column;gap:.4rem">
+            <span class="fluxo-linha">
+              <span class="fluxo-cond">Morte encefálica não confirmada</span>
+              <span class="fluxo-seta">→</span>
+              <span class="badge badge-me-sem-conf">M.E. Sem Confirmação</span>
+              <span class="fluxo-seta">→</span>
+              <span class="badge badge-arquivado">Arquivar</span>
+            </span>
+            <span class="fluxo-linha">
+              <span class="fluxo-cond">Morte encefálica confirmada</span>
+              <span class="fluxo-seta">→</span>
+              <span class="badge badge-me-confirmado">M.E. Confirmado</span>
+            </span>
+          </span>
+        </div>
+
+        <div class="fluxo-sub">
+          <div class="fluxo-linha">
+            <span class="badge badge-me-confirmado">M.E. Confirmado</span>
+            <span class="fluxo-seta">→</span>
+            <span class="badge badge-me-com-doacao">M.E. Com Doação</span>
+            <span class="fluxo-seta">→</span>
+            <span class="badge badge-arquivado">Arquivar</span>
+          </div>
+          <div class="fluxo-linha">
+            <span class="badge badge-me-confirmado">M.E. Confirmado</span>
+            <span class="fluxo-seta">→</span>
+            <span class="badge badge-me-sem-doacao">M.E. Sem Doação</span>
+            <span class="fluxo-seta">→</span>
+            <span class="badge badge-arquivado">Arquivar</span>
+          </div>
+        </div>
+
+        <p style="margin:.75rem 0 0 0;font-size:.82rem;color:var(--texto-leve)">
+          Somente os status finais (<em>M.E. Sem Confirmação, M.E. Confirmado, M.E. Com Doação, M.E. Sem Doação</em> e <em>Acompanhamento</em>) permitem arquivamento.
+          Casos arquivados não aparecem mais nas rondas e não podem ser editados.
+        </p>
+      </div>
+    </div>
+
+    <!-- ── 5. Pacientes ──────────────────────────────────────────────────── -->
+    <div class="card tut-secao">
+      <h2>Tela de Pacientes</h2>
+      <p>
+        A tela de Pacientes exibe todos os casos ativos do seu hospital com filtros por status.
+        Os pacientes <strong>persistem de ronda a ronda</strong> — ao iniciar uma nova ronda, os casos
+        anteriores já aparecem automaticamente para acompanhamento.
+      </p>
+
+      <h3>Buscar e filtrar</h3>
+      <ul>
+        <li>Use o campo <strong>"Buscar"</strong> para localizar por iniciais ou número de prontuário.</li>
+        <li>Use o filtro <strong>"Status"</strong> para listar apenas pacientes em determinada fase clínica.</li>
+      </ul>
+
+      <h3>Editar um paciente</h3>
+      <ul>
+        <li>Clique em <strong>"Editar"</strong> na linha do paciente para abrir o formulário.</li>
+        <li>Atualize setor, causa/diagnóstico, observações clínicas ou status diretamente pelo formulário.</li>
+        <li>O <strong>histórico de alterações</strong> é exibido abaixo do formulário, com data, campo alterado e usuário responsável.</li>
+      </ul>
+
+      <div class="aviso-lgpd">
+        <strong>LGPD — Proteção de dados do paciente:</strong> registre apenas as <strong>iniciais</strong>
+        do paciente (ex.: J.C.S.), nunca o nome completo. O número de prontuário já permite
+        identificação interna. O sistema não deve conter dados pessoais identificáveis além do estritamente necessário.
+      </div>
+    </div>
+
+    <!-- ── 6. Geolocalização ─────────────────────────────────────────────── -->
+    <div class="card tut-secao">
+      <h2>Geolocalização para Auditoria</h2>
+      <p>
+        O sistema captura automaticamente as coordenadas GPS ao <strong>iniciar</strong> e ao
+        <strong>encerrar</strong> cada ronda. Isso permite verificar, em auditoria, se o registro
+        foi feito dentro do hospital.
+      </p>
+      <ul>
+        <li>As coordenadas e a precisão (em metros) ficam visíveis na tela de detalhe de cada ronda.</li>
+        <li>Um link direto para o Google Maps permite visualizar o ponto no mapa.</li>
+        <li>Se o GPS estiver indisponível ou a permissão for negada, a ronda é registrada normalmente, mas sem coordenadas — o que fica registrado na auditoria.</li>
+        <li><strong>Importante:</strong> use o sistema dentro do hospital, com o GPS ativado no celular, para que o registro seja válido para auditoria.</li>
+      </ul>
+    </div>
+
+    <!-- ── 7. Dicas rápidas ──────────────────────────────────────────────── -->
+    <div class="card tut-secao">
+      <h2>Dicas rápidas</h2>
+      <ul>
+        <li><strong>Celular:</strong> toque no ícone ☰ (canto superior direito) para abrir o menu lateral.</li>
+        <li><strong>Período do Dashboard:</strong> use o seletor "7 dias / 30 dias / 90 dias" para ajustar as estatísticas exibidas.</li>
+        <li><strong>Ronda em andamento:</strong> se fechar o aplicativo por acidente, a ronda continua aberta — basta acessar novamente e clicar em "Acompanhar →" na lista de rondas.</li>
+        <li><strong>Prontuário único:</strong> um paciente não pode ser cadastrado duas vezes com o mesmo prontuário no mesmo hospital. Se tentar, o sistema exibirá uma mensagem de aviso.</li>
+        <li><strong>Sessão expirada:</strong> a sessão dura 8 horas. Após esse período, o sistema solicita novo login automaticamente.</li>
+      </ul>
+    </div>
+
+    <!-- ── 8. Suporte ────────────────────────────────────────────────────── -->
+    <div class="card tut-secao" style="margin-bottom:0">
+      <h2>Dúvidas e suporte</h2>
+      <p>
+        Em caso de dúvidas técnicas, problemas de acesso ou comportamentos inesperados,
+        entre em contato com o coordenador da sua OPO ou com a equipe de administração do sistema.
+        Informe sempre: o seu perfil de usuário, a tela onde o problema ocorreu e uma descrição do erro exibido.
+      </p>
+    </div>
+
+  </main>
+
+  <script src="/static/js/api.js"></script>
+  <script>
+    exigirLogin();
+    const u = Api.getUsuario();
+    const p = u?.perfil || '';
+    document.getElementById('sidebar-nome').textContent   = u?.nome  || '—';
+    document.getElementById('sidebar-perfil').textContent =
+      ({cet_admin:'CET Admin',opo_auditor:'OPO Auditor',edot_coord:'Coordenador EDOT',edot_membro:'Membro EDOT'})[p] || p;
+    if (['cet_admin','opo_auditor'].includes(p)) document.getElementById('nav-stats').style.display = '';
+    if (p === 'cet_admin') document.getElementById('nav-admin').style.display = '';
+  </script>
+</body>
+</html>

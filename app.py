@@ -116,6 +116,7 @@ def create_app(env=None):
     @app.route('/paciente')
     @app.route('/stats')
     @app.route('/admin')
+    @app.route('/tutorial')
     def frontend_pages():
         page = request.path.lstrip('/') or 'dashboard'
         return send_from_directory(FRONTEND_DIR, f'{page}.html')
