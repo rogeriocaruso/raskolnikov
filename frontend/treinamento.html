@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EDOT System — Treinamento</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#0d1b2a;color:#fff;height:100vh;overflow:hidden;display:flex;flex-direction:column;user-select:none}
+
+/* ── Slideshow ── */
+#slides{flex:1;position:relative;overflow:hidden}
+.slide{position:absolute;inset:0;display:flex;flex-direction:column;padding:2.5rem 4rem 1.5rem;opacity:0;transform:translateX(80px);transition:opacity .3s ease,transform .3s ease;pointer-events:none}
+.slide.ativo{opacity:1;transform:translateX(0);pointer-events:auto}
+.slide.saindo{opacity:0;transform:translateX(-80px)}
+.slide-row{display:flex;gap:3rem;align-items:flex-start;flex:1;min-height:0}
+.slide-capa,.slide-fim{justify-content:center;align-items:center;text-align:center}
+
+/* Fundos */
+.fundo-azul{background:linear-gradient(135deg,#1a2c4e 0%,#2980b9 100%)}
+.fundo-escuro{background:#131f2e}
+.fundo-verde{background:linear-gradient(135deg,#1a4e2c 0%,#27ae60 100%)}
+
+/* ── Barra de navegação ── */
+#nav{background:#0a1520;display:flex;align-items:center;justify-content:center;gap:1.25rem;padding:.6rem 2rem;border-top:1px solid #1e3050}
+#nav button{background:#2980b9;color:#fff;border:none;border-radius:6px;padding:.35rem 1.1rem;font-size:.9rem;cursor:pointer;transition:background .2s}
+#nav button:hover{background:#1a6fa3}
+#nav button:disabled{background:#1e3050;color:#456;cursor:default}
+#contador{color:#7ec8f0;font-size:.85rem;min-width:70px;text-align:center;font-weight:600}
+.pontos{display:flex;gap:.35rem;flex-wrap:wrap;justify-content:center;max-width:280px}
+.ponto{width:7px;height:7px;border-radius:50%;background:#1e3050;cursor:pointer;transition:background .2s}
+.ponto.ativo{background:#2980b9}
+
+/* ── Tipografia ── */
+.titulo-capa{font-size:4rem;font-weight:800;letter-spacing:-2px;line-height:1}
+.sub-capa{font-size:1.3rem;color:rgba(255,255,255,.75);margin:1rem 0 2rem}
+.pill{background:rgba(255,255,255,.15);border-radius:30px;padding:.5rem 1.5rem;font-size:.95rem;color:rgba(255,255,255,.85);display:inline-block}
+.slide-titulo{font-size:1.75rem;font-weight:700;color:#7ec8f0;margin-bottom:1.25rem;padding-bottom:.6rem;border-bottom:2px solid #2980b9;flex-shrink:0}
+.slide-titulo-full{font-size:2rem;font-weight:700;color:#7ec8f0;margin-bottom:1.5rem;text-align:center}
+
+/* ── Colunas ── */
+.col{display:flex;flex-direction:column;gap:.75rem}
+.col-texto{flex:1;min-width:0;max-width:46%}
+.col-mock{flex:1;min-width:0;display:flex;align-items:flex-start;justify-content:center}
+.col-wide{flex:2}
+
+/* ── Itens numerados ── */
+.item{display:flex;gap:.7rem;align-items:flex-start}
+.num{background:#2980b9;color:#fff;border-radius:50%;width:1.75rem;height:1.75rem;min-width:1.75rem;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.8rem;margin-top:.15rem}
+.num.verde{background:#27ae60}
+.num.roxo{background:#7b2fa8}
+.corpo strong{display:block;font-size:.95rem;color:#e0e8f0;margin-bottom:.15rem}
+.corpo span{font-size:.85rem;color:#8a9bb0;line-height:1.55}
+
+/* ── Listas ── */
+.lista{list-style:none;display:flex;flex-direction:column;gap:.55rem}
+.lista li{font-size:.9rem;color:#b0c0d0;padding-left:1.2rem;position:relative;line-height:1.5}
+.lista li::before{content:'→';position:absolute;left:0;color:#2980b9;font-weight:700}
+.lista li strong{color:#e0e8f0}
+
+/* ── Destaques ── */
+.destaque{background:rgba(41,128,185,.12);border-left:3px solid #2980b9;border-radius:4px;padding:.6rem .9rem;font-size:.88rem;color:#b0d0e8;line-height:1.5}
+.destaque b{color:#7ec8f0}
+.destaque-amarelo{background:rgba(243,156,18,.1);border-left:3px solid #f39c12;border-radius:4px;padding:.6rem .9rem;font-size:.88rem;color:#e8d8b0;line-height:1.5}
+.destaque-vermelho{background:rgba(231,76,60,.1);border-left:3px solid #e74c3c;border-radius:4px;padding:.6rem .9rem;font-size:.88rem;color:#e8c0b8;line-height:1.5}
+.destaque-verde{background:rgba(39,174,96,.1);border-left:3px solid #27ae60;border-radius:4px;padding:.6rem .9rem;font-size:.88rem;color:#b0e0c0;line-height:1.5}
+
+/* ── Perfis grid ── */
+.perfis{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;width:100%}
+.perfil-card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:.8rem 1rem}
+.perfil-titulo{font-weight:700;font-size:.95rem;margin-bottom:.3rem}
+.perfil-desc{font-size:.82rem;color:#8a9bb0;line-height:1.5}
+
+/* ── Hierarquia ── */
+.hier{display:flex;flex-direction:column;align-items:center;gap:.25rem}
+.hier-item{border-radius:8px;padding:.55rem 2.5rem;font-weight:600;font-size:1rem;text-align:center;min-width:180px}
+.hier-seta{color:#2980b9;font-size:1.2rem}
+
+/* ── Screen mockup ── */
+.mock{background:#f0f4f8;border-radius:10px;overflow:hidden;width:100%;box-shadow:0 8px 40px rgba(0,0,0,.6);color:#2c3e50;font-size:.68rem}
+.mock-bar{background:#1a2c4e;padding:.35rem .7rem;display:flex;align-items:center;gap:.4rem}
+.dot{width:7px;height:7px;border-radius:50%}
+.mock-url{flex:1;background:rgba(255,255,255,.1);border-radius:3px;padding:.12rem .4rem;font-size:.6rem;color:rgba(255,255,255,.5);font-family:monospace}
+.mock-body{display:flex;min-height:180px}
+.mock-sidebar{width:38px;background:#1a2c4e;display:flex;flex-direction:column;align-items:center;padding:.5rem 0;gap:.35rem}
+.msb{width:26px;height:5px;background:rgba(255,255,255,.2);border-radius:3px}
+.msb.a{background:#2980b9}
+.mock-main{flex:1;padding:.65rem}
+.mh{font-weight:700;font-size:.8rem;color:#1a2c4e;margin-bottom:.45rem}
+.mcard{background:#fff;border-radius:5px;border:1px solid #dde1e7;padding:.45rem .55rem;margin-bottom:.35rem}
+.mbtn{display:inline-block;padding:.18rem .45rem;border-radius:3px;font-size:.58rem;font-weight:700;cursor:default;color:#fff}
+.mbtn.az{background:#2980b9}.mbtn.vd{background:#27ae60}.mbtn.vm{background:#e74c3c}.mbtn.ci{background:#95a5a6}.mbtn.am{background:#f39c12}.mbtn.rx{background:#7b2fa8}
+.mstats{display:grid;grid-template-columns:repeat(3,1fr);gap:.3rem;margin-bottom:.4rem}
+.msc{background:#fff;border-radius:4px;border:1px solid #dde1e7;padding:.3rem;text-align:center}
+.mscv{font-size:.95rem;font-weight:700;color:#1a2c4e;line-height:1}
+.mscl{font-size:.5rem;color:#7f8c8d;margin-top:.08rem}
+.msc.vd .mscv{color:#27ae60}.msc.am .mscv{color:#f39c12}.msc.az .mscv{color:#2980b9}
+.mtable{width:100%;border-collapse:collapse}
+.mtable th{background:#f0f4f8;font-size:.6rem;font-weight:600;color:#5d6d7e;padding:.2rem .35rem;text-align:left;border-bottom:1px solid #dde1e7}
+.mtable td{font-size:.6rem;padding:.18rem .35rem;border-bottom:1px solid #f0f0f0;color:#2c3e50}
+.minput{background:#f8fafc;border:1px solid #dde1e7;border-radius:3px;padding:.18rem .35rem;font-size:.6rem;color:#555;margin-bottom:.2rem;width:100%;display:block}
+.mlabel{font-size:.55rem;color:#7f8c8d;font-weight:600;margin-bottom:.08rem;display:block}
+.mmodal{background:#fff;border-radius:7px;box-shadow:0 6px 25px rgba(0,0,0,.25);padding:.65rem}
+.mmt{font-weight:700;font-size:.75rem;color:#1a2c4e;margin-bottom:.4rem;padding-bottom:.25rem;border-bottom:1px solid #dde1e7}
+
+/* ── Badges ── */
+.b{display:inline-block;padding:.1rem .4rem;border-radius:20px;font-size:.6rem;font-weight:700;white-space:nowrap}
+.b-sc{background:#e8f4fd;color:#1a6fa3}.b-sp{background:#fff3e0;color:#b26a00}
+.b-ac{background:#e8f8f5;color:#148f77}.b-pm{background:#f3e8fd;color:#7b2fa8}
+.b-ms{background:#f2f3f4;color:#5d6d7e}.b-mc{background:#fef5e7;color:#9a5c00}
+.b-cd{background:#e8f8f0;color:#1a6b3c}.b-sd{background:#fdecea;color:#c0392b}
+.b-ar{background:#f2f3f4;color:#7f8c8d}.b-an{background:#fef9e7;color:#b7770d}
+
+/* ── Fluxo status (diagrama) ── */
+.fluxo{display:flex;flex-direction:column;gap:.65rem;width:100%}
+.fl{display:flex;align-items:center;gap:.55rem;flex-wrap:wrap}
+.fs{color:#7ec8f0;font-size:1.1rem;font-weight:300}
+.fb{display:inline-flex;align-items:center;padding:.35rem .9rem;border-radius:20px;font-size:.82rem;font-weight:700;white-space:nowrap}
+.fb-sc{background:#e8f4fd;color:#1a6fa3}.fb-sp{background:#fff3e0;color:#b26a00}
+.fb-ac{background:#e8f8f5;color:#148f77}.fb-pm{background:#f3e8fd;color:#7b2fa8}
+.fb-ms{background:#f2f3f4;color:#5d6d7e}.fb-mc{background:#fef5e7;color:#9a5c00}
+.fb-cd{background:#e8f8f0;color:#1a6b3c}.fb-sd{background:#fdecea;color:#c0392b}
+.fb-ar{background:#ecf0f1;color:#7f8c8d;border:1px solid #bdc3c7}
+.fcond{background:rgba(255,255,255,.07);border-radius:4px;padding:.18rem .55rem;font-size:.75rem;color:#8a9bb0;font-style:italic}
+.fsub{margin-left:2.5rem;padding-left:1rem;border-left:2px solid #2980b9;display:flex;flex-direction:column;gap:.5rem}
+
+/* ── Ícone GPS ── */
+.gps-demo{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:.9rem 1.1rem;font-family:monospace;font-size:.88rem;color:#7ec8f0;line-height:1.8}
+.gps-label{color:#8a9bb0;font-size:.75rem;font-family:inherit;margin-bottom:.2rem;display:block}
+
+/* ── Rodapé do slide ── */
+.slide-footer{text-align:right;font-size:.72rem;color:#2d4a6b;margin-top:.5rem;flex-shrink:0}
+</style>
+</head>
+<body>
+
+<div id="slides">
+
+  <!-- ── 1. Capa ── -->
+  <div class="slide slide-capa fundo-azul ativo">
+    <div class="titulo-capa">EDOT System</div>
+    <div class="sub-capa">Treinamento de Usuários — Busca Ativa de Doadores de Órgãos</div>
+    <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap">
+      <span class="pill">Coordenadores e Membros de EDOT</span>
+      <span class="pill">Auditores OPO / CET</span>
+    </div>
+    <div style="margin-top:3rem;font-size:.85rem;color:rgba(255,255,255,.4)">Use as setas ← → ou clique nos botões abaixo para navegar</div>
+  </div>
+
+  <!-- ── 2. O que é o sistema ── -->
+  <div class="slide fundo-escuro">
+    <div class="slide-titulo">O que é o EDOT System?</div>
+    <div class="slide-row">
+      <div class="col col-texto">
+        <p style="font-size:1rem;color:#b0c0d0;line-height:1.7">
+          Plataforma de apoio à <strong style="color:#7ec8f0">busca ativa de potenciais doadores de órgãos</strong> em ambiente hospitalar.
+          Registra e acompanha pacientes ronda a ronda — da sedação ao desfecho clínico — garantindo rastreabilidade para auditoria.
+        </p>
+        <div style="margin-top:.5rem">
+          <div style="font-size:.85rem;font-weight:600;color:#7ec8f0;margin-bottom:.6rem;text-transform:uppercase;letter-spacing:.05em">Hierarquia do Sistema</div>
+          <div class="hier">
+            <div class="hier-item" style="background:rgba(231,76,60,.2);border:1px solid #e74c3c;color:#e74c3c">CET — Central de Transplantes</div>
+            <div class="hier-seta">↓</div>
+            <div class="hier-item" style="background:rgba(243,156,18,.2);border:1px solid #f39c12;color:#f39c12">OPO — Organização de Procura de Órgãos</div>
+            <div class="hier-seta">↓</div>
+            <div class="hier-item" style="background:rgba(41,128,185,.2);border:1px solid #2980b9;color:#7ec8f0">EDOT — Equipe Hospitalar</div>
+            <div class="hier-seta">↓</div>
+            <div class="hier-item" style="background:rgba(39,174,96,.2);border:1px solid #27ae60;color:#27ae60">Pacientes Acompanhados</div>
+          </div>
+        </div>
+      </div>
+      <div class="col col-wide" style="max-width:50%">
+        <div style="font-size:.85rem;font-weight:600;color:#7ec8f0;margin-bottom:.6rem;text-transform:uppercase;letter-spacing:.05em">Como funciona na prática</div>
+        <div class="col" style="gap:.5rem">
+          <div class="item">
+            <div class="num">1</div>
+            <div class="corpo"><strong>Equipe vai ao hospital</strong><span>Coordenador ou membro abre uma ronda ao sair para os setores.</span></div>
+          </div>
+          <div class="item">
+            <div class="num">2</div>
+            <div class="corpo"><strong>Avalia leitos</strong><span>Verifica pacientes sedados com potencial para morte encefálica.</span></div>
+          </div>
+          <div class="item">
+            <div class="num">3</div>
+            <div class="corpo"><strong>Registra casos</strong><span>Cadastra novos potenciais ou atualiza status dos casos já conhecidos.</span></div>
+          </div>
+          <div class="item">
+            <div class="num">4</div>
+            <div class="corpo"><strong>Encerra a ronda</strong><span>Informa leitos visitados. O sistema registra GPS de início e fim para auditoria.</span></div>
+          </div>
+          <div class="item">
+            <div class="num">5</div>
+            <div class="corpo"><strong>Próximas rondas</strong><span>Os casos permanecem visíveis automaticamente até serem arquivados.</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer">EDOT System — Treinamento</div>
+  </div>
+
+  <!-- ── 3. Perfis ── -->
+  <div class="slide fundo-escuro">
+    <div class="slide-titulo">Perfis de Acesso</div>
+    <div class="perfis" style="margin-top:.5rem">
+      <div class="perfil-card" style="border-color:#27ae60">
+        <div class="perfil-titulo" style="color:#27ae60">Membro EDOT</div>
+        <div class="perfil-desc">
+          Realiza rondas, registra e atualiza pacientes, arquiva casos.<br>
+          Acesso restrito ao <strong style="color:#b0d0b0">próprio hospital</strong>.
+        </div>
+        <div style="margin-top:.6rem;font-size:.78rem;color:#27ae60">✔ Rondas &nbsp; ✔ Pacientes &nbsp; ✔ Dashboard</div>
+      </div>
+      <div class="perfil-card" style="border-color:#2980b9">
+        <div class="perfil-titulo" style="color:#7ec8f0">Coordenador EDOT</div>
+        <div class="perfil-desc">
+          Mesmo acesso que o membro. Pode supervisionar e orientar o registro dos casos da equipe.
+        </div>
+        <div style="margin-top:.6rem;font-size:.78rem;color:#7ec8f0">✔ Rondas &nbsp; ✔ Pacientes &nbsp; ✔ Dashboard</div>
+      </div>
+      <div class="perfil-card" style="border-color:#f39c12">
+        <div class="perfil-titulo" style="color:#f39c12">OPO Auditor</div>
+        <div class="perfil-desc">
+          Somente leitura. Visualiza dados de todos os hospitais da sua OPO para fins de monitoramento.<br>
+          <strong style="color:#e8d8b0">Não pode criar ou editar</strong> informações.
+        </div>
+        <div style="margin-top:.6rem;font-size:.78rem;color:#f39c12">👁 Estatísticas &nbsp; 👁 Rondas &nbsp; 👁 Pacientes</div>
+      </div>
+      <div class="perfil-card" style="border-color:#e74c3c">
+        <div class="perfil-titulo" style="color:#e87060">CET Admin</div>
+        <div class="perfil-desc">
+          Auditoria geral e gestão administrativa: cria usuários, EDOTs, OPOs.
+          <strong style="color:#e8c0b8">Não manipula dados clínicos</strong> de pacientes.
+        </div>
+        <div style="margin-top:.6rem;font-size:.78rem;color:#e87060">🔧 Administração &nbsp; 👁 Auditoria Geral</div>
+      </div>
+    </div>
+    <div class="slide-footer">EDOT System — Treinamento</div>
+  </div>
+
+  <!-- ── 4. Login ── -->
+  <div class="slide fundo-escuro">
+    <div class="slide-titulo">Primeiro Acesso — Login</div>
+    <div class="slide-row">
+      <div class="col col-texto">
+        <div class="col" style="gap:.5rem">
+          <div class="item">
+            <div class="num">1</div>
+            <div class="corpo"><strong>Receba suas credenciais</strong><span>O administrador envia e-mail e senha iniciais.</span></div>
+          </div>
+          <div class="item">
+            <div class="num">2</div>
+            <div class="corpo"><strong>Acesse pelo navegador</strong><span>Chrome ou Firefox recomendados. Funciona em celular e computador.</span></div>
+          </div>
+          <div class="item">
+            <div class="num">3</div>
+            <div class="corpo"><strong>Informe e-mail e senha</strong><span>Clique em <b>Entrar</b>. A sessão dura 8 horas.</span></div>
+          </div>
+          <div class="item">
+            <div class="num">4</div>
+            <div class="corpo"><strong>Autorize o GPS</strong><span>Quando o navegador perguntar, clique em <b>"Permitir"</b>. Essencial para auditoria das rondas.</span></div>
+          </div>
+        </div>
+        <div class="destaque-amarelo" style="margin-top:.5rem">
+          <b>Dica celular:</b> no Chrome, toque no menu ⋮ → "Adicionar à tela inicial" para acesso rápido como se fosse um aplicativo.
+        </div>
+      </div>
+      <div class="col col-mock">
+        <div class="mock" style="max-width:280px">
+          <div class="mock-bar">
+            <div class="dot" style="background:#e74c3c"></div>
+            <div class="dot" style="background:#f39c12"></div>
+            <div class="dot" style="background:#27ae60"></div>
+            <div class="mock-url">edotsystem.railway.app</div>
+          </div>
+          <div style="background:#1a2c4e;padding:1.5rem 1.2rem;display:flex;flex-direction:column;align-items:center;gap:.6rem">
+            <div style="font-size:1.1rem;font-weight:800;color:#fff;letter-spacing:-1px">EDOT System</div>
+            <div style="font-size:.6rem;color:rgba(255,255,255,.5)">Gestão de Doação de Órgãos</div>
+            <div style="background:#fff;border-radius:8px;padding:.8rem;width:100%;display:flex;flex-direction:column;gap:.4rem">
+              <span class="mlabel" style="color:#5d6d7e">E-mail</span>
+              <div class="minput" style="color:#2980b9">enfermeiro@hospital.rs.gov.br</div>
+              <span class="mlabel" style="color:#5d6d7e">Senha</span>
+              <div class="minput" style="color:#aaa;letter-spacing:3px">••••••••</div>
+              <div class="mbtn az" style="text-align:center;padding:.3rem;margin-top:.2rem;font-size:.65rem">Entrar</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer">EDOT System — Treinamento</div>
+  </div>
+
+  <!-- ── 5. Dashboard ── -->
+  <div class="slide fundo-escuro">
+    <div class="slide-titulo">Dashboard — Visão Geral</div>
+    <div class="slide-row">
+      <div class="col col-texto">
+        <p style="font-size:.95rem;color:#b0c0d0;line-height:1.6">Primeira tela após o login. Mostra um <strong style="color:#7ec8f0">resumo em tempo real</strong> do hospital.</p>
+        <ul class="lista" style="margin-top:.5rem">
+          <li><strong>Cards de estatísticas</strong> — pacientes por fase clínica, rondas realizadas e leitos visitados no período selecionado</li>
+          <li><strong>Filtro de período</strong> — 7, 30 ou 90 dias</li>
+          <li><strong>Lista de pacientes ativos</strong> — os 10 casos mais recentes com status e setor</li>
+          <li><strong>Rondas recentes</strong> — histórico das últimas rondas do hospital</li>
+        </ul>
+        <div class="destaque" style="margin-top:.5rem">
+          <b>OPO / CET:</b> veem dados de todos os hospitais sob sua supervisão.
+        </div>
+      </div>
+      <div class="col col-mock">
+        <div class="mock">
+          <div class="mock-bar">
+            <div class="dot" style="background:#e74c3c"></div>
+            <div class="dot" style="background:#f39c12"></div>
+            <div class="dot" style="background:#27ae60"></div>
+            <div class="mock-url">edotsystem.railway.app/dashboard</div>
+          </div>
+          <div class="mock-body">
+            <div class="mock-sidebar"><div class="msb a"></div><div class="msb"></div><div class="msb"></div><div class="msb"></div></div>
+            <div class="mock-main">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
+                <div class="mh" style="margin:0">Dashboard</div>
+                <select style="font-size:.55rem;padding:.1rem .3rem;border:1px solid #dde;border-radius:3px;color:#555"><option>30 dias</option></select>
+              </div>
+              <div class="mstats">
+                <div class="msc"><div class="mscv">4</div><div class="mscl">Em Sedação</div></div>
+                <div class="msc am"><div class="mscv">2</div><div class="mscl">Protocolo M.E.</div></div>
+                <div class="msc vd"><div class="mscv">1</div><div class="mscl">M.E. Com Doação</div></div>
+                <div class="msc"><div class="mscv">12</div><div class="mscl">Rondas</div></div>
+                <div class="msc"><div class="mscv">1</div><div class="mscl">M.E. Confirmado</div></div>
+                <div class="msc az"><div class="mscv">87</div><div class="mscl">Leitos Visitados</div></div>
+              </div>
+              <div class="mcard">
+                <div class="mh" style="font-size:.65rem;margin-bottom:.3rem">Pacientes Ativos</div>
+                <table class="mtable">
+                  <thead><tr><th>Iniciais</th><th>Status</th><th>Setor</th></tr></thead>
+                  <tbody>
+                    <tr><td>A.M.S.</td><td><span class="b b-pm">Protocolo M.E.</span></td><td>UTI</td></tr>
+                    <tr><td>R.C.F.</td><td><span class="b b-sc">Sedação Contínua</span></td><td>PS</td></tr>
+                    <tr><td>J.P.L.</td><td><span class="b b-ac">Acompanhamento</span></td><td>UTI</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer">EDOT System — Treinamento</div>
+  </div>
+
+  <!-- ── 6. Iniciar Ronda ── -->
+  <div class="slide fundo-escuro">
+    <div class="slide-titulo">Realizando uma Ronda — Abertura</div>
+    <div class="slide-row">
+      <div class="col col-texto">
+        <div class="col" style="gap:.5rem">
+          <div class="item">
+            <div class="num">1</div>
+            <div class="corpo"><strong>Menu lateral → Rondas</strong><span>Veja o histórico de rondas do seu hospital.</span></div>
+          </div>
+          <div class="item">
+            <div class="num">2</div>
+            <div class="corpo"><strong>Clique em "Nova Ronda"</strong><span>Selecione o turno: Manhã, Tarde, Noite ou Plantão.</span></div>
+          </div>
+          <div class="item">
+            <div class="num">3</div>
+            <div class="corpo"><strong>Selecione o setor</strong><span>Se a ronda cobrir apenas um setor (ex: UTI), selecione. Caso cubra todo o hospital, deixe em branco.</span></div>
+          </div>
+          <div class="item">
+            <div class="num">4</div>
+            <div class="corpo"><strong>Clique em "Iniciar Ronda"</strong><span>O sistema captura a geolocalização automaticamente e registra o horário de início.</span></div>
+          </div>
+        </div>
+        <div class="destaque-verde" style="margin-top:.5rem">
+          <b>Atenção:</b> abra a ronda <b>dentro do hospital</b>, com o GPS do celular ativado. O ponto GPS ficará registrado para auditoria.
+        </div>
+      </div>
+      <div class="col col-mock">
+        <div class="mock">
+          <div class="mock-bar">
+            <div class="dot" style="background:#e74c3c"></div><div class="dot" style="background:#f39c12"></div><div class="dot" style="background:#27ae60"></div>
+            <div class="mock-url">edotsystem.railway.app/ronda</div>
+          </div>
+          <div class="mock-body">
+            <div class="mock-sidebar"><div class="msb"></div><div class="msb"></div><div class="msb a"></div><div class="msb"></div></div>
+            <div class="mock-main">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem">
+                <div class="mh" style="margin:0">Rondas</div>
+                <div class="mbtn vd" style="font-size:.58rem">+ Nova Ronda</div>
+              </div>
+              <div class="mcard" style="background:#fff9e6;border-color:#f39c12">
+                <div class="mmt" style="color:#b26a00;border-color:#f39c12">Iniciar Nova Ronda</div>
+                <span class="mlabel">Turno *</span>
+                <div class="minput" style="color:#2980b9">▾ Manhã</div>
+                <span class="mlabel">Setor (opcional)</span>
+                <div class="minput" style="color:#2980b9">▾ UTI Adulto</div>
+                <span class="mlabel">Observações iniciais</span>
+                <div class="minput" style="height:28px"></div>
+                <div style="text-align:right;margin-top:.3rem">
+                  <div class="mbtn vd" style="font-size:.6rem">📍 Iniciar Ronda</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer">EDOT System — Treinamento</div>
+  </div>
+
+  <!-- ── 7. Pacientes na Ronda ── -->
+  <div class="slide fundo-escuro">
+    <div class="slide-titulo">Durante a Ronda — Acompanhar Pacientes</div>
+    <div class="slide-row">
+      <div class="col col-texto">
+        <p style="font-size:.92rem;color:#b0c0d0;line-height:1.6">Após abrir a ronda, você verá <strong style="color:#7ec8f0">todos os pacientes ativos do hospital</strong> — automaticamente.</p>
+        <div class="col" style="gap:.45rem;margin-top:.5rem">
+          <div class="item">
+            <div class="num">1</div>
+            <div class="corpo"><strong>Revise os casos existentes</strong><span>Pacientes de rondas anteriores já aparecem listados. Atualize o status de cada um conforme a visita de hoje.</span></div>
+          </div>
+          <div class="item">
+            <div class="num">2</div>
+            <div class="corpo"><strong>Registre novo caso</strong><span>Encontrou um novo paciente sedado? Clique em <b>"Registrar Potencial"</b>.</span></div>
+          </div>
+          <div class="item">
+            <div class="num" style="background:#7b2fa8">!</div>
+            <div class="corpo"><strong>Nenhum PD encontrado?</strong><span>Clique em <b>"Registrar ronda sem PD e encerrar"</b> para registrar a passagem para auditoria mesmo sem casos.</span></div>
+          </div>
+        </div>
+        <div class="destaque" style="margin-top:.5rem">
+          Os pacientes <b>não são apagados</b> ao encerrar a ronda — permanecem até serem arquivados.
+        </div>
+      </div>
+      <div class="col col-mock">
+        <div class="mock">
+          <div class="mock-bar">
+            <div class="dot" style="background:#e74c3c"></div><div class="dot" style="background:#f39c12"></div><div class="dot" style="background:#27ae60"></div>
+            <div class="mock-url">edotsystem.railway.app/ronda</div>
+          </div>
+          <div class="mock-body">
+            <div class="mock-sidebar"><div class="msb"></div><div class="msb"></div><div class="msb a"></div><div class="msb"></div></div>
+            <div class="mock-main">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.35rem">
+                <div>
+                  <div class="mh" style="margin:0;font-size:.72rem">Hospital Lauro Réus — Manhã</div>
+                  <div style="font-size:.55rem;color:#7f8c8d">Iniciada em 07/05/2025 às 08:14 · Em andamento</div>
+                </div>
+                <div style="display:flex;gap:.3rem">
+                  <div class="mbtn vd" style="font-size:.55rem">+ Registrar Potencial</div>
+                  <div class="mbtn vm" style="font-size:.55rem">Encerrar</div>
+                </div>
+              </div>
+              <div class="mcard">
+                <div style="font-size:.62rem;font-weight:700;color:#1a2c4e;margin-bottom:.3rem">Pacientes em acompanhamento <span class="b b-sc">3 casos</span></div>
+                <table class="mtable">
+                  <thead><tr><th>Iniciais</th><th>Prontuário</th><th>Status</th><th>Ação</th></tr></thead>
+                  <tbody>
+                    <tr><td>A.M.S.</td><td>089234</td><td><span class="b b-pm">Protocolo M.E.</span></td><td><div class="mbtn ci" style="font-size:.52rem">Atualizar</div></td></tr>
+                    <tr><td>R.C.F.</td><td>091002</td><td><span class="b b-sc">Sedação Contínua</span></td><td><div class="mbtn am" style="font-size:.52rem">Pausar Sed.</div></td></tr>
+                    <tr><td>J.P.L.</td><td>087541</td><td><span class="b b-ac">Acompanhamento</span></td><td><div class="mbtn rx" style="font-size:.52rem">Protocolo M.E.</div></td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer">EDOT System — Treinamento</div>
+  </div>
+
+  <!-- ── 8. Registrar Potencial ── -->
+  <div class="slide fundo-escuro">
+    <div class="slide-titulo">Registrar Novo Potencial Doador</div>
+    <div class="slide-row">
+      <div class="col col-texto">
+        <p style="font-size:.92rem;color:#b0c0d0;line-height:1.6">Ao identificar um novo caso, clique em <strong style="color:#7ec8f0">"Registrar Potencial"</strong> dentro da ronda aberta.</p>
+        <ul class="lista" style="margin-top:.5rem">
+          <li><strong>Iniciais</strong> — ex.: J.C.S. (nunca o nome completo — LGPD)</li>
+          <li><strong>Prontuário</strong> — número único do hospital. Impede duplicatas.</li>
+          <li><strong>Status inicial</strong> — selecione a fase clínica atual do paciente</li>
+          <li><strong>Setor</strong> — pré-preenchido com o setor da ronda; altere se necessário</li>
+          <li><strong>Causa / Diagnóstico</strong> — ex.: TCE grave, AVC hemorrágico</li>
+          <li><strong>Observações</strong> — dados clínicos relevantes para a equipe</li>
+        </ul>
+        <div class="destaque-vermelho" style="margin-top:.5rem">
+          <b>LGPD:</b> registre apenas <b>iniciais</b> (ex.: J.C.S.), nunca o nome completo. O prontuário identifica o paciente internamente.
+        </div>
+      </div>
+      <div class="col col-mock">
+        <div class="mock" style="max-width:290px">
+          <div class="mock-bar">
+            <div class="dot" style="background:#e74c3c"></div><div class="dot" style="background:#f39c12"></div><div class="dot" style="background:#27ae60"></div>
+            <div class="mock-url">Modal — Registrar Potencial Doador</div>
+          </div>
+          <div style="padding:.6rem;background:#f0f4f8">
+            <div class="mmodal">
+              <div class="mmt">Registrar Potencial Doador</div>
+              <span class="mlabel">Iniciais do Paciente * <span style="color:#e74c3c">(LGPD — não registrar nome)</span></span>
+              <div class="minput" style="color:#2980b9">A.M.S.</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:.3rem">
+                <div>
+                  <span class="mlabel">Prontuário *</span>
+                  <div class="minput">089234</div>
+                </div>
+                <div>
+                  <span class="mlabel">Status inicial *</span>
+                  <div class="minput" style="color:#2980b9">▾ Sedação Contínua</div>
+                </div>
+                <div>
+                  <span class="mlabel">Nascimento</span>
+                  <div class="minput">1962-03-15</div>
+                </div>
+                <div>
+                  <span class="mlabel">Setor</span>
+                  <div class="minput" style="color:#27ae60">✔ UTI Adulto</div>
+                </div>
+              </div>
+              <span class="mlabel">Causa / Diagnóstico</span>
+              <div class="minput">TCE grave</div>
+              <div style="display:flex;justify-content:flex-end;gap:.3rem;margin-top:.4rem">
+                <div class="mbtn ci" style="font-size:.6rem">Cancelar</div>
+                <div class="mbtn vd" style="font-size:.6rem">✔ Registrar</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer">EDOT System — Treinamento</div>
+  </div>
+
+  <!-- ── 9. Fluxo de Status ── -->
+  <div class="slide fundo-escuro">
+    <div class="slide-titulo-full">Fluxo de Status Clínico</div>
+    <div class="fluxo">
+      <div class="fl">
+        <span class="fb fb-sc">Sedação Contínua</span>
+        <span class="fs">→</span>
+        <span class="fcond">Pausar Sedação</span>
+        <span class="fs">→</span>
+        <span class="fb fb-sp">Sedação Pausada</span>
+      </div>
+      <div style="margin-left:1rem;display:flex;flex-direction:column;gap:.4rem;padding-left:.9rem;border-left:2px solid #2980b9">
+        <div class="fl">
+          <span class="fcond">Reflexos do Tronco Encefálico AUSENTES</span>
+          <span class="fs">→</span>
+          <span class="fb fb-pm">Protocolo M.E. em Andamento</span>
+        </div>
+        <div class="fl">
+          <span class="fcond">Reflexos do Tronco Encefálico PRESENTES</span>
+          <span class="fs">→</span>
+          <span class="fb fb-ac">Acompanhamento</span>
+          <span class="fs">→</span>
+          <span class="fcond">Reavaliado nas próximas rondas</span>
+          <span class="fs">→</span>
+          <span class="fb fb-pm">Protocolo M.E.</span>
+          <span class="fs">ou</span>
+          <span class="fb fb-ar">Arquivar Caso</span>
+        </div>
+      </div>
+      <div style="margin-left:1rem;display:flex;flex-direction:column;gap:.4rem;padding-left:.9rem;border-left:2px solid #7b2fa8">
+        <div class="fl">
+          <span class="fcond">M.E. não confirmada</span><span class="fs">→</span>
+          <span class="fb fb-ms">M.E. Sem Confirmação</span><span class="fs">→</span>
+          <span class="fb fb-ar">Arquivar Caso</span>
+        </div>
+        <div class="fl">
+          <span class="fcond">M.E. confirmada</span><span class="fs">→</span>
+          <span class="fb fb-mc">M.E. Confirmado</span>
+        </div>
+      </div>
+      <div class="fsub" style="margin-left:2rem">
+        <div class="fl">
+          <span class="fb fb-mc">M.E. Confirmado</span><span class="fs">→</span>
+          <span class="fcond">Família aceitou</span><span class="fs">→</span>
+          <span class="fb fb-cd">M.E. Com Doação</span><span class="fs">→</span>
+          <span class="fb fb-ar">Arquivar</span>
+        </div>
+        <div class="fl">
+          <span class="fb fb-mc">M.E. Confirmado</span><span class="fs">→</span>
+          <span class="fcond">Família recusou / contraindicação</span><span class="fs">→</span>
+          <span class="fb fb-sd">M.E. Sem Doação</span><span class="fs">→</span>
+          <span class="fb fb-ar">Arquivar</span>
+        </div>
+      </div>
+    </div>
+    <div class="destaque" style="margin-top:.75rem;font-size:.82rem">
+      Os botões de ação <b>mudam automaticamente</b> conforme o status atual. Não é possível pular etapas.
+      Somente os status finais permitem arquivamento.
+    </div>
+    <div class="slide-footer">EDOT System — Treinamento</div>
+  </div>
+
+  <!-- ── 10. Atualizar Status ── -->
+  <div class="slide fundo-escuro">
+    <div class="slide-titulo">Atualizando o Status na Ronda</div>
+    <div class="slide-row">
+      <div class="col col-texto">
+        <p style="font-size:.92rem;color:#b0c0d0;line-height:1.6">Na linha do paciente, clique no botão correspondente ao resultado da avaliação clínica de hoje.</p>
+        <div class="col" style="gap:.5rem;margin-top:.5rem">
+          <div class="item">
+            <div class="num">1</div>
+            <div class="corpo"><strong>Clique no botão de ação</strong><span>Ex.: "TE Ausentes → Protocolo M.E." se os reflexos estiverem ausentes.</span></div>
+          </div>
+          <div class="item">
+            <div class="num">2</div>
+            <div class="corpo"><strong>Janela de confirmação</strong><span>Informe uma observação clínica (opcional, mas recomendado). Descreva exames, intercorrências ou evolução.</span></div>
+          </div>
+          <div class="item">
+            <div class="num">3</div>
+            <div class="corpo"><strong>Confirme</strong><span>O status é atualizado imediatamente. O histórico registra quem alterou, quando e de qual status para qual.</span></div>
+          </div>
+        </div>
+        <div class="destaque" style="margin-top:.5rem">
+          Toda alteração fica no <b>histórico do paciente</b> — data, hora, usuário e observação. Rastreabilidade completa.
+        </div>
+      </div>
+      <div class="col col-mock">
+        <div class="mock" style="max-width:290px">
+          <div class="mock-bar">
+            <div class="dot" style="background:#e74c3c"></div><div class="dot" style="background:#f39c12"></div><div class="dot" style="background:#27ae60"></div>
+            <div class="mock-url">Modal — Atualizar Status</div>
+          </div>
+          <div style="padding:.6rem;background:#f0f4f8">
+            <div class="mmodal">
+              <div class="mmt">Atualizar Status</div>
+              <div style="font-size:.7rem;font-weight:700;color:#1a2c4e;margin-bottom:.4rem">A.M.S.</div>
+              <div style="background:#f3e8fd;border-radius:4px;padding:.3rem .4rem;font-size:.65rem;color:#7b2fa8;font-weight:600;margin-bottom:.4rem;text-align:center">
+                Confirmar: TE Ausentes → Protocolo M.E.
+              </div>
+              <span class="mlabel">Observação (opcional)</span>
+              <div class="minput" style="height:36px;padding:.2rem .35rem;font-size:.6rem;color:#555">Pupilas fixas e midriáticas. Iniciado protocolo conforme protocolo hospitalar.</div>
+              <div style="display:flex;justify-content:flex-end;gap:.3rem;margin-top:.4rem">
+                <div class="mbtn ci" style="font-size:.6rem">Fechar</div>
+                <div class="mbtn rx" style="font-size:.6rem">Confirmar</div>
+              </div>
+            </div>
+            <div class="mcard" style="margin-top:.4rem;background:#f0f4f8">
+              <div style="font-size:.6rem;font-weight:700;color:#1a2c4e;margin-bottom:.25rem">Histórico de Alterações</div>
+              <div style="font-size:.55rem;color:#7f8c8d;line-height:1.6">
+                <div>05/05/2025 08:32 · <b>status</b>: sedacao_continua → <span style="color:#7b2fa8">protocolo_me</span></div>
+                <div style="color:#aaa">Pupilas fixas e midriáticas...</div>
+                <div style="margin-top:.15rem">03/05/2025 09:15 · <b>criacao</b>: sedacao_continua</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer">EDOT System — Treinamento</div>
+  </div>
+
+  <!-- ── 11. Encerrar Ronda ── -->
+  <div class="slide fundo-escuro">
+    <div class="slide-titulo">Encerrando a Ronda</div>
+    <div class="slide-row">
+      <div class="col col-texto">
+        <p style="font-size:.92rem;color:#b0c0d0;line-height:1.6">Ao terminar a visita aos leitos, clique em <strong style="color:#e87060">"Encerrar Ronda"</strong>.</p>
+        <div class="col" style="gap:.5rem;margin-top:.5rem">
+          <div class="item">
+            <div class="num">1</div>
+            <div class="corpo"><strong>Informe os leitos visitados</strong><span>Total de leitos avaliados durante esta ronda.</span></div>
+          </div>
+          <div class="item">
+            <div class="num">2</div>
+            <div class="corpo"><strong>Potenciais encontrados</strong><span>Quantos novos PDs foram identificados nesta passagem.</span></div>
+          </div>
+          <div class="item">
+            <div class="num">3</div>
+            <div class="corpo"><strong>Observação final</strong><span>Resumo da ronda, intercorrências, pendências.</span></div>
+          </div>
+          <div class="item">
+            <div class="num" style="background:#27ae60">✓</div>
+            <div class="corpo"><strong>Confirme o encerramento</strong><span>O sistema registra a geolocalização de encerramento. A ronda aparece como "Encerrada" na lista.</span></div>
+          </div>
+        </div>
+        <div class="destaque-amarelo" style="margin-top:.5rem">
+          <b>Ronda sem PD:</b> se não encontrou nenhum caso, use o botão <b>"Registrar ronda sem PD e encerrar"</b> — a ronda fica registrada com 0 potenciais, válida para auditoria.
+        </div>
+      </div>
+      <div class="col col-mock">
+        <div class="mock" style="max-width:270px">
+          <div class="mock-bar">
+            <div class="dot" style="background:#e74c3c"></div><div class="dot" style="background:#f39c12"></div><div class="dot" style="background:#27ae60"></div>
+            <div class="mock-url">Modal — Encerrar Ronda</div>
+          </div>
+          <div style="padding:.6rem;background:#f0f4f8">
+            <div class="mmodal">
+              <div class="mmt" style="color:#c0392b;border-color:#e74c3c">Encerrar Ronda</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:.3rem">
+                <div>
+                  <span class="mlabel">Leitos Visitados</span>
+                  <div class="minput" style="color:#2980b9;text-align:center;font-weight:700">14</div>
+                </div>
+                <div>
+                  <span class="mlabel">Potenciais encontrados</span>
+                  <div class="minput" style="color:#27ae60;text-align:center;font-weight:700">1</div>
+                </div>
+              </div>
+              <span class="mlabel">Observações finais</span>
+              <div class="minput" style="height:32px;color:#555;font-size:.58rem">1 novo caso UTI leito 7. Demais pacientes estáveis.</div>
+              <div style="display:flex;justify-content:flex-end;gap:.3rem;margin-top:.4rem">
+                <div class="mbtn ci" style="font-size:.6rem">Cancelar</div>
+                <div class="mbtn vm" style="font-size:.6rem">📍 Encerrar Ronda</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer">EDOT System — Treinamento</div>
+  </div>
+
+  <!-- ── 12. Tela Pacientes ── -->
+  <div class="slide fundo-escuro">
+    <div class="slide-titulo">Tela de Pacientes</div>
+    <div class="slide-row">
+      <div class="col col-texto">
+        <p style="font-size:.92rem;color:#b0c0d0;line-height:1.6">Acesse pelo menu lateral. Exibe <strong style="color:#7ec8f0">todos os pacientes ativos</strong> com filtros avançados.</p>
+        <ul class="lista" style="margin-top:.5rem">
+          <li><strong>Buscar por iniciais ou prontuário</strong></li>
+          <li><strong>Filtrar por status clínico</strong> — ex.: ver apenas pacientes em Protocolo M.E.</li>
+          <li><strong>Editar</strong> — atualizar setor, diagnóstico, observações ou status</li>
+          <li><strong>Histórico completo</strong> — todas as alterações com data, hora e usuário</li>
+          <li><strong>Arquivar</strong> — disponível apenas nos status finais (M.E. Com/Sem Doação, M.E. Sem Confirmação, Acompanhamento)</li>
+        </ul>
+        <div class="destaque" style="margin-top:.5rem">
+          Pacientes arquivados <b>saem da lista de rondas</b>. Ainda são consultáveis pelo filtro "Arquivado".
+        </div>
+      </div>
+      <div class="col col-mock">
+        <div class="mock">
+          <div class="mock-bar">
+            <div class="dot" style="background:#e74c3c"></div><div class="dot" style="background:#f39c12"></div><div class="dot" style="background:#27ae60"></div>
+            <div class="mock-url">edotsystem.railway.app/paciente</div>
+          </div>
+          <div class="mock-body">
+            <div class="mock-sidebar"><div class="msb"></div><div class="msb a"></div><div class="msb"></div><div class="msb"></div></div>
+            <div class="mock-main">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.35rem">
+                <div class="mh" style="margin:0">Pacientes</div>
+                <div class="mbtn vd" style="font-size:.55rem">+ Novo Paciente</div>
+              </div>
+              <div class="mcard" style="padding:.3rem .5rem">
+                <div style="display:flex;gap:.3rem">
+                  <div class="minput" style="flex:2;margin:0" placeholder="Buscar...">🔍 Buscar...</div>
+                  <div class="minput" style="flex:1;margin:0;color:#2980b9">▾ Todos</div>
+                  <div class="mbtn az" style="font-size:.55rem;white-space:nowrap">Buscar</div>
+                </div>
+              </div>
+              <div class="mcard" style="padding:.3rem .5rem">
+                <table class="mtable">
+                  <thead><tr><th>Iniciais</th><th>Pron.</th><th>Status</th><th>Setor</th><th></th></tr></thead>
+                  <tbody>
+                    <tr><td>A.M.S.</td><td>089234</td><td><span class="b b-pm">Protocolo M.E.</span></td><td>UTI</td><td><div class="mbtn az" style="font-size:.5rem">Editar</div></td></tr>
+                    <tr><td>R.C.F.</td><td>091002</td><td><span class="b b-sc">Sedação Cont.</span></td><td>PS</td><td><div class="mbtn az" style="font-size:.5rem">Editar</div></td></tr>
+                    <tr><td>J.P.L.</td><td>087541</td><td><span class="b b-ac">Acompanhamento</span></td><td>UTI</td><td><div class="mbtn az" style="font-size:.5rem">Editar</div></td></tr>
+                    <tr><td>M.O.B.</td><td>092100</td><td><span class="b b-mc">M.E. Confirmado</span></td><td>UTI</td><td><div class="mbtn az" style="font-size:.5rem">Editar</div></td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer">EDOT System — Treinamento</div>
+  </div>
+
+  <!-- ── 13. LGPD e GPS ── -->
+  <div class="slide fundo-escuro">
+    <div class="slide-titulo">LGPD e Geolocalização</div>
+    <div class="slide-row" style="gap:2.5rem">
+      <div class="col" style="flex:1">
+        <div style="font-size:.88rem;font-weight:700;color:#f39c12;margin-bottom:.5rem;text-transform:uppercase;letter-spacing:.05em">⚖ LGPD — Proteção de Dados</div>
+        <ul class="lista" style="gap:.5rem">
+          <li>Registre apenas as <strong>iniciais do paciente</strong> (ex.: J.C.S.)</li>
+          <li>Nunca registre o nome completo no sistema</li>
+          <li>O número de prontuário identifica o paciente internamente</li>
+          <li>Data de nascimento: somente quando essencial para o caso</li>
+        </ul>
+        <div class="destaque-amarelo" style="margin-top:.75rem">
+          <b>Por quê?</b> O sistema pode ser auditado por perfis externos (OPO, CET). Dados pessoais completos ferem a LGPD (Lei 13.709/2018).
+        </div>
+      </div>
+      <div style="width:1px;background:rgba(255,255,255,.1);flex-shrink:0"></div>
+      <div class="col" style="flex:1">
+        <div style="font-size:.88rem;font-weight:700;color:#7ec8f0;margin-bottom:.5rem;text-transform:uppercase;letter-spacing:.05em">📍 Geolocalização de Auditoria</div>
+        <ul class="lista" style="gap:.5rem">
+          <li>O sistema captura GPS ao <strong>iniciar</strong> e ao <strong>encerrar</strong> cada ronda</li>
+          <li>Coordenadas e precisão ficam visíveis no detalhe da ronda</li>
+          <li>Link direto para <strong>Google Maps</strong> para verificação em auditoria</li>
+          <li>Se o GPS for negado: ronda registrada, mas <strong>sem coordenadas</strong> — fica anotado na auditoria</li>
+        </ul>
+        <div class="gps-demo" style="margin-top:.75rem">
+          <span class="gps-label">Início da ronda</span>
+          -29.987234, -51.012456 &nbsp; ±8 m<br>
+          <a style="font-size:.78rem;color:#7ec8f0">Ver no mapa ↗</a>
+          <br><br>
+          <span class="gps-label">Encerramento</span>
+          -29.987198, -51.012401 &nbsp; ±12 m<br>
+          <a style="font-size:.78rem;color:#7ec8f0">Ver no mapa ↗</a>
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer">EDOT System — Treinamento</div>
+  </div>
+
+  <!-- ── 14. Dicas e Suporte ── -->
+  <div class="slide fundo-escuro">
+    <div class="slide-titulo">Dicas Rápidas</div>
+    <div class="slide-row" style="gap:2.5rem">
+      <div class="col" style="flex:1">
+        <ul class="lista">
+          <li><strong>Celular:</strong> toque em ☰ (canto superior direito) para abrir o menu lateral</li>
+          <li><strong>Ronda interrompida:</strong> a ronda continua aberta se você fechar o app — acesse novamente e clique em "Acompanhar →"</li>
+          <li><strong>Prontuário duplicado:</strong> o sistema avisa se o prontuário já estiver cadastrado no mesmo hospital</li>
+          <li><strong>Sessão expirada:</strong> a sessão dura 8 horas — após esse tempo o sistema pede novo login</li>
+          <li><strong>Filtro de período:</strong> no Dashboard, ajuste para 7, 30 ou 90 dias conforme necessário</li>
+        </ul>
+      </div>
+      <div style="width:1px;background:rgba(255,255,255,.1);flex-shrink:0"></div>
+      <div class="col" style="flex:1">
+        <div style="font-size:.88rem;font-weight:700;color:#7ec8f0;margin-bottom:.75rem;text-transform:uppercase;letter-spacing:.05em">Suporte</div>
+        <p style="font-size:.92rem;color:#b0c0d0;line-height:1.6;margin-bottom:.75rem">Em caso de dúvidas ou problemas, informe ao suporte:</p>
+        <ul class="lista">
+          <li>Seu <strong>perfil de usuário</strong> (Membro EDOT, Coordenador, etc.)</li>
+          <li>A <strong>tela</strong> onde o problema ocorreu</li>
+          <li>A <strong>mensagem de erro</strong> exibida</li>
+        </ul>
+        <div class="destaque-verde" style="margin-top:.75rem">
+          O tutorial completo está disponível no próprio sistema em <b>Menu → Tutorial</b>.
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer">EDOT System — Treinamento</div>
+  </div>
+
+  <!-- ── 15. Fim ── -->
+  <div class="slide slide-fim fundo-verde">
+    <div style="font-size:3rem;margin-bottom:.5rem">🫀</div>
+    <div class="titulo-capa" style="font-size:2.8rem">Pronto para começar!</div>
+    <div class="sub-capa">Cada ronda registrada contribui para identificar um potencial doador.<br>Juntos salvamos mais vidas.</div>
+    <div style="display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;margin-top:1rem">
+      <span class="pill" style="background:rgba(255,255,255,.2)">Busca ativa salva vidas</span>
+      <span class="pill" style="background:rgba(255,255,255,.2)">EDOT System — Gestão de Doação de Órgãos</span>
+    </div>
+  </div>
+
+</div><!-- /slides -->
+
+<!-- ── Navegação ── -->
+<div id="nav">
+  <button id="btn-ant" onclick="navegar(-1)" disabled>← Anterior</button>
+  <div class="pontos" id="pontos"></div>
+  <span id="contador">1 / 15</span>
+  <button id="btn-prox" onclick="navegar(1)">Próximo →</button>
+</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const total  = slides.length;
+  let atual = 0;
+
+  const pontosEl  = document.getElementById('pontos');
+  const contEl    = document.getElementById('contador');
+  const btnAnt    = document.getElementById('btn-ant');
+  const btnProx   = document.getElementById('btn-prox');
+
+  // Criar pontos
+  slides.forEach((_, i) => {
+    const p = document.createElement('div');
+    p.className = 'ponto' + (i === 0 ? ' ativo' : '');
+    p.onclick = () => irPara(i);
+    pontosEl.appendChild(p);
+  });
+
+  function irPara(idx) {
+    if (idx < 0 || idx >= total || idx === atual) return;
+    slides[atual].classList.add('saindo');
+    slides[atual].classList.remove('ativo');
+    setTimeout(() => slides[idx === atual ? idx : (slides[atual] ? atual : idx)].classList.remove('saindo'), 350);
+    const ant = atual;
+    atual = idx;
+    slides[ant].classList.remove('ativo');
+    slides[ant].classList.remove('saindo');
+    slides[atual].classList.add('ativo');
+    atualizar();
+  }
+
+  function navegar(dir) { irPara(atual + dir); }
+
+  function atualizar() {
+    document.querySelectorAll('.ponto').forEach((p, i) =>
+      p.classList.toggle('ativo', i === atual));
+    contEl.textContent = (atual + 1) + ' / ' + total;
+    btnAnt.disabled = atual === 0;
+    btnProx.disabled = atual === total - 1;
+  }
+
+  // Teclado
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') { e.preventDefault(); navegar(1); }
+    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')  { e.preventDefault(); navegar(-1); }
+    if (e.key === 'Home') irPara(0);
+    if (e.key === 'End')  irPara(total - 1);
+  });
+
+  // Touch/swipe
+  let tsx = 0;
+  document.addEventListener('touchstart', e => tsx = e.touches[0].clientX, {passive:true});
+  document.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - tsx;
+    if (Math.abs(dx) > 50) navegar(dx < 0 ? 1 : -1);
+  }, {passive:true});
+
+  atualizar();
+</script>
+</body>
+</html>
