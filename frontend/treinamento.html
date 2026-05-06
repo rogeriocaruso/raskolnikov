@@ -21,13 +21,23 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0d1b2a;color:#fff;h
 .fundo-escuro{background:#131f2e}
 .fundo-verde{background:linear-gradient(135deg,#1a4e2c 0%,#27ae60 100%)}
 
+/* ── Subtítulo de narração ── */
+#subtitulo{background:rgba(0,0,0,.75);backdrop-filter:blur(6px);padding:.45rem 1.5rem;font-size:.82rem;color:#d0e8ff;line-height:1.5;min-height:2.4rem;display:flex;align-items:center;justify-content:center;text-align:center;border-top:1px solid rgba(41,128,185,.3);transition:opacity .3s}
+#subtitulo.vazio{opacity:0}
+
 /* ── Barra de navegação ── */
-#nav{background:#0a1520;display:flex;align-items:center;justify-content:center;gap:1.25rem;padding:.6rem 2rem;border-top:1px solid #1e3050}
-#nav button{background:#2980b9;color:#fff;border:none;border-radius:6px;padding:.35rem 1.1rem;font-size:.9rem;cursor:pointer;transition:background .2s}
+#nav{background:#0a1520;display:flex;align-items:center;justify-content:center;gap:1rem;padding:.55rem 1.5rem;border-top:1px solid #1e3050;flex-wrap:wrap}
+#nav button{background:#2980b9;color:#fff;border:none;border-radius:6px;padding:.32rem 1rem;font-size:.85rem;cursor:pointer;transition:background .2s;white-space:nowrap}
 #nav button:hover{background:#1a6fa3}
 #nav button:disabled{background:#1e3050;color:#456;cursor:default}
-#contador{color:#7ec8f0;font-size:.85rem;min-width:70px;text-align:center;font-weight:600}
-.pontos{display:flex;gap:.35rem;flex-wrap:wrap;justify-content:center;max-width:280px}
+#btn-narracao{background:#1e3a50}
+#btn-narracao.ativa{background:#c0392b}
+#btn-narracao.ativa:hover{background:#a93226}
+#btn-avanco{background:#1e3a50}
+#btn-avanco.ativo{background:#1a6b3c}
+#btn-avanco.ativo:hover{background:#145a32}
+#contador{color:#7ec8f0;font-size:.82rem;min-width:65px;text-align:center;font-weight:600}
+.pontos{display:flex;gap:.32rem;flex-wrap:wrap;justify-content:center;max-width:260px}
 .ponto{width:7px;height:7px;border-radius:50%;background:#1e3050;cursor:pointer;transition:background .2s}
 .ponto.ativo{background:#2980b9}
 
@@ -130,9 +140,27 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0d1b2a;color:#fff;h
 
 /* ── Rodapé do slide ── */
 .slide-footer{text-align:right;font-size:.72rem;color:#2d4a6b;margin-top:.5rem;flex-shrink:0}
+
+/* ── Indicador de voz ── */
+#indicador-voz{position:fixed;top:.6rem;right:1rem;display:flex;align-items:center;gap:.4rem;background:rgba(10,21,32,.85);border:1px solid #2980b9;border-radius:20px;padding:.3rem .7rem;font-size:.75rem;color:#7ec8f0;opacity:0;transition:opacity .4s;pointer-events:none}
+#indicador-voz.visivel{opacity:1}
+.onda{display:flex;gap:2px;align-items:flex-end;height:14px}
+.onda span{display:block;width:3px;background:#2980b9;border-radius:2px;animation:onda 0.8s ease-in-out infinite}
+.onda span:nth-child(1){animation-delay:0s;height:4px}
+.onda span:nth-child(2){animation-delay:.15s;height:10px}
+.onda span:nth-child(3){animation-delay:.3s;height:7px}
+.onda span:nth-child(4){animation-delay:.45s;height:12px}
+.onda span:nth-child(5){animation-delay:.6s;height:5px}
+@keyframes onda{0%,100%{transform:scaleY(.4)}50%{transform:scaleY(1)}}
 </style>
 </head>
 <body>
+
+<!-- Indicador de voz ativo -->
+<div id="indicador-voz">
+  <div class="onda"><span></span><span></span><span></span><span></span><span></span></div>
+  <span id="ind-texto">Narrando...</span>
+</div>
 
 <div id="slides">
 
@@ -144,7 +172,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0d1b2a;color:#fff;h
       <span class="pill">Coordenadores e Membros de EDOT</span>
       <span class="pill">Auditores OPO / CET</span>
     </div>
-    <div style="margin-top:3rem;font-size:.85rem;color:rgba(255,255,255,.4)">Use as setas ← → ou clique nos botões abaixo para navegar</div>
+    <div style="margin-top:3rem;font-size:.85rem;color:rgba(255,255,255,.4)">Use as setas ← → ou clique nos botões abaixo para navegar · Ative a narração com 📢</div>
   </div>
 
   <!-- ── 2. O que é o sistema ── -->
@@ -172,26 +200,11 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0d1b2a;color:#fff;h
       <div class="col col-wide" style="max-width:50%">
         <div style="font-size:.85rem;font-weight:600;color:#7ec8f0;margin-bottom:.6rem;text-transform:uppercase;letter-spacing:.05em">Como funciona na prática</div>
         <div class="col" style="gap:.5rem">
-          <div class="item">
-            <div class="num">1</div>
-            <div class="corpo"><strong>Equipe vai ao hospital</strong><span>Coordenador ou membro abre uma ronda ao sair para os setores.</span></div>
-          </div>
-          <div class="item">
-            <div class="num">2</div>
-            <div class="corpo"><strong>Avalia leitos</strong><span>Verifica pacientes sedados com potencial para morte encefálica.</span></div>
-          </div>
-          <div class="item">
-            <div class="num">3</div>
-            <div class="corpo"><strong>Registra casos</strong><span>Cadastra novos potenciais ou atualiza status dos casos já conhecidos.</span></div>
-          </div>
-          <div class="item">
-            <div class="num">4</div>
-            <div class="corpo"><strong>Encerra a ronda</strong><span>Informa leitos visitados. O sistema registra GPS de início e fim para auditoria.</span></div>
-          </div>
-          <div class="item">
-            <div class="num">5</div>
-            <div class="corpo"><strong>Próximas rondas</strong><span>Os casos permanecem visíveis automaticamente até serem arquivados.</span></div>
-          </div>
+          <div class="item"><div class="num">1</div><div class="corpo"><strong>Equipe vai ao hospital</strong><span>Coordenador ou membro abre uma ronda ao sair para os setores.</span></div></div>
+          <div class="item"><div class="num">2</div><div class="corpo"><strong>Avalia leitos</strong><span>Verifica pacientes sedados com potencial para morte encefálica.</span></div></div>
+          <div class="item"><div class="num">3</div><div class="corpo"><strong>Registra casos</strong><span>Cadastra novos potenciais ou atualiza status dos casos já conhecidos.</span></div></div>
+          <div class="item"><div class="num">4</div><div class="corpo"><strong>Encerra a ronda</strong><span>Informa leitos visitados. O sistema registra GPS de início e fim para auditoria.</span></div></div>
+          <div class="item"><div class="num">5</div><div class="corpo"><strong>Próximas rondas</strong><span>Os casos permanecem visíveis automaticamente até serem arquivados.</span></div></div>
         </div>
       </div>
     </div>
@@ -204,33 +217,22 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0d1b2a;color:#fff;h
     <div class="perfis" style="margin-top:.5rem">
       <div class="perfil-card" style="border-color:#27ae60">
         <div class="perfil-titulo" style="color:#27ae60">Membro EDOT</div>
-        <div class="perfil-desc">
-          Realiza rondas, registra e atualiza pacientes, arquiva casos.<br>
-          Acesso restrito ao <strong style="color:#b0d0b0">próprio hospital</strong>.
-        </div>
+        <div class="perfil-desc">Realiza rondas, registra e atualiza pacientes, arquiva casos.<br>Acesso restrito ao <strong style="color:#b0d0b0">próprio hospital</strong>.</div>
         <div style="margin-top:.6rem;font-size:.78rem;color:#27ae60">✔ Rondas &nbsp; ✔ Pacientes &nbsp; ✔ Dashboard</div>
       </div>
       <div class="perfil-card" style="border-color:#2980b9">
         <div class="perfil-titulo" style="color:#7ec8f0">Coordenador EDOT</div>
-        <div class="perfil-desc">
-          Mesmo acesso que o membro. Pode supervisionar e orientar o registro dos casos da equipe.
-        </div>
+        <div class="perfil-desc">Mesmo acesso que o membro. Pode supervisionar e orientar o registro dos casos da equipe.</div>
         <div style="margin-top:.6rem;font-size:.78rem;color:#7ec8f0">✔ Rondas &nbsp; ✔ Pacientes &nbsp; ✔ Dashboard</div>
       </div>
       <div class="perfil-card" style="border-color:#f39c12">
         <div class="perfil-titulo" style="color:#f39c12">OPO Auditor</div>
-        <div class="perfil-desc">
-          Somente leitura. Visualiza dados de todos os hospitais da sua OPO para fins de monitoramento.<br>
-          <strong style="color:#e8d8b0">Não pode criar ou editar</strong> informações.
-        </div>
+        <div class="perfil-desc">Somente leitura. Visualiza dados de todos os hospitais da sua OPO para fins de monitoramento.<br><strong style="color:#e8d8b0">Não pode criar ou editar</strong> informações.</div>
         <div style="margin-top:.6rem;font-size:.78rem;color:#f39c12">👁 Estatísticas &nbsp; 👁 Rondas &nbsp; 👁 Pacientes</div>
       </div>
       <div class="perfil-card" style="border-color:#e74c3c">
         <div class="perfil-titulo" style="color:#e87060">CET Admin</div>
-        <div class="perfil-desc">
-          Auditoria geral e gestão administrativa: cria usuários, EDOTs, OPOs.
-          <strong style="color:#e8c0b8">Não manipula dados clínicos</strong> de pacientes.
-        </div>
+        <div class="perfil-desc">Auditoria geral e gestão administrativa: cria usuários, EDOTs, OPOs. <strong style="color:#e8c0b8">Não manipula dados clínicos</strong> de pacientes.</div>
         <div style="margin-top:.6rem;font-size:.78rem;color:#e87060">🔧 Administração &nbsp; 👁 Auditoria Geral</div>
       </div>
     </div>
@@ -243,33 +245,17 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0d1b2a;color:#fff;h
     <div class="slide-row">
       <div class="col col-texto">
         <div class="col" style="gap:.5rem">
-          <div class="item">
-            <div class="num">1</div>
-            <div class="corpo"><strong>Receba suas credenciais</strong><span>O administrador envia e-mail e senha iniciais.</span></div>
-          </div>
-          <div class="item">
-            <div class="num">2</div>
-            <div class="corpo"><strong>Acesse pelo navegador</strong><span>Chrome ou Firefox recomendados. Funciona em celular e computador.</span></div>
-          </div>
-          <div class="item">
-            <div class="num">3</div>
-            <div class="corpo"><strong>Informe e-mail e senha</strong><span>Clique em <b>Entrar</b>. A sessão dura 8 horas.</span></div>
-          </div>
-          <div class="item">
-            <div class="num">4</div>
-            <div class="corpo"><strong>Autorize o GPS</strong><span>Quando o navegador perguntar, clique em <b>"Permitir"</b>. Essencial para auditoria das rondas.</span></div>
-          </div>
+          <div class="item"><div class="num">1</div><div class="corpo"><strong>Receba suas credenciais</strong><span>O administrador envia e-mail e senha iniciais.</span></div></div>
+          <div class="item"><div class="num">2</div><div class="corpo"><strong>Acesse pelo navegador</strong><span>Chrome ou Firefox recomendados. Funciona em celular e computador.</span></div></div>
+          <div class="item"><div class="num">3</div><div class="corpo"><strong>Informe e-mail e senha</strong><span>Clique em Entrar. A sessão dura 8 horas.</span></div></div>
+          <div class="item"><div class="num">4</div><div class="corpo"><strong>Autorize o GPS</strong><span>Quando o navegador perguntar, clique em "Permitir". Essencial para auditoria das rondas.</span></div></div>
         </div>
-        <div class="destaque-amarelo" style="margin-top:.5rem">
-          <b>Dica celular:</b> no Chrome, toque no menu ⋮ → "Adicionar à tela inicial" para acesso rápido como se fosse um aplicativo.
-        </div>
+        <div class="destaque-amarelo" style="margin-top:.5rem"><b>Dica celular:</b> no Chrome, toque no menu ⋮ → "Adicionar à tela inicial" para acesso rápido como aplicativo.</div>
       </div>
       <div class="col col-mock">
         <div class="mock" style="max-width:280px">
           <div class="mock-bar">
-            <div class="dot" style="background:#e74c3c"></div>
-            <div class="dot" style="background:#f39c12"></div>
-            <div class="dot" style="background:#27ae60"></div>
+            <div class="dot" style="background:#e74c3c"></div><div class="dot" style="background:#f39c12"></div><div class="dot" style="background:#27ae60"></div>
             <div class="mock-url">edotsystem.railway.app</div>
           </div>
           <div style="background:#1a2c4e;padding:1.5rem 1.2rem;display:flex;flex-direction:column;align-items:center;gap:.6rem">
@@ -296,21 +282,17 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0d1b2a;color:#fff;h
       <div class="col col-texto">
         <p style="font-size:.95rem;color:#b0c0d0;line-height:1.6">Primeira tela após o login. Mostra um <strong style="color:#7ec8f0">resumo em tempo real</strong> do hospital.</p>
         <ul class="lista" style="margin-top:.5rem">
-          <li><strong>Cards de estatísticas</strong> — pacientes por fase clínica, rondas realizadas e leitos visitados no período selecionado</li>
+          <li><strong>Cards de estatísticas</strong> — pacientes por fase clínica, rondas realizadas e leitos visitados</li>
           <li><strong>Filtro de período</strong> — 7, 30 ou 90 dias</li>
-          <li><strong>Lista de pacientes ativos</strong> — os 10 casos mais recentes com status e setor</li>
+          <li><strong>Lista de pacientes ativos</strong> — os casos mais recentes com status e setor</li>
           <li><strong>Rondas recentes</strong> — histórico das últimas rondas do hospital</li>
         </ul>
-        <div class="destaque" style="margin-top:.5rem">
-          <b>OPO / CET:</b> veem dados de todos os hospitais sob sua supervisão.
-        </div>
+        <div class="destaque" style="margin-top:.5rem"><b>OPO / CET:</b> veem dados de todos os hospitais sob sua supervisão.</div>
       </div>
       <div class="col col-mock">
         <div class="mock">
           <div class="mock-bar">
-            <div class="dot" style="background:#e74c3c"></div>
-            <div class="dot" style="background:#f39c12"></div>
-            <div class="dot" style="background:#27ae60"></div>
+            <div class="dot" style="background:#e74c3c"></div><div class="dot" style="background:#f39c12"></div><div class="dot" style="background:#27ae60"></div>
             <div class="mock-url">edotsystem.railway.app/dashboard</div>
           </div>
           <div class="mock-body">
@@ -353,26 +335,12 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0d1b2a;color:#fff;h
     <div class="slide-row">
       <div class="col col-texto">
         <div class="col" style="gap:.5rem">
-          <div class="item">
-            <div class="num">1</div>
-            <div class="corpo"><strong>Menu lateral → Rondas</strong><span>Veja o histórico de rondas do seu hospital.</span></div>
-          </div>
-          <div class="item">
-            <div class="num">2</div>
-            <div class="corpo"><strong>Clique em "Nova Ronda"</strong><span>Selecione o turno: Manhã, Tarde, Noite ou Plantão.</span></div>
-          </div>
-          <div class="item">
-            <div class="num">3</div>
-            <div class="corpo"><strong>Selecione o setor</strong><span>Se a ronda cobrir apenas um setor (ex: UTI), selecione. Caso cubra todo o hospital, deixe em branco.</span></div>
-          </div>
-          <div class="item">
-            <div class="num">4</div>
-            <div class="corpo"><strong>Clique em "Iniciar Ronda"</strong><span>O sistema captura a geolocalização automaticamente e registra o horário de início.</span></div>
-          </div>
+          <div class="item"><div class="num">1</div><div class="corpo"><strong>Menu lateral → Rondas</strong><span>Veja o histórico de rondas do seu hospital.</span></div></div>
+          <div class="item"><div class="num">2</div><div class="corpo"><strong>Clique em "Nova Ronda"</strong><span>Selecione o turno: Manhã, Tarde, Noite ou Plantão.</span></div></div>
+          <div class="item"><div class="num">3</div><div class="corpo"><strong>Selecione o setor</strong><span>Se a ronda cobrir apenas um setor, selecione. Caso cubra todo o hospital, deixe em branco.</span></div></div>
+          <div class="item"><div class="num">4</div><div class="corpo"><strong>Clique em "Iniciar Ronda"</strong><span>O sistema captura a geolocalização e registra o horário de início.</span></div></div>
         </div>
-        <div class="destaque-verde" style="margin-top:.5rem">
-          <b>Atenção:</b> abra a ronda <b>dentro do hospital</b>, com o GPS do celular ativado. O ponto GPS ficará registrado para auditoria.
-        </div>
+        <div class="destaque-verde" style="margin-top:.5rem"><b>Atenção:</b> abra a ronda <b>dentro do hospital</b>, com o GPS do celular ativado. O ponto GPS ficará registrado para auditoria.</div>
       </div>
       <div class="col col-mock">
         <div class="mock">
@@ -395,9 +363,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0d1b2a;color:#fff;h
                 <div class="minput" style="color:#2980b9">▾ UTI Adulto</div>
                 <span class="mlabel">Observações iniciais</span>
                 <div class="minput" style="height:28px"></div>
-                <div style="text-align:right;margin-top:.3rem">
-                  <div class="mbtn vd" style="font-size:.6rem">📍 Iniciar Ronda</div>
-                </div>
+                <div style="text-align:right;margin-top:.3rem"><div class="mbtn vd" style="font-size:.6rem">📍 Iniciar Ronda</div></div>
               </div>
             </div>
           </div>
@@ -414,22 +380,11 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0d1b2a;color:#fff;h
       <div class="col col-texto">
         <p style="font-size:.92rem;color:#b0c0d0;line-height:1.6">Após abrir a ronda, você verá <strong style="color:#7ec8f0">todos os pacientes ativos do hospital</strong> — automaticamente.</p>
         <div class="col" style="gap:.45rem;margin-top:.5rem">
-          <div class="item">
-            <div class="num">1</div>
-            <div class="corpo"><strong>Revise os casos existentes</strong><span>Pacientes de rondas anteriores já aparecem listados. Atualize o status de cada um conforme a visita de hoje.</span></div>
-          </div>
-          <div class="item">
-            <div class="num">2</div>
-            <div class="corpo"><strong>Registre novo caso</strong><span>Encontrou um novo paciente sedado? Clique em <b>"Registrar Potencial"</b>.</span></div>
-          </div>
-          <div class="item">
-            <div class="num" style="background:#7b2fa8">!</div>
-            <div class="corpo"><strong>Nenhum PD encontrado?</strong><span>Clique em <b>"Registrar ronda sem PD e encerrar"</b> para registrar a passagem para auditoria mesmo sem casos.</span></div>
-          </div>
+          <div class="item"><div class="num">1</div><div class="corpo"><strong>Revise os casos existentes</strong><span>Pacientes de rondas anteriores já aparecem listados. Atualize o status de cada um conforme a visita de hoje.</span></div></div>
+          <div class="item"><div class="num">2</div><div class="corpo"><strong>Registre novo caso</strong><span>Encontrou um novo paciente sedado? Clique em "Registrar Potencial".</span></div></div>
+          <div class="item"><div class="num" style="background:#7b2fa8">!</div><div class="corpo"><strong>Nenhum PD encontrado?</strong><span>Clique em "Registrar ronda sem PD e encerrar" para registrar a passagem para auditoria mesmo sem casos.</span></div></div>
         </div>
-        <div class="destaque" style="margin-top:.5rem">
-          Os pacientes <b>não são apagados</b> ao encerrar a ronda — permanecem até serem arquivados.
-        </div>
+        <div class="destaque" style="margin-top:.5rem">Os pacientes <b>não são apagados</b> ao encerrar a ronda — permanecem até serem arquivados.</div>
       </div>
       <div class="col col-mock">
         <div class="mock">
@@ -441,23 +396,16 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0d1b2a;color:#fff;h
             <div class="mock-sidebar"><div class="msb"></div><div class="msb"></div><div class="msb a"></div><div class="msb"></div></div>
             <div class="mock-main">
               <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.35rem">
-                <div>
-                  <div class="mh" style="margin:0;font-size:.72rem">Hospital Lauro Réus — Manhã</div>
-                  <div style="font-size:.55rem;color:#7f8c8d">Iniciada em 07/05/2025 às 08:14 · Em andamento</div>
-                </div>
-                <div style="display:flex;gap:.3rem">
-                  <div class="mbtn vd" style="font-size:.55rem">+ Registrar Potencial</div>
-                  <div class="mbtn vm" style="font-size:.55rem">Encerrar</div>
-                </div>
+                <div><div class="mh" style="margin:0;font-size:.72rem">Hospital Lauro Réus — Manhã</div><div style="font-size:.55rem;color:#7f8c8d">Iniciada 08:14 · Em andamento</div></div>
+                <div style="display:flex;gap:.3rem"><div class="mbtn vd" style="font-size:.55rem">+ Registrar</div><div class="mbtn vm" style="font-size:.55rem">Encerrar</div></div>
               </div>
               <div class="mcard">
-                <div style="font-size:.62rem;font-weight:700;color:#1a2c4e;margin-bottom:.3rem">Pacientes em acompanhamento <span class="b b-sc">3 casos</span></div>
                 <table class="mtable">
-                  <thead><tr><th>Iniciais</th><th>Prontuário</th><th>Status</th><th>Ação</th></tr></thead>
+                  <thead><tr><th>Iniciais</th><th>Pron.</th><th>Status</th><th>Ação</th></tr></thead>
                   <tbody>
                     <tr><td>A.M.S.</td><td>089234</td><td><span class="b b-pm">Protocolo M.E.</span></td><td><div class="mbtn ci" style="font-size:.52rem">Atualizar</div></td></tr>
-                    <tr><td>R.C.F.</td><td>091002</td><td><span class="b b-sc">Sedação Contínua</span></td><td><div class="mbtn am" style="font-size:.52rem">Pausar Sed.</div></td></tr>
-                    <tr><td>J.P.L.</td><td>087541</td><td><span class="b b-ac">Acompanhamento</span></td><td><div class="mbtn rx" style="font-size:.52rem">Protocolo M.E.</div></td></tr>
+                    <tr><td>R.C.F.</td><td>091002</td><td><span class="b b-sc">Sedação Cont.</span></td><td><div class="mbtn am" style="font-size:.52rem">Pausar</div></td></tr>
+                    <tr><td>J.P.L.</td><td>087541</td><td><span class="b b-ac">Acompanhamento</span></td><td><div class="mbtn rx" style="font-size:.52rem">Protocolo</div></td></tr>
                   </tbody>
                 </table>
               </div>
@@ -478,14 +426,12 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0d1b2a;color:#fff;h
         <ul class="lista" style="margin-top:.5rem">
           <li><strong>Iniciais</strong> — ex.: J.C.S. (nunca o nome completo — LGPD)</li>
           <li><strong>Prontuário</strong> — número único do hospital. Impede duplicatas.</li>
-          <li><strong>Status inicial</strong> — selecione a fase clínica atual do paciente</li>
-          <li><strong>Setor</strong> — pré-preenchido com o setor da ronda; altere se necessário</li>
+          <li><strong>Status inicial</strong> — selecione a fase clínica atual</li>
+          <li><strong>Setor</strong> — pré-preenchido com o setor da ronda</li>
           <li><strong>Causa / Diagnóstico</strong> — ex.: TCE grave, AVC hemorrágico</li>
           <li><strong>Observações</strong> — dados clínicos relevantes para a equipe</li>
         </ul>
-        <div class="destaque-vermelho" style="margin-top:.5rem">
-          <b>LGPD:</b> registre apenas <b>iniciais</b> (ex.: J.C.S.), nunca o nome completo. O prontuário identifica o paciente internamente.
-        </div>
+        <div class="destaque-vermelho" style="margin-top:.5rem"><b>LGPD:</b> registre apenas <b>iniciais</b> (ex.: J.C.S.), nunca o nome completo.</div>
       </div>
       <div class="col col-mock">
         <div class="mock" style="max-width:290px">
@@ -496,25 +442,13 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0d1b2a;color:#fff;h
           <div style="padding:.6rem;background:#f0f4f8">
             <div class="mmodal">
               <div class="mmt">Registrar Potencial Doador</div>
-              <span class="mlabel">Iniciais do Paciente * <span style="color:#e74c3c">(LGPD — não registrar nome)</span></span>
+              <span class="mlabel">Iniciais * <span style="color:#e74c3c">(LGPD — não registrar nome)</span></span>
               <div class="minput" style="color:#2980b9">A.M.S.</div>
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:.3rem">
-                <div>
-                  <span class="mlabel">Prontuário *</span>
-                  <div class="minput">089234</div>
-                </div>
-                <div>
-                  <span class="mlabel">Status inicial *</span>
-                  <div class="minput" style="color:#2980b9">▾ Sedação Contínua</div>
-                </div>
-                <div>
-                  <span class="mlabel">Nascimento</span>
-                  <div class="minput">1962-03-15</div>
-                </div>
-                <div>
-                  <span class="mlabel">Setor</span>
-                  <div class="minput" style="color:#27ae60">✔ UTI Adulto</div>
-                </div>
+                <div><span class="mlabel">Prontuário *</span><div class="minput">089234</div></div>
+                <div><span class="mlabel">Status inicial *</span><div class="minput" style="color:#2980b9">▾ Sedação Contínua</div></div>
+                <div><span class="mlabel">Nascimento</span><div class="minput">1962-03-15</div></div>
+                <div><span class="mlabel">Setor</span><div class="minput" style="color:#27ae60">✔ UTI Adulto</div></div>
               </div>
               <span class="mlabel">Causa / Diagnóstico</span>
               <div class="minput">TCE grave</div>
@@ -535,60 +469,24 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0d1b2a;color:#fff;h
     <div class="slide-titulo-full">Fluxo de Status Clínico</div>
     <div class="fluxo">
       <div class="fl">
-        <span class="fb fb-sc">Sedação Contínua</span>
-        <span class="fs">→</span>
-        <span class="fcond">Pausar Sedação</span>
-        <span class="fs">→</span>
+        <span class="fb fb-sc">Sedação Contínua</span><span class="fs">→</span>
+        <span class="fcond">Pausar Sedação</span><span class="fs">→</span>
         <span class="fb fb-sp">Sedação Pausada</span>
       </div>
       <div style="margin-left:1rem;display:flex;flex-direction:column;gap:.4rem;padding-left:.9rem;border-left:2px solid #2980b9">
-        <div class="fl">
-          <span class="fcond">Reflexos do Tronco Encefálico AUSENTES</span>
-          <span class="fs">→</span>
-          <span class="fb fb-pm">Protocolo M.E. em Andamento</span>
-        </div>
-        <div class="fl">
-          <span class="fcond">Reflexos do Tronco Encefálico PRESENTES</span>
-          <span class="fs">→</span>
-          <span class="fb fb-ac">Acompanhamento</span>
-          <span class="fs">→</span>
-          <span class="fcond">Reavaliado nas próximas rondas</span>
-          <span class="fs">→</span>
-          <span class="fb fb-pm">Protocolo M.E.</span>
-          <span class="fs">ou</span>
-          <span class="fb fb-ar">Arquivar Caso</span>
-        </div>
+        <div class="fl"><span class="fcond">Reflexos do Tronco Encefálico AUSENTES</span><span class="fs">→</span><span class="fb fb-pm">Protocolo M.E. em Andamento</span></div>
+        <div class="fl"><span class="fcond">Reflexos do Tronco Encefálico PRESENTES</span><span class="fs">→</span><span class="fb fb-ac">Acompanhamento</span><span class="fs">→</span><span class="fcond">Reavaliado nas próximas rondas</span><span class="fs">→</span><span class="fb fb-pm">Protocolo M.E.</span><span class="fs">ou</span><span class="fb fb-ar">Arquivar Caso</span></div>
       </div>
       <div style="margin-left:1rem;display:flex;flex-direction:column;gap:.4rem;padding-left:.9rem;border-left:2px solid #7b2fa8">
-        <div class="fl">
-          <span class="fcond">M.E. não confirmada</span><span class="fs">→</span>
-          <span class="fb fb-ms">M.E. Sem Confirmação</span><span class="fs">→</span>
-          <span class="fb fb-ar">Arquivar Caso</span>
-        </div>
-        <div class="fl">
-          <span class="fcond">M.E. confirmada</span><span class="fs">→</span>
-          <span class="fb fb-mc">M.E. Confirmado</span>
-        </div>
+        <div class="fl"><span class="fcond">M.E. não confirmada</span><span class="fs">→</span><span class="fb fb-ms">M.E. Sem Confirmação</span><span class="fs">→</span><span class="fb fb-ar">Arquivar Caso</span></div>
+        <div class="fl"><span class="fcond">M.E. confirmada</span><span class="fs">→</span><span class="fb fb-mc">M.E. Confirmado</span></div>
       </div>
       <div class="fsub" style="margin-left:2rem">
-        <div class="fl">
-          <span class="fb fb-mc">M.E. Confirmado</span><span class="fs">→</span>
-          <span class="fcond">Família aceitou</span><span class="fs">→</span>
-          <span class="fb fb-cd">M.E. Com Doação</span><span class="fs">→</span>
-          <span class="fb fb-ar">Arquivar</span>
-        </div>
-        <div class="fl">
-          <span class="fb fb-mc">M.E. Confirmado</span><span class="fs">→</span>
-          <span class="fcond">Família recusou / contraindicação</span><span class="fs">→</span>
-          <span class="fb fb-sd">M.E. Sem Doação</span><span class="fs">→</span>
-          <span class="fb fb-ar">Arquivar</span>
-        </div>
+        <div class="fl"><span class="fb fb-mc">M.E. Confirmado</span><span class="fs">→</span><span class="fcond">Família aceitou</span><span class="fs">→</span><span class="fb fb-cd">M.E. Com Doação</span><span class="fs">→</span><span class="fb fb-ar">Arquivar</span></div>
+        <div class="fl"><span class="fb fb-mc">M.E. Confirmado</span><span class="fs">→</span><span class="fcond">Família recusou / contraindicação</span><span class="fs">→</span><span class="fb fb-sd">M.E. Sem Doação</span><span class="fs">→</span><span class="fb fb-ar">Arquivar</span></div>
       </div>
     </div>
-    <div class="destaque" style="margin-top:.75rem;font-size:.82rem">
-      Os botões de ação <b>mudam automaticamente</b> conforme o status atual. Não é possível pular etapas.
-      Somente os status finais permitem arquivamento.
-    </div>
+    <div class="destaque" style="margin-top:.75rem;font-size:.82rem">Os botões de ação <b>mudam automaticamente</b> conforme o status atual. Não é possível pular etapas. Somente os status finais permitem arquivamento.</div>
     <div class="slide-footer">EDOT System — Treinamento</div>
   </div>
 
@@ -599,22 +497,11 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0d1b2a;color:#fff;h
       <div class="col col-texto">
         <p style="font-size:.92rem;color:#b0c0d0;line-height:1.6">Na linha do paciente, clique no botão correspondente ao resultado da avaliação clínica de hoje.</p>
         <div class="col" style="gap:.5rem;margin-top:.5rem">
-          <div class="item">
-            <div class="num">1</div>
-            <div class="corpo"><strong>Clique no botão de ação</strong><span>Ex.: "TE Ausentes → Protocolo M.E." se os reflexos estiverem ausentes.</span></div>
-          </div>
-          <div class="item">
-            <div class="num">2</div>
-            <div class="corpo"><strong>Janela de confirmação</strong><span>Informe uma observação clínica (opcional, mas recomendado). Descreva exames, intercorrências ou evolução.</span></div>
-          </div>
-          <div class="item">
-            <div class="num">3</div>
-            <div class="corpo"><strong>Confirme</strong><span>O status é atualizado imediatamente. O histórico registra quem alterou, quando e de qual status para qual.</span></div>
-          </div>
+          <div class="item"><div class="num">1</div><div class="corpo"><strong>Clique no botão de ação</strong><span>Ex.: "TE Ausentes → Protocolo M.E." se os reflexos estiverem ausentes.</span></div></div>
+          <div class="item"><div class="num">2</div><div class="corpo"><strong>Janela de confirmação</strong><span>Informe uma observação clínica (opcional, mas recomendado). Descreva exames, intercorrências ou evolução.</span></div></div>
+          <div class="item"><div class="num">3</div><div class="corpo"><strong>Confirme</strong><span>O status é atualizado imediatamente com registro de quem alterou, quando e de qual status para qual.</span></div></div>
         </div>
-        <div class="destaque" style="margin-top:.5rem">
-          Toda alteração fica no <b>histórico do paciente</b> — data, hora, usuário e observação. Rastreabilidade completa.
-        </div>
+        <div class="destaque" style="margin-top:.5rem">Toda alteração fica no <b>histórico do paciente</b> — data, hora, usuário e observação. Rastreabilidade completa.</div>
       </div>
       <div class="col col-mock">
         <div class="mock" style="max-width:290px">
@@ -626,9 +513,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0d1b2a;color:#fff;h
             <div class="mmodal">
               <div class="mmt">Atualizar Status</div>
               <div style="font-size:.7rem;font-weight:700;color:#1a2c4e;margin-bottom:.4rem">A.M.S.</div>
-              <div style="background:#f3e8fd;border-radius:4px;padding:.3rem .4rem;font-size:.65rem;color:#7b2fa8;font-weight:600;margin-bottom:.4rem;text-align:center">
-                Confirmar: TE Ausentes → Protocolo M.E.
-              </div>
+              <div style="background:#f3e8fd;border-radius:4px;padding:.3rem .4rem;font-size:.65rem;color:#7b2fa8;font-weight:600;margin-bottom:.4rem;text-align:center">Confirmar: TE Ausentes → Protocolo M.E.</div>
               <span class="mlabel">Observação (opcional)</span>
               <div class="minput" style="height:36px;padding:.2rem .35rem;font-size:.6rem;color:#555">Pupilas fixas e midriáticas. Iniciado protocolo conforme protocolo hospitalar.</div>
               <div style="display:flex;justify-content:flex-end;gap:.3rem;margin-top:.4rem">
@@ -639,9 +524,9 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0d1b2a;color:#fff;h
             <div class="mcard" style="margin-top:.4rem;background:#f0f4f8">
               <div style="font-size:.6rem;font-weight:700;color:#1a2c4e;margin-bottom:.25rem">Histórico de Alterações</div>
               <div style="font-size:.55rem;color:#7f8c8d;line-height:1.6">
-                <div>05/05/2025 08:32 · <b>status</b>: sedacao_continua → <span style="color:#7b2fa8">protocolo_me</span></div>
+                <div>05/05 08:32 · <b>status</b>: sedacao_continua → <span style="color:#7b2fa8">protocolo_me</span></div>
                 <div style="color:#aaa">Pupilas fixas e midriáticas...</div>
-                <div style="margin-top:.15rem">03/05/2025 09:15 · <b>criacao</b>: sedacao_continua</div>
+                <div style="margin-top:.15rem">03/05 09:15 · <b>criacao</b>: sedacao_continua</div>
               </div>
             </div>
           </div>
@@ -658,26 +543,12 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0d1b2a;color:#fff;h
       <div class="col col-texto">
         <p style="font-size:.92rem;color:#b0c0d0;line-height:1.6">Ao terminar a visita aos leitos, clique em <strong style="color:#e87060">"Encerrar Ronda"</strong>.</p>
         <div class="col" style="gap:.5rem;margin-top:.5rem">
-          <div class="item">
-            <div class="num">1</div>
-            <div class="corpo"><strong>Informe os leitos visitados</strong><span>Total de leitos avaliados durante esta ronda.</span></div>
-          </div>
-          <div class="item">
-            <div class="num">2</div>
-            <div class="corpo"><strong>Potenciais encontrados</strong><span>Quantos novos PDs foram identificados nesta passagem.</span></div>
-          </div>
-          <div class="item">
-            <div class="num">3</div>
-            <div class="corpo"><strong>Observação final</strong><span>Resumo da ronda, intercorrências, pendências.</span></div>
-          </div>
-          <div class="item">
-            <div class="num" style="background:#27ae60">✓</div>
-            <div class="corpo"><strong>Confirme o encerramento</strong><span>O sistema registra a geolocalização de encerramento. A ronda aparece como "Encerrada" na lista.</span></div>
-          </div>
+          <div class="item"><div class="num">1</div><div class="corpo"><strong>Informe os leitos visitados</strong><span>Total de leitos avaliados durante esta ronda.</span></div></div>
+          <div class="item"><div class="num">2</div><div class="corpo"><strong>Potenciais encontrados</strong><span>Quantos novos PDs foram identificados nesta passagem.</span></div></div>
+          <div class="item"><div class="num">3</div><div class="corpo"><strong>Observação final</strong><span>Resumo da ronda, intercorrências, pendências.</span></div></div>
+          <div class="item"><div class="num" style="background:#27ae60">✓</div><div class="corpo"><strong>Confirme o encerramento</strong><span>O sistema registra a geolocalização de encerramento. A ronda aparece como "Encerrada" na lista.</span></div></div>
         </div>
-        <div class="destaque-amarelo" style="margin-top:.5rem">
-          <b>Ronda sem PD:</b> se não encontrou nenhum caso, use o botão <b>"Registrar ronda sem PD e encerrar"</b> — a ronda fica registrada com 0 potenciais, válida para auditoria.
-        </div>
+        <div class="destaque-amarelo" style="margin-top:.5rem"><b>Ronda sem PD:</b> se não encontrou nenhum caso, use o botão "Registrar ronda sem PD e encerrar" — a ronda fica registrada para auditoria.</div>
       </div>
       <div class="col col-mock">
         <div class="mock" style="max-width:270px">
@@ -689,17 +560,11 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0d1b2a;color:#fff;h
             <div class="mmodal">
               <div class="mmt" style="color:#c0392b;border-color:#e74c3c">Encerrar Ronda</div>
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:.3rem">
-                <div>
-                  <span class="mlabel">Leitos Visitados</span>
-                  <div class="minput" style="color:#2980b9;text-align:center;font-weight:700">14</div>
-                </div>
-                <div>
-                  <span class="mlabel">Potenciais encontrados</span>
-                  <div class="minput" style="color:#27ae60;text-align:center;font-weight:700">1</div>
-                </div>
+                <div><span class="mlabel">Leitos Visitados</span><div class="minput" style="color:#2980b9;text-align:center;font-weight:700">14</div></div>
+                <div><span class="mlabel">Potenciais encontrados</span><div class="minput" style="color:#27ae60;text-align:center;font-weight:700">1</div></div>
               </div>
               <span class="mlabel">Observações finais</span>
-              <div class="minput" style="height:32px;color:#555;font-size:.58rem">1 novo caso UTI leito 7. Demais pacientes estáveis.</div>
+              <div class="minput" style="height:32px;color:#555;font-size:.58rem">1 novo caso UTI leito 7. Demais estáveis.</div>
               <div style="display:flex;justify-content:flex-end;gap:.3rem;margin-top:.4rem">
                 <div class="mbtn ci" style="font-size:.6rem">Cancelar</div>
                 <div class="mbtn vm" style="font-size:.6rem">📍 Encerrar Ronda</div>
@@ -723,11 +588,9 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0d1b2a;color:#fff;h
           <li><strong>Filtrar por status clínico</strong> — ex.: ver apenas pacientes em Protocolo M.E.</li>
           <li><strong>Editar</strong> — atualizar setor, diagnóstico, observações ou status</li>
           <li><strong>Histórico completo</strong> — todas as alterações com data, hora e usuário</li>
-          <li><strong>Arquivar</strong> — disponível apenas nos status finais (M.E. Com/Sem Doação, M.E. Sem Confirmação, Acompanhamento)</li>
+          <li><strong>Arquivar</strong> — disponível apenas nos status finais</li>
         </ul>
-        <div class="destaque" style="margin-top:.5rem">
-          Pacientes arquivados <b>saem da lista de rondas</b>. Ainda são consultáveis pelo filtro "Arquivado".
-        </div>
+        <div class="destaque" style="margin-top:.5rem">Pacientes arquivados <b>saem da lista de rondas</b>. Ainda são consultáveis pelo filtro "Arquivado".</div>
       </div>
       <div class="col col-mock">
         <div class="mock">
@@ -744,19 +607,19 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0d1b2a;color:#fff;h
               </div>
               <div class="mcard" style="padding:.3rem .5rem">
                 <div style="display:flex;gap:.3rem">
-                  <div class="minput" style="flex:2;margin:0" placeholder="Buscar...">🔍 Buscar...</div>
+                  <div class="minput" style="flex:2;margin:0">🔍 Buscar...</div>
                   <div class="minput" style="flex:1;margin:0;color:#2980b9">▾ Todos</div>
-                  <div class="mbtn az" style="font-size:.55rem;white-space:nowrap">Buscar</div>
+                  <div class="mbtn az" style="font-size:.55rem">Buscar</div>
                 </div>
               </div>
               <div class="mcard" style="padding:.3rem .5rem">
                 <table class="mtable">
-                  <thead><tr><th>Iniciais</th><th>Pron.</th><th>Status</th><th>Setor</th><th></th></tr></thead>
+                  <thead><tr><th>Iniciais</th><th>Pron.</th><th>Status</th><th></th></tr></thead>
                   <tbody>
-                    <tr><td>A.M.S.</td><td>089234</td><td><span class="b b-pm">Protocolo M.E.</span></td><td>UTI</td><td><div class="mbtn az" style="font-size:.5rem">Editar</div></td></tr>
-                    <tr><td>R.C.F.</td><td>091002</td><td><span class="b b-sc">Sedação Cont.</span></td><td>PS</td><td><div class="mbtn az" style="font-size:.5rem">Editar</div></td></tr>
-                    <tr><td>J.P.L.</td><td>087541</td><td><span class="b b-ac">Acompanhamento</span></td><td>UTI</td><td><div class="mbtn az" style="font-size:.5rem">Editar</div></td></tr>
-                    <tr><td>M.O.B.</td><td>092100</td><td><span class="b b-mc">M.E. Confirmado</span></td><td>UTI</td><td><div class="mbtn az" style="font-size:.5rem">Editar</div></td></tr>
+                    <tr><td>A.M.S.</td><td>089234</td><td><span class="b b-pm">Protocolo M.E.</span></td><td><div class="mbtn az" style="font-size:.5rem">Editar</div></td></tr>
+                    <tr><td>R.C.F.</td><td>091002</td><td><span class="b b-sc">Sedação Cont.</span></td><td><div class="mbtn az" style="font-size:.5rem">Editar</div></td></tr>
+                    <tr><td>J.P.L.</td><td>087541</td><td><span class="b b-ac">Acompanhamento</span></td><td><div class="mbtn az" style="font-size:.5rem">Editar</div></td></tr>
+                    <tr><td>M.O.B.</td><td>092100</td><td><span class="b b-mc">M.E. Confirmado</span></td><td><div class="mbtn az" style="font-size:.5rem">Editar</div></td></tr>
                   </tbody>
                 </table>
               </div>
@@ -777,12 +640,10 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0d1b2a;color:#fff;h
         <ul class="lista" style="gap:.5rem">
           <li>Registre apenas as <strong>iniciais do paciente</strong> (ex.: J.C.S.)</li>
           <li>Nunca registre o nome completo no sistema</li>
-          <li>O número de prontuário identifica o paciente internamente</li>
+          <li>O prontuário identifica o paciente internamente</li>
           <li>Data de nascimento: somente quando essencial para o caso</li>
         </ul>
-        <div class="destaque-amarelo" style="margin-top:.75rem">
-          <b>Por quê?</b> O sistema pode ser auditado por perfis externos (OPO, CET). Dados pessoais completos ferem a LGPD (Lei 13.709/2018).
-        </div>
+        <div class="destaque-amarelo" style="margin-top:.75rem"><b>Por quê?</b> O sistema pode ser auditado por perfis externos. Dados pessoais completos ferem a LGPD — Lei 13.709 de 2018.</div>
       </div>
       <div style="width:1px;background:rgba(255,255,255,.1);flex-shrink:0"></div>
       <div class="col" style="flex:1">
@@ -791,13 +652,12 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0d1b2a;color:#fff;h
           <li>O sistema captura GPS ao <strong>iniciar</strong> e ao <strong>encerrar</strong> cada ronda</li>
           <li>Coordenadas e precisão ficam visíveis no detalhe da ronda</li>
           <li>Link direto para <strong>Google Maps</strong> para verificação em auditoria</li>
-          <li>Se o GPS for negado: ronda registrada, mas <strong>sem coordenadas</strong> — fica anotado na auditoria</li>
+          <li>Se o GPS for negado: ronda registrada, mas <strong>sem coordenadas</strong> — anotado na auditoria</li>
         </ul>
         <div class="gps-demo" style="margin-top:.75rem">
           <span class="gps-label">Início da ronda</span>
           -29.987234, -51.012456 &nbsp; ±8 m<br>
-          <a style="font-size:.78rem;color:#7ec8f0">Ver no mapa ↗</a>
-          <br><br>
+          <a style="font-size:.78rem;color:#7ec8f0">Ver no mapa ↗</a><br><br>
           <span class="gps-label">Encerramento</span>
           -29.987198, -51.012401 &nbsp; ±12 m<br>
           <a style="font-size:.78rem;color:#7ec8f0">Ver no mapa ↗</a>
@@ -813,8 +673,8 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0d1b2a;color:#fff;h
     <div class="slide-row" style="gap:2.5rem">
       <div class="col" style="flex:1">
         <ul class="lista">
-          <li><strong>Celular:</strong> toque em ☰ (canto superior direito) para abrir o menu lateral</li>
-          <li><strong>Ronda interrompida:</strong> a ronda continua aberta se você fechar o app — acesse novamente e clique em "Acompanhar →"</li>
+          <li><strong>Celular:</strong> toque em ☰ para abrir o menu lateral</li>
+          <li><strong>Ronda interrompida:</strong> a ronda continua aberta se você fechar o app — acesse novamente e clique em "Acompanhar"</li>
           <li><strong>Prontuário duplicado:</strong> o sistema avisa se o prontuário já estiver cadastrado no mesmo hospital</li>
           <li><strong>Sessão expirada:</strong> a sessão dura 8 horas — após esse tempo o sistema pede novo login</li>
           <li><strong>Filtro de período:</strong> no Dashboard, ajuste para 7, 30 ou 90 dias conforme necessário</li>
@@ -829,9 +689,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0d1b2a;color:#fff;h
           <li>A <strong>tela</strong> onde o problema ocorreu</li>
           <li>A <strong>mensagem de erro</strong> exibida</li>
         </ul>
-        <div class="destaque-verde" style="margin-top:.75rem">
-          O tutorial completo está disponível no próprio sistema em <b>Menu → Tutorial</b>.
-        </div>
+        <div class="destaque-verde" style="margin-top:.75rem">O tutorial completo está disponível no próprio sistema em <b>Menu → Tutorial</b>.</div>
       </div>
     </div>
     <div class="slide-footer">EDOT System — Treinamento</div>
@@ -850,72 +708,221 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0d1b2a;color:#fff;h
 
 </div><!-- /slides -->
 
+<!-- ── Subtítulo ── -->
+<div id="subtitulo" class="vazio"></div>
+
 <!-- ── Navegação ── -->
 <div id="nav">
   <button id="btn-ant" onclick="navegar(-1)" disabled>← Anterior</button>
   <div class="pontos" id="pontos"></div>
   <span id="contador">1 / 15</span>
   <button id="btn-prox" onclick="navegar(1)">Próximo →</button>
+  <button id="btn-narracao" onclick="toggleNarracao()" title="Ativar narração por voz (pt-BR)">📢 Narrar</button>
+  <button id="btn-avanco" onclick="toggleAvanco()" title="Avançar automaticamente após narração">⏭ Auto</button>
 </div>
 
 <script>
-  const slides = document.querySelectorAll('.slide');
-  const total  = slides.length;
-  let atual = 0;
+// ── Narração de cada slide ──────────────────────────────────────────────────
+const NARRACOES = [
+  // 1 - Capa
+  "Bem-vindos ao treinamento do EDOT System. Este material foi preparado para coordenadores e membros de equipes hospitalares, auditores de OPO e gestores da CET. Ao longo desta apresentação vamos aprender juntos como utilizar o sistema para apoiar a busca ativa de potenciais doadores de órgãos.",
 
-  const pontosEl  = document.getElementById('pontos');
-  const contEl    = document.getElementById('contador');
-  const btnAnt    = document.getElementById('btn-ant');
-  const btnProx   = document.getElementById('btn-prox');
+  // 2 - O que é
+  "O EDOT System é uma plataforma digital para apoiar a busca ativa de potenciais doadores de órgãos em hospitais. O sistema segue a hierarquia da rede de transplantes do Brasil: a CET, Central de Transplantes, supervisiona as OPOs, Organizações de Procura de Órgãos, que por sua vez coordenam as equipes hospitalares, chamadas EDOTs. Na prática, a equipe vai ao hospital, abre uma ronda, avalia os leitos, registra os casos encontrados e encerra a ronda ao final da visita. Os casos ficam registrados e acompanhados ronda a ronda até o desfecho clínico.",
 
-  // Criar pontos
-  slides.forEach((_, i) => {
-    const p = document.createElement('div');
-    p.className = 'ponto' + (i === 0 ? ' ativo' : '');
-    p.onclick = () => irPara(i);
-    pontosEl.appendChild(p);
-  });
+  // 3 - Perfis
+  "O sistema tem quatro perfis de acesso. O Membro EDOT é quem realiza as rondas no hospital, registra e atualiza pacientes, e arquiva casos quando necessário. O acesso é restrito ao próprio hospital. O Coordenador EDOT tem os mesmos acessos e pode supervisionar a equipe. O Auditor OPO tem acesso somente leitura para monitorar os dados de todos os hospitais da sua OPO, mas não pode criar ou editar informações. Por fim, o administrador da CET gerencia usuários, hospitais e OPOs, mas não manipula dados clínicos de pacientes.",
 
-  function irPara(idx) {
-    if (idx < 0 || idx >= total || idx === atual) return;
-    slides[atual].classList.add('saindo');
-    slides[atual].classList.remove('ativo');
-    setTimeout(() => slides[idx === atual ? idx : (slides[atual] ? atual : idx)].classList.remove('saindo'), 350);
-    const ant = atual;
-    atual = idx;
-    slides[ant].classList.remove('ativo');
-    slides[ant].classList.remove('saindo');
-    slides[atual].classList.add('ativo');
-    atualizar();
-  }
+  // 4 - Login
+  "Para o primeiro acesso, você receberá seu e-mail e senha do administrador do sistema. Acesse pelo navegador Chrome ou Firefox — o sistema funciona tanto no celular quanto no computador. Informe seu e-mail e senha e clique em Entrar. A sessão dura 8 horas. Quando o navegador perguntar sobre permissão de localização, clique em Permitir — o GPS é essencial para registrar a geolocalização das rondas. Uma dica para o celular: no Chrome, toque no menu e escolha Adicionar à tela inicial para acessar o sistema como se fosse um aplicativo.",
 
-  function navegar(dir) { irPara(atual + dir); }
+  // 5 - Dashboard
+  "Após o login você verá o Dashboard, a tela principal do sistema. Ela mostra um resumo em tempo real do hospital: quantos pacientes estão em cada fase clínica, quantas rondas foram realizadas e quantos leitos foram visitados no período. Você pode filtrar os dados para os últimos 7, 30 ou 90 dias. Abaixo dos cards aparecem os pacientes ativos e as rondas mais recentes. Auditores da OPO e da CET visualizam os dados de todos os hospitais sob sua supervisão.",
 
-  function atualizar() {
-    document.querySelectorAll('.ponto').forEach((p, i) =>
-      p.classList.toggle('ativo', i === atual));
-    contEl.textContent = (atual + 1) + ' / ' + total;
-    btnAnt.disabled = atual === 0;
-    btnProx.disabled = atual === total - 1;
-  }
+  // 6 - Iniciar Ronda
+  "Para realizar uma ronda, acesse o menu Rondas no painel lateral e clique em Nova Ronda. Selecione o turno: manhã, tarde, noite ou plantão. Se a ronda cobrir apenas um setor específico, como a UTI, selecione o setor. Se cobrir todo o hospital, deixe em branco. Em seguida clique em Iniciar Ronda. O sistema captura automaticamente a geolocalização do início e registra o horário. É muito importante abrir a ronda dentro do hospital, com o GPS do celular ativado, pois esse ponto ficará registrado para auditoria.",
 
-  // Teclado
-  document.addEventListener('keydown', e => {
-    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') { e.preventDefault(); navegar(1); }
-    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')  { e.preventDefault(); navegar(-1); }
-    if (e.key === 'Home') irPara(0);
-    if (e.key === 'End')  irPara(total - 1);
-  });
+  // 7 - Pacientes na Ronda
+  "Após abrir a ronda, o sistema exibe automaticamente todos os pacientes ativos do hospital. Os casos de rondas anteriores já aparecem listados — você não precisa cadastrá-los novamente. Revise cada caso e atualize o status conforme a avaliação do dia. Se encontrou um novo paciente sedado, clique em Registrar Potencial. Se nenhum caso foi identificado nessa visita, use o botão para registrar a ronda sem potencial doador — a passagem fica registrada no sistema para fins de auditoria. Os pacientes não são apagados ao encerrar a ronda: permanecem visíveis até serem arquivados.",
 
-  // Touch/swipe
-  let tsx = 0;
-  document.addEventListener('touchstart', e => tsx = e.touches[0].clientX, {passive:true});
-  document.addEventListener('touchend', e => {
-    const dx = e.changedTouches[0].clientX - tsx;
-    if (Math.abs(dx) > 50) navegar(dx < 0 ? 1 : -1);
-  }, {passive:true});
+  // 8 - Registrar Potencial
+  "Para cadastrar um novo potencial doador, clique em Registrar Potencial dentro da ronda aberta. Preencha as iniciais do paciente — por exigência da LGPD nunca registre o nome completo. O prontuário é obrigatório e único por hospital: o sistema avisa se ele já estiver cadastrado. Selecione o status inicial, geralmente Sedação Contínua. O setor já vem pré-preenchido com o setor da ronda. Informe a causa ou diagnóstico, como traumatismo cranioencefálico grave ou acidente vascular cerebral hemorrágico. E adicione observações clínicas relevantes para a equipe.",
 
+  // 9 - Fluxo de Status
+  "Este é o fluxo clínico de status do sistema. O paciente começa em Sedação Contínua. Quando a sedação é pausada para avaliação, a equipe avalia os reflexos do tronco encefálico. Se os reflexos estiverem ausentes, inicia-se o Protocolo de Morte Encefálica em Andamento. Se os reflexos estiverem presentes, o paciente vai para Acompanhamento e é reavaliado nas próximas rondas — podendo avançar para o protocolo ou ser arquivado. Ao concluir o protocolo, o resultado pode ser M.E. Sem Confirmação, ou M.E. Confirmado. Com a morte encefálica confirmada, a decisão familiar define o desfecho: M.E. Com Doação ou M.E. Sem Doação. Somente os status finais permitem o arquivamento do caso.",
+
+  // 10 - Atualizar Status
+  "Para atualizar o status de um paciente durante a ronda, clique no botão de ação na linha do paciente. Os botões disponíveis mudam automaticamente conforme o status atual — não é possível pular etapas. Uma janela de confirmação aparece: informe uma observação clínica descrevendo os exames realizados, a evolução ou intercorrências. Depois confirme a ação. O sistema registra automaticamente quem realizou a alteração, quando, e de qual status para qual, formando um histórico completo e rastreável de toda a evolução do paciente.",
+
+  // 11 - Encerrar Ronda
+  "Ao finalizar a visita aos leitos, clique em Encerrar Ronda. Na janela que aparece, informe o número total de leitos visitados durante esta ronda, quantos novos potenciais doadores foram encontrados, e escreva uma observação final resumindo a ronda, intercorrências ou pendências. Ao confirmar, o sistema registra novamente a geolocalização de encerramento. A ronda passa a aparecer como encerrada na lista. Se não encontrou nenhum caso nessa passagem, use o botão Registrar ronda sem potencial doador e encerrar — a ronda fica válida para auditoria mesmo com zero casos.",
+
+  // 12 - Tela Pacientes
+  "A tela de Pacientes, acessível pelo menu lateral, exibe todos os casos cadastrados com filtros avançados. Você pode buscar por iniciais ou prontuário, ou filtrar por status clínico — por exemplo, ver apenas os pacientes em Protocolo M.E. Clicando em Editar você pode atualizar o setor, diagnóstico, observações ou status do paciente. O histórico completo de todas as alterações fica disponível, com data, hora e usuário responsável. O botão de arquivamento aparece somente nos status finais permitidos pelo fluxo clínico. Pacientes arquivados saem da lista de rondas mas continuam consultáveis pelo filtro de arquivados.",
+
+  // 13 - LGPD e GPS
+  "Dois pontos muito importantes. Primeiro, a LGPD — Lei Geral de Proteção de Dados. Registre sempre apenas as iniciais do paciente, nunca o nome completo. O número de prontuário identifica o paciente internamente no sistema. A data de nascimento deve ser informada somente quando for essencial para o caso. O motivo é que o sistema pode ser auditado por perfis externos, e dados pessoais completos ferem a Lei 13.709 de 2018. Segundo ponto: a geolocalização. O sistema captura as coordenadas do GPS ao iniciar e encerrar cada ronda, com link direto para o Google Maps para verificação em auditoria. Se o GPS for negado pelo usuário, a ronda é registrada normalmente, mas sem coordenadas, e essa ausência fica anotada no registro.",
+
+  // 14 - Dicas
+  "Algumas dicas rápidas. No celular, o menu lateral fica atrás do ícone de hambúrguer no canto superior. Se a ronda for interrompida, ela continua aberta: acesse novamente o sistema e clique em Acompanhar para retomar. O sistema avisa automaticamente se um prontuário já estiver cadastrado no hospital, evitando duplicatas. A sessão expira após 8 horas, então se ficar muito tempo sem usar o sistema, pode ser necessário fazer login novamente. No Dashboard, ajuste o período para 7, 30 ou 90 dias conforme sua necessidade de visualização. Em caso de dúvidas ou problemas, informe ao suporte o seu perfil, a tela onde o problema ocorreu e a mensagem de erro exibida.",
+
+  // 15 - Fim
+  "Parabéns, você concluiu o treinamento do EDOT System! Agora você está preparado para realizar rondas, registrar e acompanhar potenciais doadores, e contribuir com o processo de busca ativa. Lembre-se: cada ronda registrada pode fazer a diferença na identificação de um potencial doador. O tutorial completo está disponível no próprio sistema, no menu Tutorial, sempre que precisar consultar. Obrigado pela dedicação. Juntos salvamos mais vidas."
+];
+
+// ── Estado ─────────────────────────────────────────────────────────────────
+const slides      = document.querySelectorAll('.slide');
+const total       = slides.length;
+let atual         = 0;
+let narracaoAtiva = false;
+let avancoAuto    = false;
+let vozes         = [];
+
+const pontosEl  = document.getElementById('pontos');
+const contEl    = document.getElementById('contador');
+const btnAnt    = document.getElementById('btn-ant');
+const btnProx   = document.getElementById('btn-prox');
+const btnNarr   = document.getElementById('btn-narracao');
+const btnAvanc  = document.getElementById('btn-avanco');
+const subtitulo = document.getElementById('subtitulo');
+const indicador = document.getElementById('indicador-voz');
+const indTexto  = document.getElementById('ind-texto');
+
+// ── Criar pontos ────────────────────────────────────────────────────────────
+slides.forEach((_, i) => {
+  const p = document.createElement('div');
+  p.className = 'ponto' + (i === 0 ? ' ativo' : '');
+  p.onclick = () => irPara(i);
+  pontosEl.appendChild(p);
+});
+
+// ── Navegação ───────────────────────────────────────────────────────────────
+function irPara(idx) {
+  if (idx < 0 || idx >= total || idx === atual) return;
+  pararFala();
+  slides[atual].classList.remove('ativo');
+  slides[atual].classList.add('saindo');
+  const ant = atual;
+  atual = idx;
+  setTimeout(() => slides[ant].classList.remove('saindo'), 350);
+  slides[atual].classList.add('ativo');
   atualizar();
+  if (narracaoAtiva) falar(atual);
+}
+
+function navegar(dir) { irPara(atual + dir); }
+
+function atualizar() {
+  document.querySelectorAll('.ponto').forEach((p, i) => p.classList.toggle('ativo', i === atual));
+  contEl.textContent = (atual + 1) + ' / ' + total;
+  btnAnt.disabled  = atual === 0;
+  btnProx.disabled = atual === total - 1;
+}
+
+// ── Narração ────────────────────────────────────────────────────────────────
+function carregarVozes() {
+  vozes = window.speechSynthesis ? window.speechSynthesis.getVoices() : [];
+}
+if (window.speechSynthesis) {
+  carregarVozes();
+  window.speechSynthesis.onvoiceschanged = carregarVozes;
+}
+
+function escolherVoz() {
+  const prefs = ['pt-BR', 'pt_BR', 'pt-PT', 'pt'];
+  for (const pref of prefs) {
+    const v = vozes.find(v => v.lang.startsWith(pref));
+    if (v) return v;
+  }
+  return null;
+}
+
+function pararFala() {
+  if (window.speechSynthesis) window.speechSynthesis.cancel();
+  mostrarSubtitulo('');
+  mostrarIndicador(false);
+}
+
+function falar(idx) {
+  if (!narracaoAtiva || !window.speechSynthesis) return;
+  pararFala();
+  const texto = NARRACOES[idx];
+  if (!texto) return;
+
+  const u  = new SpeechSynthesisUtterance(texto);
+  u.lang   = 'pt-BR';
+  u.rate   = 0.92;
+  u.pitch  = 1.0;
+  const voz = escolherVoz();
+  if (voz) u.voice = voz;
+
+  mostrarSubtitulo(texto);
+  mostrarIndicador(true, 'Slide ' + (idx + 1) + ' de ' + total);
+
+  u.onend = () => {
+    mostrarIndicador(false);
+    if (avancoAuto && narracaoAtiva && idx === atual && atual < total - 1) {
+      setTimeout(() => irPara(atual + 1), 800);
+    } else {
+      mostrarSubtitulo('');
+    }
+  };
+
+  u.onerror = () => { mostrarIndicador(false); mostrarSubtitulo(''); };
+
+  window.speechSynthesis.speak(u);
+}
+
+function mostrarSubtitulo(txt) {
+  subtitulo.textContent = txt;
+  subtitulo.classList.toggle('vazio', !txt);
+}
+
+function mostrarIndicador(visivel, label) {
+  indicador.classList.toggle('visivel', visivel);
+  if (label) indTexto.textContent = label;
+}
+
+function toggleNarracao() {
+  if (!window.speechSynthesis) {
+    alert('Narração não suportada neste navegador.\nUse Chrome ou Safari para a narração automática.');
+    return;
+  }
+  narracaoAtiva = !narracaoAtiva;
+  btnNarr.textContent = narracaoAtiva ? '🔇 Parar' : '📢 Narrar';
+  btnNarr.classList.toggle('ativa', narracaoAtiva);
+  if (narracaoAtiva) {
+    falar(atual);
+  } else {
+    pararFala();
+  }
+}
+
+function toggleAvanco() {
+  avancoAuto = !avancoAuto;
+  btnAvanc.textContent = avancoAuto ? '⏸ Auto' : '⏭ Auto';
+  btnAvanc.classList.toggle('ativo', avancoAuto);
+}
+
+// ── Teclado ─────────────────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') { e.preventDefault(); navegar(1); }
+  if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')  { e.preventDefault(); navegar(-1); }
+  if (e.key === 'Home') irPara(0);
+  if (e.key === 'End')  irPara(total - 1);
+  if (e.key === 'n' || e.key === 'N') toggleNarracao();
+});
+
+// ── Touch/swipe ─────────────────────────────────────────────────────────────
+let tsx = 0;
+document.addEventListener('touchstart', e => tsx = e.touches[0].clientX, {passive:true});
+document.addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].clientX - tsx;
+  if (Math.abs(dx) > 50) navegar(dx < 0 ? 1 : -1);
+}, {passive:true});
+
+// ── Init ────────────────────────────────────────────────────────────────────
+atualizar();
 </script>
 </body>
 </html>
