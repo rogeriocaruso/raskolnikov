@@ -217,6 +217,59 @@ class PacienteHistorico(db.Model):
         )
 
 
+RESULTADO_ENTREVISTA = ('autorizacao', 'naf')
+TECIDOS_ENTREVISTA   = ('corneas', 'pele', 'ossos')
+
+
+class EntrevistaFamiliar(db.Model):
+    __tablename__ = 'entrevista_familiar'
+
+    id          = db.Column(db.Integer, primary_key=True)
+    edot_id     = db.Column(db.Integer, db.ForeignKey('edot.id'), nullable=False)
+    iniciais    = db.Column(db.String(20),  nullable=False)
+    prontuario  = db.Column(db.String(50),  nullable=False)
+    idade       = db.Column(db.Integer,     nullable=True)
+    diagnostico = db.Column(db.String(200), nullable=True)
+    local_obito = db.Column(db.String(150), nullable=True)
+    data_obito  = db.Column(db.DateTime,    nullable=True)
+    data_entrevista = db.Column(db.DateTime, nullable=True)
+    resultado   = db.Column(db.String(20),  nullable=False)   # 'autorizacao' | 'naf'
+    tecidos     = db.Column(db.String(100), nullable=True)    # texto livre / lista csv
+    observacoes = db.Column(db.Text,        nullable=True)
+    arquivado   = db.Column(db.Boolean, default=False, nullable=False)
+    created_by  = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False)
+    updated_by  = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=True)
+    created_at  = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at  = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    edot           = db.relationship('EDOT')
+    criador        = db.relationship('Usuario', foreign_keys=[created_by])
+    atualizador    = db.relationship('Usuario', foreign_keys=[updated_by])
+
+    def to_dict(self):
+        return dict(
+            id=self.id,
+            edot_id=self.edot_id,
+            edot_nome=self.edot.hospital_nome if self.edot else None,
+            iniciais=self.iniciais,
+            prontuario=self.prontuario,
+            idade=self.idade,
+            diagnostico=self.diagnostico,
+            local_obito=self.local_obito,
+            data_obito=self.data_obito.isoformat() if self.data_obito else None,
+            data_entrevista=self.data_entrevista.isoformat() if self.data_entrevista else None,
+            resultado=self.resultado,
+            tecidos=self.tecidos,
+            observacoes=self.observacoes,
+            arquivado=self.arquivado,
+            created_by=self.created_by,
+            criador_nome=self.criador.nome if self.criador else None,
+            updated_by=self.updated_by,
+            created_at=self.created_at.isoformat(),
+            updated_at=self.updated_at.isoformat() if self.updated_at else None,
+        )
+
+
 class Ronda(db.Model):
     __tablename__ = 'ronda'
 

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>EDOT System — Pacientes</title>
+  <title>EDOT System — Entrevistas Familiares</title>
   <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body class="page-main">
@@ -18,7 +18,7 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
         Dashboard
       </a>
-      <a href="/paciente" class="ativo">
+      <a href="/paciente">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         Pacientes
       </a>
@@ -26,7 +26,7 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
         Rondas
       </a>
-      <a href="/entrevista">
+      <a href="/entrevista" class="ativo">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
         Entrevistas
       </a>
@@ -38,7 +38,7 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
         Administração
       </a>
-          <a href="/tutorial">
+      <a href="/tutorial">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
         Tutorial
       </a>
@@ -55,36 +55,45 @@
   </aside>
 
   <main class="conteudo">
-    <!-- Lista de pacientes -->
+
+    <!-- Cards de totais -->
+    <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:1.25rem">
+      <div class="stat-card"><div class="stat-valor" id="s-total">—</div><div class="stat-label">Total (30 dias)</div></div>
+      <div class="stat-card verde"><div class="stat-valor" id="s-autorizacoes">—</div><div class="stat-label">Autorizações</div></div>
+      <div class="stat-card vermelho"><div class="stat-valor" id="s-nafs">—</div><div class="stat-label">NAF</div></div>
+      <div class="stat-card"><div class="stat-valor" id="s-taxa">—</div><div class="stat-label">Taxa de Autorização</div></div>
+    </div>
+
+    <!-- ── Lista ── -->
     <div id="view-lista">
       <div class="page-header">
-        <h1>Pacientes</h1>
-        <button class="btn btn-sucesso" id="btn-novo-paciente">
+        <h1>Entrevistas Familiares — Doação de Tecidos</h1>
+        <button class="btn btn-sucesso" id="btn-nova-entrevista">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Novo Paciente
+          Nova Entrevista
         </button>
       </div>
 
       <!-- Filtros -->
       <div class="card" style="padding:1rem">
         <div style="display:flex;gap:.75rem;flex-wrap:wrap;align-items:flex-end">
-          <div class="form-grupo" style="margin:0;flex:1;min-width:200px">
+          <div class="form-grupo" style="margin:0;flex:1;min-width:180px">
             <label>Buscar</label>
-            <input type="text" id="busca" placeholder="Nome ou prontuário...">
+            <input type="text" id="busca" placeholder="Iniciais ou prontuário...">
           </div>
           <div class="form-grupo" style="margin:0;min-width:160px">
-            <label>Status</label>
-            <select id="filtro-status">
+            <label>Resultado</label>
+            <select id="filtro-resultado">
               <option value="">Todos</option>
-              <option value="sedacao_continua">Sedação Contínua</option>
-              <option value="sedacao_pausada">Sedação Pausada</option>
-              <option value="acompanhamento">Acompanhamento</option>
-              <option value="protocolo_me">Protocolo M.E. em Andamento</option>
-              <option value="me_sem_confirmacao">M.E. Sem Confirmação</option>
-              <option value="me_confirmado">M.E. Confirmado</option>
-              <option value="me_com_doacao">M.E. Com Doação</option>
-              <option value="me_sem_doacao">M.E. Sem Doação</option>
-              <option value="arquivado">Arquivado</option>
+              <option value="autorizacao">Autorização</option>
+              <option value="naf">NAF</option>
+            </select>
+          </div>
+          <div class="form-grupo" style="margin:0;min-width:140px">
+            <label>Exibir</label>
+            <select id="filtro-arquivado">
+              <option value="false">Ativos</option>
+              <option value="true">Arquivados</option>
             </select>
           </div>
           <button class="btn btn-primario" id="btn-buscar" style="margin-bottom:0">Buscar</button>
@@ -92,25 +101,26 @@
       </div>
 
       <div class="card">
-        <div id="loading-pacientes" style="color:var(--texto-leve);font-size:.9rem">Carregando...</div>
-        <div class="tabela-wrapper" id="wrapper-pacientes" style="display:none">
+        <div id="loading-entrevistas" style="color:var(--texto-leve);font-size:.9rem">Carregando...</div>
+        <div class="tabela-wrapper" id="wrapper-entrevistas" style="display:none">
           <table>
             <thead>
               <tr>
                 <th>Iniciais</th>
                 <th>Prontuário</th>
-                <th>Nascimento</th>
-                <th>Status</th>
-                <th>Setor</th>
-                <th>Internação</th>
+                <th>Idade</th>
+                <th>Óbito</th>
+                <th>Diagnóstico</th>
+                <th>Resultado</th>
+                <th></th>
                 <th></th>
               </tr>
             </thead>
-            <tbody id="tbody-pacientes"></tbody>
+            <tbody id="tbody-entrevistas"></tbody>
           </table>
         </div>
-        <div id="sem-pacientes" style="display:none;color:var(--texto-leve);font-size:.9rem;padding:.5rem 0">
-          Nenhum paciente encontrado.
+        <div id="sem-entrevistas" style="display:none;color:var(--texto-leve);font-size:.9rem;padding:.5rem 0">
+          Nenhum registro encontrado.
         </div>
         <div id="paginacao" style="display:none;margin-top:1rem;display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
           <button class="btn btn-secundario btn-sm" id="btn-anterior" disabled>Anterior</button>
@@ -120,79 +130,94 @@
       </div>
     </div>
 
-    <!-- Formulário novo/editar paciente -->
+    <!-- ── Formulário ── -->
     <div id="view-form" style="display:none">
       <div class="page-header">
-        <h1 id="form-titulo">Novo Paciente</h1>
+        <h1 id="form-titulo">Nova Entrevista</h1>
         <button class="btn btn-secundario" id="btn-voltar">← Voltar</button>
       </div>
       <div class="card">
         <div id="alerta-form" class="alerta"></div>
-        <form id="form-paciente">
-          <input type="hidden" id="p-id">
+        <form id="form-entrevista">
+          <input type="hidden" id="e-id">
+          <input type="hidden" id="e-edot-id">
+
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+
+            <!-- Dados do paciente -->
+            <div style="grid-column:1/-1">
+              <p style="font-size:.8rem;font-weight:600;color:var(--texto-leve);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem">Dados do Paciente</p>
+            </div>
+
             <div class="form-grupo">
-              <label for="p-nome">Iniciais do Paciente * <span style="font-weight:400;font-size:.8rem;color:var(--texto-leve)">(LGPD — não registrar nome completo)</span></label>
-              <input type="text" id="p-nome" required placeholder="Ex.: J.C.S.">
+              <label for="e-iniciais">Iniciais * <span style="font-weight:400;font-size:.8rem;color:var(--texto-leve)">(LGPD — não registrar nome completo)</span></label>
+              <input type="text" id="e-iniciais" required placeholder="Ex.: J.C.S.">
             </div>
             <div class="form-grupo">
-              <label for="p-prontuario">Prontuário *</label>
-              <input type="text" id="p-prontuario" required placeholder="Número do prontuário">
+              <label for="e-prontuario">Prontuário *</label>
+              <input type="text" id="e-prontuario" required placeholder="Número do prontuário">
             </div>
             <div class="form-grupo">
-              <label for="p-nascimento">Data de Nascimento</label>
-              <input type="date" id="p-nascimento">
+              <label for="e-idade">Idade</label>
+              <input type="number" id="e-idade" min="0" max="130" placeholder="Anos">
             </div>
             <div class="form-grupo">
-              <label for="p-internacao">Data de Internação</label>
-              <input type="date" id="p-internacao">
+              <label for="e-diagnostico">Diagnóstico Principal</label>
+              <input type="text" id="e-diagnostico" placeholder="Ex.: Parada cardiorrespiratória, TCE...">
             </div>
             <div class="form-grupo">
-              <label for="p-status">Status *</label>
-              <select id="p-status" required>
-                <option value="sedacao_continua">Sedação Contínua</option>
-                <option value="sedacao_pausada">Sedação Pausada</option>
-                <option value="acompanhamento">Acompanhamento</option>
-                <option value="protocolo_me">Protocolo M.E. em Andamento</option>
-                <option value="me_sem_confirmacao">M.E. Sem Confirmação</option>
-                <option value="me_confirmado">M.E. Confirmado</option>
-                <option value="me_com_doacao">M.E. Com Doação</option>
-                <option value="me_sem_doacao">M.E. Sem Doação</option>
+              <label for="e-local-obito">Local do Óbito</label>
+              <input type="text" id="e-local-obito" placeholder="Ex.: Pronto-socorro, Enfermaria 3...">
+            </div>
+            <div class="form-grupo">
+              <label for="e-data-obito">Data e Hora do Óbito</label>
+              <input type="datetime-local" id="e-data-obito">
+            </div>
+
+            <!-- Dados da entrevista -->
+            <div style="grid-column:1/-1;margin-top:.25rem">
+              <p style="font-size:.8rem;font-weight:600;color:var(--texto-leve);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem">Entrevista Familiar</p>
+            </div>
+
+            <div class="form-grupo">
+              <label for="e-data-entrevista">Data e Hora da Entrevista *</label>
+              <input type="datetime-local" id="e-data-entrevista" required>
+            </div>
+            <div class="form-grupo">
+              <label for="e-resultado">Resultado *</label>
+              <select id="e-resultado" required>
+                <option value="">Selecione...</option>
+                <option value="autorizacao">Autorização Familiar</option>
+                <option value="naf">NAF — Não Autorização Familiar</option>
               </select>
             </div>
             <div class="form-grupo">
-              <label for="p-setor">Setor</label>
-              <select id="p-setor">
-                <option value="">Selecione o setor...</option>
+              <label for="e-tecidos">Tecidos</label>
+              <select id="e-tecidos">
+                <option value="">Selecione...</option>
+                <option value="Córneas">Córneas</option>
+                <option value="Pele">Pele</option>
+                <option value="Ossos">Ossos</option>
+                <option value="Córneas e Pele">Córneas e Pele</option>
+                <option value="Córneas e Ossos">Córneas e Ossos</option>
+                <option value="Córneas, Pele e Ossos">Córneas, Pele e Ossos</option>
               </select>
             </div>
             <div class="form-grupo" style="grid-column:1/-1">
-              <label for="p-causa">Causa Mortis</label>
-              <input type="text" id="p-causa" placeholder="Diagnóstico / causa mortis">
-            </div>
-            <div class="form-grupo" style="grid-column:1/-1">
-              <label for="p-obs">Observações</label>
-              <textarea id="p-obs" placeholder="Observações clínicas relevantes..."></textarea>
+              <label for="e-obs">Observações</label>
+              <textarea id="e-obs" placeholder="Informações relevantes sobre a entrevista..."></textarea>
             </div>
           </div>
+
           <div style="display:flex;gap:.75rem;justify-content:flex-end;margin-top:.5rem">
             <button type="button" class="btn btn-secundario" id="btn-cancelar-form">Cancelar</button>
-            <button type="button" class="btn btn-perigo" id="btn-arquivar" style="display:none">Arquivar Paciente</button>
+            <button type="button" class="btn btn-perigo" id="btn-arquivar-form" style="display:none" onclick="abrirModalArquivar()">Arquivar</button>
             <button type="submit" class="btn btn-sucesso">
               <span id="spinner-form" class="spinner" style="display:none"></span>
               <span id="btn-form-texto">Salvar</span>
             </button>
           </div>
         </form>
-      </div>
-
-      <!-- Histórico -->
-      <div class="card" id="card-historico" style="display:none">
-        <div class="card-titulo">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4"/></svg>
-          Histórico de Alterações
-        </div>
-        <div id="historico-lista" style="font-size:.875rem"></div>
       </div>
     </div>
   </main>
@@ -201,26 +226,13 @@
   <div id="modal-arquivar" class="modal-overlay" style="display:none">
     <div class="modal-box">
       <div class="modal-header">
-        <h2 class="modal-titulo">Arquivar Paciente</h2>
+        <h2 class="modal-titulo">Arquivar Entrevista</h2>
         <button class="modal-fechar" onclick="fecharModalArquivar()">&times;</button>
       </div>
       <p style="margin-bottom:1rem;color:var(--texto-leve);font-size:.9rem">
-        Esta ação irá arquivar o paciente. Informe o motivo:
+        O registro será arquivado e continuará visível nas estatísticas. Use ao final do mês para fechar o período.
       </p>
       <div id="alerta-arquivar" class="alerta"></div>
-      <div class="form-grupo">
-        <label for="motivo-arquivar">Motivo *</label>
-        <select id="motivo-arquivar">
-          <option value="">Selecione...</option>
-          <option value="Morte encefálica não confirmada">Morte encefálica não confirmada</option>
-          <option value="Família recusou doação">Família recusou doação</option>
-          <option value="Contraindicação médica">Contraindicação médica</option>
-          <option value="Doação efetivada">Doação efetivada</option>
-          <option value="Alta hospitalar">Alta hospitalar</option>
-          <option value="Óbito">Óbito</option>
-          <option value="Outro">Outro</option>
-        </select>
-      </div>
       <div style="display:flex;gap:.75rem;justify-content:flex-end">
         <button class="btn btn-secundario" onclick="fecharModalArquivar()">Cancelar</button>
         <button class="btn btn-perigo" id="btn-confirmar-arquivar">Confirmar Arquivamento</button>
@@ -229,6 +241,6 @@
   </div>
 
   <script src="/static/js/api.js"></script>
-  <script src="/static/js/paciente.js"></script>
+  <script src="/static/js/entrevista.js"></script>
 </body>
 </html>

@@ -122,11 +122,37 @@ function esc(str) {
   return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
+// ── Carregar entrevistas (resumo) ───────────────────────────────────────────
+async function carregarStatsEntrevistas(dias) {
+  try {
+    const d = await Api.request(`/entrevistas/stats?dias=${dias}`);
+    const el = document.getElementById('resumo-entrevistas');
+    if (!el) return;
+    el.innerHTML = `
+      <div class="card-titulo">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+        Entrevistas Familiares — Tecidos <span style="font-size:.75rem;font-weight:400;color:var(--texto-leve)">(${dias} dias)</span>
+      </div>
+      <div style="display:flex;gap:2rem;flex-wrap:wrap;margin-top:.5rem">
+        <div><span style="font-size:1.6rem;font-weight:700;color:var(--texto)">${d.total}</span><br><span style="font-size:.8rem;color:var(--texto-leve)">Total</span></div>
+        <div><span style="font-size:1.6rem;font-weight:700;color:var(--verde)">${d.autorizacoes}</span><br><span style="font-size:.8rem;color:var(--texto-leve)">Autorizações</span></div>
+        <div><span style="font-size:1.6rem;font-weight:700;color:var(--perigo)">${d.nafs}</span><br><span style="font-size:.8rem;color:var(--texto-leve)">NAF</span></div>
+      </div>
+      <div style="margin-top:.75rem">
+        <a href="/entrevista" class="btn btn-secundario btn-sm">Ver registros →</a>
+      </div>`;
+  } catch (_) {}
+}
+
 // ── Filtro de período ───────────────────────────────────────────────────────
 const selDias = document.getElementById('sel-dias');
-selDias.addEventListener('change', () => carregarStats(+selDias.value));
+selDias.addEventListener('change', () => {
+  carregarStats(+selDias.value);
+  carregarStatsEntrevistas(+selDias.value);
+});
 
 // ── Init ────────────────────────────────────────────────────────────────────
 carregarStats(30);
 carregarPacientes();
 carregarRondas();
+carregarStatsEntrevistas(30);
