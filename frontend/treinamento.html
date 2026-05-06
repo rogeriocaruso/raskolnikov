@@ -164,83 +164,8 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0d1b2a;color:#fff;h
 
 <div id="slides">
 
-  <!-- ── 1. Capa ── -->
-  <div class="slide slide-capa fundo-azul ativo">
-    <div class="titulo-capa">EDOT System</div>
-    <div class="sub-capa">Treinamento de Usuários — Busca Ativa de Doadores de Órgãos</div>
-    <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap">
-      <span class="pill">Coordenadores e Membros de EDOT</span>
-      <span class="pill">Auditores OPO / CET</span>
-    </div>
-    <div style="margin-top:3rem;font-size:.85rem;color:rgba(255,255,255,.4)">Use as setas ← → ou clique nos botões abaixo para navegar · Ative a narração com 📢</div>
-  </div>
-
-  <!-- ── 2. O que é o sistema ── -->
-  <div class="slide fundo-escuro">
-    <div class="slide-titulo">O que é o EDOT System?</div>
-    <div class="slide-row">
-      <div class="col col-texto">
-        <p style="font-size:1rem;color:#b0c0d0;line-height:1.7">
-          Plataforma de apoio à <strong style="color:#7ec8f0">busca ativa de potenciais doadores de órgãos</strong> em ambiente hospitalar.
-          Registra e acompanha pacientes ronda a ronda — da sedação ao desfecho clínico — garantindo rastreabilidade para auditoria.
-        </p>
-        <div style="margin-top:.5rem">
-          <div style="font-size:.85rem;font-weight:600;color:#7ec8f0;margin-bottom:.6rem;text-transform:uppercase;letter-spacing:.05em">Hierarquia do Sistema</div>
-          <div class="hier">
-            <div class="hier-item" style="background:rgba(231,76,60,.2);border:1px solid #e74c3c;color:#e74c3c">CET — Central de Transplantes</div>
-            <div class="hier-seta">↓</div>
-            <div class="hier-item" style="background:rgba(243,156,18,.2);border:1px solid #f39c12;color:#f39c12">OPO — Organização de Procura de Órgãos</div>
-            <div class="hier-seta">↓</div>
-            <div class="hier-item" style="background:rgba(41,128,185,.2);border:1px solid #2980b9;color:#7ec8f0">EDOT — Equipe Hospitalar</div>
-            <div class="hier-seta">↓</div>
-            <div class="hier-item" style="background:rgba(39,174,96,.2);border:1px solid #27ae60;color:#27ae60">Pacientes Acompanhados</div>
-          </div>
-        </div>
-      </div>
-      <div class="col col-wide" style="max-width:50%">
-        <div style="font-size:.85rem;font-weight:600;color:#7ec8f0;margin-bottom:.6rem;text-transform:uppercase;letter-spacing:.05em">Como funciona na prática</div>
-        <div class="col" style="gap:.5rem">
-          <div class="item"><div class="num">1</div><div class="corpo"><strong>Equipe vai ao hospital</strong><span>Coordenador ou membro abre uma ronda ao sair para os setores.</span></div></div>
-          <div class="item"><div class="num">2</div><div class="corpo"><strong>Avalia leitos</strong><span>Verifica pacientes sedados com potencial para morte encefálica.</span></div></div>
-          <div class="item"><div class="num">3</div><div class="corpo"><strong>Registra casos</strong><span>Cadastra novos potenciais ou atualiza status dos casos já conhecidos.</span></div></div>
-          <div class="item"><div class="num">4</div><div class="corpo"><strong>Encerra a ronda</strong><span>Informa leitos visitados. O sistema registra GPS de início e fim para auditoria.</span></div></div>
-          <div class="item"><div class="num">5</div><div class="corpo"><strong>Próximas rondas</strong><span>Os casos permanecem visíveis automaticamente até serem arquivados.</span></div></div>
-        </div>
-      </div>
-    </div>
-    <div class="slide-footer">EDOT System — Treinamento</div>
-  </div>
-
-  <!-- ── 3. Perfis ── -->
-  <div class="slide fundo-escuro">
-    <div class="slide-titulo">Perfis de Acesso</div>
-    <div class="perfis" style="margin-top:.5rem">
-      <div class="perfil-card" style="border-color:#27ae60">
-        <div class="perfil-titulo" style="color:#27ae60">Membro EDOT</div>
-        <div class="perfil-desc">Realiza rondas, registra e atualiza pacientes, arquiva casos.<br>Acesso restrito ao <strong style="color:#b0d0b0">próprio hospital</strong>.</div>
-        <div style="margin-top:.6rem;font-size:.78rem;color:#27ae60">✔ Rondas &nbsp; ✔ Pacientes &nbsp; ✔ Dashboard</div>
-      </div>
-      <div class="perfil-card" style="border-color:#2980b9">
-        <div class="perfil-titulo" style="color:#7ec8f0">Coordenador EDOT</div>
-        <div class="perfil-desc">Mesmo acesso que o membro. Pode supervisionar e orientar o registro dos casos da equipe.</div>
-        <div style="margin-top:.6rem;font-size:.78rem;color:#7ec8f0">✔ Rondas &nbsp; ✔ Pacientes &nbsp; ✔ Dashboard</div>
-      </div>
-      <div class="perfil-card" style="border-color:#f39c12">
-        <div class="perfil-titulo" style="color:#f39c12">OPO Auditor</div>
-        <div class="perfil-desc">Somente leitura. Visualiza dados de todos os hospitais da sua OPO para fins de monitoramento.<br><strong style="color:#e8d8b0">Não pode criar ou editar</strong> informações.</div>
-        <div style="margin-top:.6rem;font-size:.78rem;color:#f39c12">👁 Estatísticas &nbsp; 👁 Rondas &nbsp; 👁 Pacientes</div>
-      </div>
-      <div class="perfil-card" style="border-color:#e74c3c">
-        <div class="perfil-titulo" style="color:#e87060">CET Admin</div>
-        <div class="perfil-desc">Auditoria geral e gestão administrativa: cria usuários, EDOTs, OPOs. <strong style="color:#e8c0b8">Não manipula dados clínicos</strong> de pacientes.</div>
-        <div style="margin-top:.6rem;font-size:.78rem;color:#e87060">🔧 Administração &nbsp; 👁 Auditoria Geral</div>
-      </div>
-    </div>
-    <div class="slide-footer">EDOT System — Treinamento</div>
-  </div>
-
-  <!-- ── 4. Login ── -->
-  <div class="slide fundo-escuro">
+  <!-- ── 1. Login ── -->
+  <div class="slide fundo-escuro ativo">
     <div class="slide-titulo">Primeiro Acesso — Login</div>
     <div class="slide-row">
       <div class="col col-texto">
@@ -715,7 +640,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0d1b2a;color:#fff;h
 <div id="nav">
   <button id="btn-ant" onclick="navegar(-1)" disabled>← Anterior</button>
   <div class="pontos" id="pontos"></div>
-  <span id="contador">1 / 15</span>
+  <span id="contador">1 / 12</span>
   <button id="btn-prox" onclick="navegar(1)">Próximo →</button>
   <button id="btn-narracao" onclick="toggleNarracao()" title="Ativar narração por voz (pt-BR)">📢 Narrar</button>
   <button id="btn-avanco" onclick="toggleAvanco()" title="Avançar automaticamente após narração">⏭ Auto</button>
@@ -724,16 +649,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#0d1b2a;color:#fff;h
 <script>
 // ── Narração de cada slide ──────────────────────────────────────────────────
 const NARRACOES = [
-  // 1 - Capa
-  "Bem-vindos ao treinamento do EDOT System. Este material foi preparado para coordenadores e membros de equipes hospitalares, auditores de OPO e gestores da CET. Ao longo desta apresentação vamos aprender juntos como utilizar o sistema para apoiar a busca ativa de potenciais doadores de órgãos.",
-
-  // 2 - O que é
-  "O EDOT System é uma plataforma digital para apoiar a busca ativa de potenciais doadores de órgãos em hospitais. O sistema segue a hierarquia da rede de transplantes do Brasil: a CET, Central de Transplantes, supervisiona as OPOs, Organizações de Procura de Órgãos, que por sua vez coordenam as equipes hospitalares, chamadas EDOTs. Na prática, a equipe vai ao hospital, abre uma ronda, avalia os leitos, registra os casos encontrados e encerra a ronda ao final da visita. Os casos ficam registrados e acompanhados ronda a ronda até o desfecho clínico.",
-
-  // 3 - Perfis
-  "O sistema tem quatro perfis de acesso. O Membro EDOT é quem realiza as rondas no hospital, registra e atualiza pacientes, e arquiva casos quando necessário. O acesso é restrito ao próprio hospital. O Coordenador EDOT tem os mesmos acessos e pode supervisionar a equipe. O Auditor OPO tem acesso somente leitura para monitorar os dados de todos os hospitais da sua OPO, mas não pode criar ou editar informações. Por fim, o administrador da CET gerencia usuários, hospitais e OPOs, mas não manipula dados clínicos de pacientes.",
-
-  // 4 - Login
+  // 1 - Login
   "Para o primeiro acesso, você receberá seu e-mail e senha do administrador do sistema. Acesse pelo navegador Chrome ou Firefox — o sistema funciona tanto no celular quanto no computador. Informe seu e-mail e senha e clique em Entrar. A sessão dura 8 horas. Quando o navegador perguntar sobre permissão de localização, clique em Permitir — o GPS é essencial para registrar a geolocalização das rondas. Uma dica para o celular: no Chrome, toque no menu e escolha Adicionar à tela inicial para acessar o sistema como se fosse um aplicativo.",
 
   // 5 - Dashboard
