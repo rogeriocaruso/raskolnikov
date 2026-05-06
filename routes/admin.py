@@ -43,7 +43,8 @@ def listar_usuarios():
 @jwt_required()
 def criar_usuario():
     claims = _get_claims()
-    if not _require_coord_or_above(claims):
+    perfil = claims.get('perfil')
+    if perfil not in ('cet_admin', 'opo_auditor', 'edot_coord'):
         return jsonify(erro='Sem permissão'), 403
 
     data = request.get_json(silent=True) or {}
@@ -58,11 +59,19 @@ def criar_usuario():
     if Usuario.query.filter_by(email=data['email'].lower().strip()).first():
         return jsonify(erro='Email já cadastrado'), 409
 
-    # edot_coord só pode criar membros da sua EDOT
-    if claims.get('perfil') == 'edot_coord':
+    # edot_coord só pode criar membros/coordenadores da sua EDOT
+    if perfil == 'edot_coord':
         if data['perfil'] not in ('edot_membro', 'edot_coord'):
             return jsonify(erro='Você só pode criar membros ou coordenadores'), 403
         data['edot_id'] = claims.get('edot_id')
+
+    # opo_auditor só pode criar edot_coord/edot_membro de EDOTs da sua OPO
+    if perfil == 'opo_auditor':
+        if data['perfil'] not in ('edot_membro', 'edot_coord'):
+            return jsonify(erro='OPO Auditor só pode criar coordenadores e membros de EDOT'), 403
+        edot = EDOT.query.get(data.get('edot_id'))
+        if not edot or edot.opo_id != claims.get('opo_id'):
+            return jsonify(erro='EDOT não pertence à sua OPO'), 403
 
     usuario = Usuario(
         nome=data['nome'],
@@ -81,10 +90,18 @@ def criar_usuario():
 @jwt_required()
 def atualizar_usuario(usuario_id):
     claims = _get_claims()
-    if not _require_coord_or_above(claims):
+    perfil = claims.get('perfil')
+    if perfil not in ('cet_admin', 'opo_auditor', 'edot_coord'):
         return jsonify(erro='Sem permissão'), 403
 
     usuario = Usuario.query.get_or_404(usuario_id)
+
+    # opo_auditor só pode editar usuários de EDOTs da sua OPO
+    if perfil == 'opo_auditor':
+        edot = EDOT.query.get(usuario.edot_id)
+        if not edot or edot.opo_id != claims.get('opo_id'):
+            return jsonify(erro='Usuário não pertence a uma EDOT da sua OPO'), 403
+
     data = request.get_json(silent=True) or {}
 
     if 'nome' in data:
@@ -110,10 +127,17 @@ def atualizar_usuario(usuario_id):
 @jwt_required()
 def desativar_usuario(usuario_id):
     claims = _get_claims()
-    if not _require_coord_or_above(claims):
+    perfil = claims.get('perfil')
+    if perfil not in ('cet_admin', 'opo_auditor', 'edot_coord'):
         return jsonify(erro='Sem permissão'), 403
 
     usuario = Usuario.query.get_or_404(usuario_id)
+
+    if perfil == 'opo_auditor':
+        edot = EDOT.query.get(usuario.edot_id)
+        if not edot or edot.opo_id != claims.get('opo_id'):
+            return jsonify(erro='Usuário não pertence a uma EDOT da sua OPO'), 403
+
     usuario.ativo = False
     db.session.commit()
     return jsonify(mensagem='Usuário desativado'), 200

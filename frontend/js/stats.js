@@ -10,7 +10,7 @@ const perfil  = usuario?.perfil || '';
 document.getElementById('sidebar-nome').textContent  = usuario?.nome  || '—';
 document.getElementById('sidebar-perfil').textContent = labelPerfil(perfil);
 
-if (perfil === 'cet_admin') {
+if (['cet_admin','opo_auditor'].includes(perfil)) {
   document.getElementById('nav-admin').style.display = '';
 }
 

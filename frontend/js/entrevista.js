@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const navStats = document.getElementById('nav-stats');
   const navAdmin = document.getElementById('nav-admin');
   if (navStats && ['cet_admin','opo_auditor'].includes(perfil)) navStats.style.display = '';
-  if (navAdmin && perfil === 'cet_admin') navAdmin.style.display = '';
+  if (navAdmin && ['cet_admin','opo_auditor'].includes(perfil)) navAdmin.style.display = '';
 
   // botão novo
   const btnNovo = document.getElementById('btn-nova-entrevista');

@@ -14,7 +14,7 @@ document.getElementById('sidebar-perfil').textContent = labelPerfil(perfil);
 if (['cet_admin','opo_auditor'].includes(perfil)) {
   document.getElementById('nav-stats').style.display = '';
 }
-if (perfil === 'cet_admin') {
+if (['cet_admin','opo_auditor'].includes(perfil)) {
   document.getElementById('nav-admin').style.display = '';
 }
 

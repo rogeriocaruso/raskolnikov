@@ -10,15 +10,17 @@ const perfil  = usuario?.perfil || '';
 document.getElementById('sidebar-nome').textContent  = usuario?.nome  || '—';
 document.getElementById('sidebar-perfil').textContent = labelPerfil(perfil);
 
-// Somente cet_admin e edot_coord têm acesso
-if (!['cet_admin','edot_coord'].includes(perfil)) {
+// cet_admin, opo_auditor e edot_coord têm acesso
+if (!['cet_admin','opo_auditor','edot_coord'].includes(perfil)) {
   window.location.href = '/dashboard';
 }
 
-// cet_admin pode criar EDOTs; edot_coord só vê usuários de sua EDOT
-const ehAdmin = perfil === 'cet_admin';
+const ehAdmin   = perfil === 'cet_admin';
+const ehOpo     = perfil === 'opo_auditor';
+
+// Apenas cet_admin gerencia EDOTs
 if (!ehAdmin) {
-  document.getElementById('aba-edots').style.display   = 'none';
+  document.getElementById('aba-edots').style.display    = 'none';
   document.getElementById('toolbar-edots').style.display = 'none';
 }
 
@@ -116,25 +118,48 @@ async function abrirModalUsuario(u) {
   grupoSenha.style.display = '';
   inputSenha.required = !u;
 
-  // Perfil: edot_coord só cria membros
+  // Perfil: cet_admin vê todos; opo_auditor só coord/membro; edot_coord só membro/coord
   const grupoPerfil = document.getElementById('grupo-perfil');
-  if (!ehAdmin) {
+  if (ehAdmin) {
+    grupoPerfil.style.display = '';
+    // restaurar todas as opções
+    const sel = document.getElementById('u-perfil');
+    sel.innerHTML = `
+      <option value="">Selecione...</option>
+      <option value="cet_admin">CET Admin</option>
+      <option value="opo_auditor">OPO Auditor</option>
+      <option value="edot_coord">Coordenador EDOT</option>
+      <option value="edot_membro">Membro EDOT</option>`;
+    if (u?.perfil) sel.value = u.perfil;
+  } else if (ehOpo) {
+    grupoPerfil.style.display = '';
+    const sel = document.getElementById('u-perfil');
+    sel.innerHTML = `
+      <option value="">Selecione...</option>
+      <option value="edot_coord">Coordenador EDOT</option>
+      <option value="edot_membro">Membro EDOT</option>`;
+    if (u?.perfil) sel.value = u.perfil;
+  } else {
     grupoPerfil.style.display = 'none';
     document.getElementById('u-perfil').value = 'edot_membro';
-  } else {
-    grupoPerfil.style.display = '';
   }
 
-  // Desativar botão
+  // Desativar botão: cet_admin ou opo_auditor podem desativar
   const btnDes = document.getElementById('btn-desativar-usuario');
-  btnDes.style.display = u && u.ativo && ehAdmin ? '' : 'none';
+  btnDes.style.display = u && u.ativo && (ehAdmin || ehOpo) ? '' : 'none';
   btnDes.onclick = () => desativarUsuario(u.id);
 
   // Selects de EDOT e OPO
   await garantirEdots();
   await garantirOpos();
-  preencherSelectEdot(document.getElementById('u-edot'), u?.edot_id);
+  // opo_auditor só vê EDOTs da sua OPO
+  const edotsVisiveis = ehOpo
+    ? _edots.filter(e => e.opo_id === usuario?.opo_id)
+    : _edots;
+  preencherSelectEdot(document.getElementById('u-edot'), u?.edot_id, edotsVisiveis);
   preencherSelectOpo(document.getElementById('u-opo'), u?.opo_id);
+  // opo_auditor não pode mudar EDOT de OPO diferente — ocultar select OPO
+  document.getElementById('grupo-opo') && (document.getElementById('grupo-opo').style.display = ehOpo ? 'none' : '');
 
   // Quando EDOT muda, preenche OPO automaticamente
   const selEdot = document.getElementById('u-edot');
@@ -336,10 +361,10 @@ document.getElementById('form-setor').addEventListener('submit', async e => {
 });
 
 // ── Helpers de select ───────────────────────────────────────────────────────
-function preencherSelectEdot(sel, valorAtual) {
-  // Manter primeira opção
+function preencherSelectEdot(sel, valorAtual, lista) {
+  const edots = lista || _edots;
   while (sel.options.length > 1) sel.remove(1);
-  _edots.forEach(e => {
+  edots.forEach(e => {
     const opt = document.createElement('option');
     opt.value = e.id;
     opt.textContent = `${e.sigla} — ${e.hospital_nome || e.nome}`;
