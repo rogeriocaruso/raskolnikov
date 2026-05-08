@@ -2,9 +2,9 @@ from datetime import datetime, timedelta
 
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt
-from sqlalchemy import func
+from sqlalchemy import func, distinct
 
-from models import db, Paciente, Ronda, EDOT, OPO, Usuario
+from models import db, Paciente, PacienteHistorico, Ronda, EDOT, EntrevistaFamiliar
 
 stats_bp = Blueprint('stats', __name__)
 
@@ -22,21 +22,64 @@ def _edot_ids_for_claims(claims):
     return [claims.get('edot_id')]
 
 
+def _contar_status_historico(edot_ids, status):
+    """Conta pacientes distintos que já atingiram este status (via histórico)."""
+    return (
+        db.session.query(func.count(distinct(PacienteHistorico.paciente_id)))
+        .join(Paciente, Paciente.id == PacienteHistorico.paciente_id)
+        .filter(
+            Paciente.edot_id.in_(edot_ids),
+            PacienteHistorico.campo_alterado == 'status',
+            PacienteHistorico.valor_novo == status,
+        )
+        .scalar() or 0
+    )
+
+
+def _taxa(num, den):
+    return round(num / den * 100, 1) if den > 0 else None
+
+
 @stats_bp.route('/', methods=['GET'])
 @jwt_required()
 def dashboard_stats():
-    """Estatísticas do dashboard filtradas por escopo do usuário."""
+    """Estatísticas do dashboard escaladas por perfil do usuário."""
     claims = _get_claims()
     edot_ids = _edot_ids_for_claims(claims)
 
-    # Período: últimos 30 dias por padrão
     dias = request.args.get('dias', 30, type=int)
     desde = datetime.utcnow() - timedelta(days=dias)
 
-    total_pacientes = (
-        Paciente.query
-        .filter(Paciente.edot_id.in_(edot_ids), Paciente.arquivado == False)
+    # ── Indicadores clínicos — acumulado (sem filtro de período) ──────────────
+    possiveis_doadores = Paciente.query.filter(
+        Paciente.edot_id.in_(edot_ids)
+    ).count()
+
+    notificacoes_me = _contar_status_historico(edot_ids, 'protocolo_me')
+    me_com_doacao   = _contar_status_historico(edot_ids, 'me_com_doacao')
+    total_pcr       = _contar_status_historico(edot_ids, 'pcr_antes_doacao')
+    total_cim       = _contar_status_historico(edot_ids, 'me_cim')
+    total_naf       = _contar_status_historico(edot_ids, 'me_naf')
+
+    # ── Tecidos / BTOH — acumulado ─────────────────────────────────────────────
+    total_entrevistas = EntrevistaFamiliar.query.filter(
+        EntrevistaFamiliar.edot_id.in_(edot_ids),
+    ).count()
+    autorizacoes_btoh = EntrevistaFamiliar.query.filter(
+        EntrevistaFamiliar.edot_id.in_(edot_ids),
+        EntrevistaFamiliar.resultado == 'autorizacao',
+    ).count()
+
+    # ── Métricas operacionais — filtradas pelo período selecionado ─────────────
+    rondas_periodo = (
+        Ronda.query
+        .filter(Ronda.edot_id.in_(edot_ids), Ronda.data_inicio >= desde)
         .count()
+    )
+    total_leitos = (
+        db.session.query(func.sum(Ronda.leitos_visitados))
+        .filter(Ronda.edot_id.in_(edot_ids), Ronda.data_inicio >= desde)
+        .scalar() or 0
     )
 
     por_status = (
@@ -46,51 +89,27 @@ def dashboard_stats():
         .all()
     )
 
-    rondas_periodo = (
-        Ronda.query
-        .filter(Ronda.edot_id.in_(edot_ids), Ronda.data_inicio >= desde)
-        .count()
-    )
-
-    potenciais_periodo = (
-        db.session.query(func.sum(Ronda.potenciais_encontrados))
-        .filter(Ronda.edot_id.in_(edot_ids), Ronda.data_inicio >= desde)
-        .scalar() or 0
-    )
-
-    novos_pacientes_periodo = (
-        Paciente.query
-        .filter(
-            Paciente.edot_id.in_(edot_ids),
-            Paciente.created_at >= desde,
-        )
-        .count()
-    )
-
-    doadores_confirmados = (
-        Paciente.query
-        .filter(
-            Paciente.edot_id.in_(edot_ids),
-            Paciente.status == 'me_com_doacao',
-        )
-        .count()
-    )
-
-    total_leitos = (
-        db.session.query(func.sum(Ronda.leitos_visitados))
-        .filter(Ronda.edot_id.in_(edot_ids), Ronda.data_inicio >= desde)
-        .scalar() or 0
-    )
-
     return jsonify(
         periodo_dias=dias,
-        total_pacientes_ativos=total_pacientes,
-        pacientes_por_status={s: c for s, c in por_status},
+        # Clínicos — captação de órgãos
+        possiveis_doadores=possiveis_doadores,
+        notificacoes_me=notificacoes_me,
+        me_com_doacao=me_com_doacao,
+        total_pcr=total_pcr,
+        total_cim=total_cim,
+        total_naf=total_naf,
+        taxa_efetivacao=_taxa(me_com_doacao, notificacoes_me),
+        taxa_pcr=_taxa(total_pcr, notificacoes_me),
+        taxa_cim=_taxa(total_cim, notificacoes_me),
+        taxa_naf=_taxa(total_naf, notificacoes_me),
+        # Tecidos
+        total_entrevistas=total_entrevistas,
+        autorizacoes_btoh=autorizacoes_btoh,
+        taxa_btoh=_taxa(autorizacoes_btoh, total_entrevistas),
+        # Operacional
         rondas_no_periodo=rondas_periodo,
         total_leitos_visitados=int(total_leitos),
-        potenciais_encontrados_periodo=int(potenciais_periodo),
-        novos_pacientes_periodo=novos_pacientes_periodo,
-        doadores_confirmados=doadores_confirmados,
+        pacientes_por_status={s: c for s, c in por_status},
     ), 200
 
 
@@ -110,10 +129,10 @@ def stats_por_edot():
         edot = EDOT.query.get(edot_id)
         if not edot:
             continue
-        ativos = Paciente.query.filter_by(edot_id=edot_id, arquivado=False).count()
-        doadores = Paciente.query.filter_by(edot_id=edot_id, status='me_com_doacao').count()
-        rondas = Ronda.query.filter_by(edot_id=edot_id).count()
-        leitos = (
+        ativos   = Paciente.query.filter_by(edot_id=edot_id, arquivado=False).count()
+        doadores = _contar_status_historico([edot_id], 'me_com_doacao')
+        rondas   = Ronda.query.filter_by(edot_id=edot_id).count()
+        leitos   = (
             db.session.query(func.sum(Ronda.leitos_visitados))
             .filter(Ronda.edot_id == edot_id)
             .scalar() or 0

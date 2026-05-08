@@ -234,11 +234,25 @@ a:hover { text-decoration: underline; }
 }
 
 /* ── Stats ────────────────────────────────────────────────────────────────── */
+.stats-secao { margin-bottom: 1.75rem; }
+.stats-secao-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: .7rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--texto-leve);
+  margin-bottom: .75rem;
+}
+.stats-secao-sub { font-weight: 400; text-transform: none; letter-spacing: 0; margin-left: .4rem; }
+
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   gap: 1rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0;
 }
 
 .stat-card {

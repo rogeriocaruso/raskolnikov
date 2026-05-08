@@ -59,24 +59,59 @@
   <main class="conteudo">
     <div class="page-header">
       <h1>Dashboard</h1>
-      <div id="filtro-dias" style="display:flex;gap:.5rem;align-items:center">
-        <label style="font-size:.875rem;color:var(--texto-leve)">Período:</label>
-        <select id="sel-dias" class="form-grupo" style="margin:0;width:auto">
-          <option value="7">7 dias</option>
-          <option value="30" selected>30 dias</option>
-          <option value="90">90 dias</option>
-        </select>
+    </div>
+
+    <!-- Captação de Órgãos -->
+    <div class="stats-secao">
+      <div class="stats-secao-header">Captação de Órgãos <span class="stats-secao-sub">acumulado</span></div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-valor" id="s-possiveis">—</div><div class="stat-label">Possíveis Doadores</div></div>
+        <div class="stat-card amarelo"><div class="stat-valor" id="s-notif-me">—</div><div class="stat-label">Notificações de ME</div></div>
+        <div class="stat-card verde"><div class="stat-valor" id="s-me-doacao">—</div><div class="stat-label">ME com Doação</div></div>
+        <div class="stat-card verde"><div class="stat-valor" id="s-taxa-efetiv">—</div><div class="stat-label">Taxa de Efetivação</div></div>
       </div>
     </div>
 
-    <!-- Stats cards -->
-    <div class="stats-grid" id="stats-grid">
-      <div class="stat-card"><div class="stat-valor" id="s-sedacao">—</div><div class="stat-label">Em Sedação</div></div>
-      <div class="stat-card amarelo"><div class="stat-valor" id="s-protocolo">—</div><div class="stat-label">Protocolo M.E.</div></div>
-      <div class="stat-card"><div class="stat-valor" id="s-me-confirmado">—</div><div class="stat-label">M.E. Confirmado</div></div>
-      <div class="stat-card verde"><div class="stat-valor" id="s-com-doacao">—</div><div class="stat-label">M.E. Com Doação</div></div>
-      <div class="stat-card"><div class="stat-valor" id="s-rondas">—</div><div class="stat-label">Rondas Realizadas</div></div>
-      <div class="stat-card"><div class="stat-valor" id="s-leitos">—</div><div class="stat-label">Leitos Visitados</div></div>
+    <!-- Desfechos sem Doação -->
+    <div class="stats-secao">
+      <div class="stats-secao-header">Desfechos sem Doação <span class="stats-secao-sub">acumulado · % sobre Notificações de ME</span></div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-valor" id="s-pcr">—</div><div class="stat-label">PCR antes da Doação</div></div>
+        <div class="stat-card"><div class="stat-valor" id="s-taxa-pcr">—</div><div class="stat-label">Taxa de PCR</div></div>
+        <div class="stat-card vermelho"><div class="stat-valor" id="s-naf">—</div><div class="stat-label">NAF</div></div>
+        <div class="stat-card"><div class="stat-valor" id="s-taxa-naf">—</div><div class="stat-label">Taxa de NAF</div></div>
+        <div class="stat-card"><div class="stat-valor" id="s-cim">—</div><div class="stat-label">CIM</div></div>
+        <div class="stat-card"><div class="stat-valor" id="s-taxa-cim">—</div><div class="stat-label">Taxa de CIM</div></div>
+      </div>
+    </div>
+
+    <!-- Tecidos — BTOH -->
+    <div class="stats-secao">
+      <div class="stats-secao-header">Tecidos — Notificação ao BTOH <span class="stats-secao-sub">acumulado</span></div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-valor" id="s-entrev-total">—</div><div class="stat-label">Entrevistas Familiares</div></div>
+        <div class="stat-card verde"><div class="stat-valor" id="s-entrev-autor">—</div><div class="stat-label">Autorizações</div></div>
+        <div class="stat-card verde"><div class="stat-valor" id="s-taxa-btoh">—</div><div class="stat-label">Taxa de Notificação ao BTOH</div></div>
+      </div>
+    </div>
+
+    <!-- Operacional -->
+    <div class="stats-secao">
+      <div class="stats-secao-header">
+        <span>Operacional</span>
+        <div style="display:flex;gap:.4rem;align-items:center;font-weight:400;text-transform:none;letter-spacing:0">
+          <label for="sel-dias" style="font-size:.8rem;color:var(--texto-leve)">Período:</label>
+          <select id="sel-dias" style="font-size:.8rem;padding:.2rem .5rem;border:1px solid var(--cinza-borda);border-radius:4px;background:#fff">
+            <option value="7">7 dias</option>
+            <option value="30" selected>30 dias</option>
+            <option value="90">90 dias</option>
+          </select>
+        </div>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-valor" id="s-rondas">—</div><div class="stat-label">Rondas Realizadas</div></div>
+        <div class="stat-card"><div class="stat-valor" id="s-leitos">—</div><div class="stat-label">Leitos Visitados</div></div>
+      </div>
     </div>
 
     <!-- Pacientes ativos -->
@@ -131,10 +166,6 @@
       <div id="sem-rondas" style="display:none;color:var(--texto-leve);font-size:.9rem;padding:.5rem 0">
         Nenhuma ronda recente.
       </div>
-    </div>
-    <!-- Resumo entrevistas familiares -->
-    <div class="card" id="resumo-entrevistas" style="min-height:80px">
-      <div style="color:var(--texto-leve);font-size:.9rem">Carregando entrevistas...</div>
     </div>
   </main>
 

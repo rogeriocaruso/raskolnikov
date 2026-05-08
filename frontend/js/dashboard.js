@@ -1,5 +1,5 @@
 /**
- * dashboard.js — Página principal com estatísticas e listagens rápidas
+ * dashboard.js — Página principal com indicadores escalados por perfil
  */
 
 exigirLogin();
@@ -10,7 +10,6 @@ const perfil  = usuario?.perfil || '';
 document.getElementById('sidebar-nome').textContent  = usuario?.nome  || '—';
 document.getElementById('sidebar-perfil').textContent = labelPerfil(perfil);
 
-// Mostrar links conforme perfil
 if (['cet_admin','opo_auditor'].includes(perfil)) {
   document.getElementById('nav-stats').style.display = '';
 }
@@ -23,17 +22,43 @@ function labelPerfil(p) {
   return m[p] || p;
 }
 
-// ── Carregar stats ──────────────────────────────────────────────────────────
+// ── Helpers de formatação ───────────────────────────────────────────────────
+function fmtTaxa(val) {
+  return val != null ? val + '%' : '—';
+}
+
+function set(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = val ?? '—';
+}
+
+// ── Indicadores ─────────────────────────────────────────────────────────────
 async function carregarStats(dias) {
   try {
     const d = await Api.dashboardStats(dias);
-    const por = d.pacientes_por_status || {};
-    document.getElementById('s-sedacao').textContent     = (por.sedacao_continua ?? 0) + (por.sedacao_pausada ?? 0);
-    document.getElementById('s-protocolo').textContent   = por.protocolo_me        ?? 0;
-    document.getElementById('s-me-confirmado').textContent = por.me_confirmado     ?? 0;
-    document.getElementById('s-com-doacao').textContent  = por.me_com_doacao       ?? 0;
-    document.getElementById('s-rondas').textContent      = d.rondas_no_periodo     ?? 0;
-    document.getElementById('s-leitos').textContent      = d.total_leitos_visitados ?? 0;
+
+    // Captação de Órgãos
+    set('s-possiveis',    d.possiveis_doadores);
+    set('s-notif-me',     d.notificacoes_me);
+    set('s-me-doacao',    d.me_com_doacao);
+    set('s-taxa-efetiv',  fmtTaxa(d.taxa_efetivacao));
+
+    // Desfechos sem Doação
+    set('s-pcr',       d.total_pcr);
+    set('s-taxa-pcr',  fmtTaxa(d.taxa_pcr));
+    set('s-naf',       d.total_naf);
+    set('s-taxa-naf',  fmtTaxa(d.taxa_naf));
+    set('s-cim',       d.total_cim);
+    set('s-taxa-cim',  fmtTaxa(d.taxa_cim));
+
+    // Tecidos — BTOH
+    set('s-entrev-total',  d.total_entrevistas);
+    set('s-entrev-autor',  d.autorizacoes_btoh);
+    set('s-taxa-btoh',     fmtTaxa(d.taxa_btoh));
+
+    // Operacional (período)
+    set('s-rondas',  d.rondas_no_periodo);
+    set('s-leitos',  d.total_leitos_visitados);
   } catch(e) {
     console.error('Erro ao carregar stats', e);
   }
@@ -117,44 +142,16 @@ function labelTurno(t) {
   return { manha:'Manhã', tarde:'Tarde', noite:'Noite', plantao:'Plantão' }[t] || t;
 }
 
-// dataFmt e dataHoraFmt definidas globalmente em api.js (fuso América/São_Paulo)
-
 function esc(str) {
   if (!str) return '—';
   return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
-// ── Carregar entrevistas (resumo) ───────────────────────────────────────────
-async function carregarStatsEntrevistas(dias) {
-  try {
-    const d = await Api.request(`/entrevistas/stats?dias=${dias}`);
-    const el = document.getElementById('resumo-entrevistas');
-    if (!el) return;
-    el.innerHTML = `
-      <div class="card-titulo">
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
-        Entrevistas Familiares — Tecidos <span style="font-size:.75rem;font-weight:400;color:var(--texto-leve)">(${dias} dias)</span>
-      </div>
-      <div style="display:flex;gap:2rem;flex-wrap:wrap;margin-top:.5rem">
-        <div><span style="font-size:1.6rem;font-weight:700;color:var(--texto)">${d.total}</span><br><span style="font-size:.8rem;color:var(--texto-leve)">Total</span></div>
-        <div><span style="font-size:1.6rem;font-weight:700;color:var(--verde)">${d.autorizacoes}</span><br><span style="font-size:.8rem;color:var(--texto-leve)">Autorizações</span></div>
-        <div><span style="font-size:1.6rem;font-weight:700;color:var(--perigo)">${d.nafs}</span><br><span style="font-size:.8rem;color:var(--texto-leve)">NAF</span></div>
-      </div>
-      <div style="margin-top:.75rem">
-        <a href="/entrevista" class="btn btn-secundario btn-sm">Ver registros →</a>
-      </div>`;
-  } catch (_) {}
-}
-
-// ── Filtro de período ───────────────────────────────────────────────────────
+// ── Filtro de período (afeta apenas métricas operacionais) ─────────────────
 const selDias = document.getElementById('sel-dias');
-selDias.addEventListener('change', () => {
-  carregarStats(+selDias.value);
-  carregarStatsEntrevistas(+selDias.value);
-});
+selDias.addEventListener('change', () => carregarStats(+selDias.value));
 
 // ── Init ────────────────────────────────────────────────────────────────────
 carregarStats(30);
 carregarPacientes();
 carregarRondas();
-carregarStatsEntrevistas(30);
