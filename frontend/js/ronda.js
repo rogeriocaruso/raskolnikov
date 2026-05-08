@@ -219,13 +219,17 @@ function botoesAtualizacaoStatus(p) {
       { status: 'arquivado', label: 'Arquivar Caso', cls: 'btn-secundario' },
     ],
     me_confirmado: [
-      { status: 'me_com_doacao', label: 'Com Doação',  cls: 'btn-sucesso' },
-      { status: 'me_sem_doacao', label: 'Sem Doação',  cls: 'btn-perigo'  },
+      { status: 'me_com_doacao',    label: 'Com Doação',             cls: 'btn-sucesso'   },
+      { status: 'me_sem_doacao',    label: 'Sem Doação',             cls: 'btn-perigo'    },
+      { status: 'pcr_antes_doacao', label: 'PCR antes da Doação',    cls: 'btn-aviso'     },
     ],
     me_com_doacao: [
       { status: 'arquivado', label: 'Arquivar Caso', cls: 'btn-secundario' },
     ],
     me_sem_doacao: [
+      { status: 'arquivado', label: 'Arquivar Caso', cls: 'btn-secundario' },
+    ],
+    pcr_antes_doacao: [
       { status: 'arquivado', label: 'Arquivar Caso', cls: 'btn-secundario' },
     ],
   };
@@ -576,6 +580,7 @@ function badgeStatus(s) {
     me_confirmado:       ['badge-me-confirmado',    'M.E. Confirmado'],
     me_com_doacao:       ['badge-me-com-doacao',    'M.E. Com Doação'],
     me_sem_doacao:       ['badge-me-sem-doacao',    'M.E. Sem Doação'],
+    pcr_antes_doacao:    ['badge-pcr-antes-doacao', 'PCR antes da Doação'],
     arquivado:           ['badge-arquivado',         'Arquivado'],
   };
   const [cls, txt] = m[s] || ['badge-arquivado', s];

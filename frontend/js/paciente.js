@@ -125,7 +125,7 @@ function preencherForm(p) {
   document.getElementById('p-causa').value      = p?.causa_morte || '';
   document.getElementById('p-obs').value        = p?.observacoes || '';
 
-  const STATUS_ARQUIVAVEIS = ['acompanhamento','me_sem_confirmacao','me_confirmado','me_com_doacao','me_sem_doacao'];
+  const STATUS_ARQUIVAVEIS = ['acompanhamento','me_sem_confirmacao','me_confirmado','me_com_doacao','me_sem_doacao','pcr_antes_doacao'];
   const btnArq = document.getElementById('btn-arquivar');
   if (p && STATUS_ARQUIVAVEIS.includes(p.status) && podeEscrever) {
     btnArq.style.display = '';
@@ -300,6 +300,7 @@ function badgeStatus(s) {
     me_confirmado:      ['badge-me-confirmado',    'M.E. Confirmado'],
     me_com_doacao:      ['badge-me-com-doacao',    'M.E. Com Doação'],
     me_sem_doacao:      ['badge-me-sem-doacao',    'M.E. Sem Doação'],
+    pcr_antes_doacao:   ['badge-pcr-antes-doacao', 'PCR antes da Doação'],
     arquivado:          ['badge-arquivado',         'Arquivado'],
   };
   const [cls, txt] = m[s] || ['badge-arquivado', s];
