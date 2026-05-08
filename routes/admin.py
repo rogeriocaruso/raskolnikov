@@ -166,20 +166,29 @@ def listar_edots():
 @jwt_required()
 def criar_edot():
     claims = _get_claims()
-    if not _require_admin(claims):
-        return jsonify(erro='Apenas cet_admin pode criar EDOTs'), 403
+    perfil = claims.get('perfil')
+    if perfil not in ('cet_admin', 'opo_auditor'):
+        return jsonify(erro='Sem permissão para criar EDOTs'), 403
 
     data = request.get_json(silent=True) or {}
-    required = ('nome', 'sigla', 'opo_id')
+    required = ('nome', 'sigla')
     missing = [f for f in required if not data.get(f)]
     if missing:
         return jsonify(erro=f'Campos obrigatórios: {", ".join(missing)}'), 400
+
+    # opo_auditor só pode criar EDOTs na sua própria OPO
+    if perfil == 'opo_auditor':
+        opo_id = claims.get('opo_id')
+    else:
+        opo_id = data.get('opo_id')
+        if not opo_id:
+            return jsonify(erro='opo_id obrigatório'), 400
 
     edot = EDOT(
         nome=data['nome'],
         sigla=data['sigla'].upper(),
         hospital_nome=data.get('hospital_nome') or data['nome'],
-        opo_id=data['opo_id'],
+        opo_id=opo_id,
     )
     db.session.add(edot)
     db.session.commit()
@@ -214,7 +223,8 @@ def listar_setores():
 @jwt_required()
 def criar_setor():
     claims = _get_claims()
-    if claims.get('perfil') not in ('cet_admin', 'edot_coord'):
+    perfil = claims.get('perfil')
+    if perfil not in ('cet_admin', 'opo_auditor', 'edot_coord'):
         return jsonify(erro='Sem permissão'), 403
 
     data = request.get_json(silent=True) or {}
@@ -222,6 +232,12 @@ def criar_setor():
     missing = [f for f in required if not data.get(f)]
     if missing:
         return jsonify(erro=f'Campos obrigatórios: {", ".join(missing)}'), 400
+
+    # opo_auditor só pode criar setores em EDOTs da sua OPO
+    if perfil == 'opo_auditor':
+        edot = EDOT.query.get(data['edot_id'])
+        if not edot or edot.opo_id != claims.get('opo_id'):
+            return jsonify(erro='EDOT não pertence à sua OPO'), 403
 
     setor = Setor(
         nome=data['nome'],

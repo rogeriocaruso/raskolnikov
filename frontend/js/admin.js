@@ -18,10 +18,11 @@ if (!['cet_admin','opo_auditor','edot_coord'].includes(perfil)) {
 const ehAdmin   = perfil === 'cet_admin';
 const ehOpo     = perfil === 'opo_auditor';
 
-// Apenas cet_admin gerencia EDOTs
-if (!ehAdmin) {
+// edot_coord não acessa abas de EDOT nem setores de outros hospitais
+if (!ehAdmin && !ehOpo) {
   document.getElementById('aba-edots').style.display    = 'none';
   document.getElementById('toolbar-edots').style.display = 'none';
+  document.getElementById('aba-setores') && (document.getElementById('aba-setores').style.display = 'none');
 }
 
 function labelPerfil(p) {
@@ -253,7 +254,18 @@ document.getElementById('btn-novo-edot').addEventListener('click', async () => {
   document.getElementById('alerta-edot').className = 'alerta';
   document.getElementById('form-edot').reset();
   await garantirOpos();
-  preencherSelectOpo(document.getElementById('edot-opo'));
+  const selOpo = document.getElementById('edot-opo');
+  const grupoOpoEdot = document.getElementById('grupo-opo-edot');
+  if (ehOpo) {
+    // pré-seleciona e bloqueia a OPO do auditor
+    selOpo.innerHTML = `<option value="${usuario.opo_id}">${_opos.find(o => o.id === usuario.opo_id)?.nome || 'Minha OPO'}</option>`;
+    selOpo.disabled = true;
+    if (grupoOpoEdot) grupoOpoEdot.style.display = 'none';
+  } else {
+    selOpo.disabled = false;
+    if (grupoOpoEdot) grupoOpoEdot.style.display = '';
+    preencherSelectOpo(selOpo);
+  }
   document.getElementById('modal-edot').style.display = 'flex';
 });
 
