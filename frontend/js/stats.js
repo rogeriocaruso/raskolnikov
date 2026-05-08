@@ -37,7 +37,7 @@ async function carregarStats(dias) {
     document.getElementById('s-leitos').textContent      = d.total_leitos_visitados  ?? 0;
 
     // Taxa de conversão: M.E. Com Doação / total de M.E. confirmados (com ou sem doação)
-    const totalMe = (por.me_confirmado ?? 0) + (por.me_com_doacao ?? 0) + (por.me_sem_doacao ?? 0);
+    const totalMe = (por.me_confirmado ?? 0) + (por.me_com_doacao ?? 0) + (por.me_cim ?? 0) + (por.me_naf ?? 0);
     const conv = totalMe > 0
       ? (((por.me_com_doacao ?? 0) / totalMe) * 100).toFixed(1) + '%'
       : '—';
@@ -52,7 +52,8 @@ async function carregarStats(dias) {
       { key: 'me_sem_confirmacao', label: 'M.E. Sem Confirmação',       cor: '#5d6d7e' },
       { key: 'me_confirmado',      label: 'M.E. Confirmado',            cor: '#9a5c00' },
       { key: 'me_com_doacao',      label: 'M.E. Com Doação',            cor: '#1a6b3c' },
-      { key: 'me_sem_doacao',      label: 'M.E. Sem Doação',            cor: '#c0392b' },
+      { key: 'me_cim',             label: 'M.E. — C.I.M.',              cor: '#3949ab' },
+      { key: 'me_naf',             label: 'M.E. — N.A.F.',              cor: '#c0392b' },
     ];
     const maxVal = Math.max(1, ...statusList.map(s => por[s.key] ?? 0));
     const barras = document.getElementById('status-bars');

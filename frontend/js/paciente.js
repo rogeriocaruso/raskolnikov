@@ -125,7 +125,7 @@ function preencherForm(p) {
   document.getElementById('p-causa').value      = p?.causa_morte || '';
   document.getElementById('p-obs').value        = p?.observacoes || '';
 
-  const STATUS_ARQUIVAVEIS = ['acompanhamento','me_sem_confirmacao','me_confirmado','me_com_doacao','me_sem_doacao','pcr_antes_doacao'];
+  const STATUS_ARQUIVAVEIS = ['acompanhamento','me_sem_confirmacao','me_confirmado','me_com_doacao','me_cim','me_naf','pcr_antes_doacao'];
   const btnArq = document.getElementById('btn-arquivar');
   if (p && STATUS_ARQUIVAVEIS.includes(p.status) && podeEscrever) {
     btnArq.style.display = '';
@@ -299,7 +299,8 @@ function badgeStatus(s) {
     me_sem_confirmacao: ['badge-me-sem-conf',      'M.E. Sem Confirmação'],
     me_confirmado:      ['badge-me-confirmado',    'M.E. Confirmado'],
     me_com_doacao:      ['badge-me-com-doacao',    'M.E. Com Doação'],
-    me_sem_doacao:      ['badge-me-sem-doacao',    'M.E. Sem Doação'],
+    me_cim:             ['badge-me-cim',           'M.E. — C.I.M.'],
+    me_naf:             ['badge-me-naf',           'M.E. — N.A.F.'],
     pcr_antes_doacao:   ['badge-pcr-antes-doacao', 'PCR antes da Doação'],
     arquivado:          ['badge-arquivado',         'Arquivado'],
   };

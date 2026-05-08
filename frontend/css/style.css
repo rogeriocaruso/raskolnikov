@@ -302,7 +302,8 @@ tbody tr:hover { background: #f8fafc; }
 .badge-me-sem-conf      { background: #f2f3f4; color: #5d6d7e; }
 .badge-me-confirmado    { background: #fef5e7; color: #9a5c00; }
 .badge-me-com-doacao    { background: #e8f8f0; color: #1a6b3c; }
-.badge-me-sem-doacao    { background: #fdecea; color: #c0392b; }
+.badge-me-cim           { background: #e8eaf6; color: #3949ab; }
+.badge-me-naf           { background: #fdecea; color: #c0392b; }
 .badge-pcr-antes-doacao { background: #f5eaf5; color: #6c2a6c; }
 .badge-arquivado        { background: #f2f3f4; color: #7f8c8d; }
 

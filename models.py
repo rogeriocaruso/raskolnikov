@@ -13,7 +13,8 @@ STATUS_PACIENTE = (
     'me_sem_confirmacao',
     'me_confirmado',
     'me_com_doacao',
-    'me_sem_doacao',
+    'me_cim',
+    'me_naf',
     'pcr_antes_doacao',
     'arquivado',
 )
@@ -22,7 +23,8 @@ STATUS_ARQUIVAVEIS = {
     'me_sem_confirmacao',
     'me_confirmado',
     'me_com_doacao',
-    'me_sem_doacao',
+    'me_cim',
+    'me_naf',
     'pcr_antes_doacao',
 }
 TURNOS = ('manha', 'tarde', 'noite', 'plantao')
