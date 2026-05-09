@@ -48,6 +48,18 @@ const Api = {
   post(caminho, corpo)  { return this.req('POST',   caminho, corpo); },
   put(caminho, corpo)   { return this.req('PUT',    caminho, corpo); },
 
+  // fetch-style wrapper usado por módulos que passam body já serializado
+  async request(caminho, opcoes = {}) {
+    const headers = { 'Content-Type': 'application/json' };
+    const token = this.getToken();
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    const resp = await fetch(API_BASE + caminho, { method: 'GET', ...opcoes, headers });
+    if (resp.status === 401) { this.limparSessao(); window.location.href = '/'; return; }
+    const dados = await resp.json().catch(() => ({}));
+    if (!resp.ok) throw { status: resp.status, ...dados };
+    return dados;
+  },
+
   // ── Auth ───────────────────────────────────────────────────────────────────
   login(email, senha)   { return this.post('/auth/login', { email, senha }); },
 
@@ -135,6 +147,84 @@ document.addEventListener('DOMContentLoaded', () => {
     a.addEventListener('click', fecharMenu)
   );
 });
+
+// ── Modal: Alterar Senha ──────────────────────────────────────────────────
+function abrirModalSenha() {
+  let modal = document.getElementById('modal-alterar-senha');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'modal-alterar-senha';
+    modal.className = 'modal-overlay';
+    modal.innerHTML = `
+      <div class="modal-box" style="max-width:360px">
+        <div class="modal-header">
+          <h2 class="modal-titulo">Alterar Senha</h2>
+          <button class="modal-fechar" id="btn-fechar-senha">&times;</button>
+        </div>
+        <div id="alerta-senha" class="alerta"></div>
+        <form id="form-alterar-senha">
+          <div class="form-grupo">
+            <label>Senha atual *</label>
+            <input type="password" id="as-atual" required autocomplete="current-password">
+          </div>
+          <div class="form-grupo">
+            <label>Nova senha *</label>
+            <input type="password" id="as-nova" required placeholder="Mínimo 6 caracteres" autocomplete="new-password">
+          </div>
+          <div class="form-grupo">
+            <label>Confirmar nova senha *</label>
+            <input type="password" id="as-confirma" required autocomplete="new-password">
+          </div>
+          <div style="display:flex;gap:.75rem;justify-content:flex-end">
+            <button type="button" class="btn btn-secundario" id="btn-cancelar-senha">Cancelar</button>
+            <button type="submit" class="btn btn-sucesso" id="btn-as-salvar">Salvar</button>
+          </div>
+        </form>
+      </div>`;
+    document.body.appendChild(modal);
+
+    const fechar = () => { modal.style.display = 'none'; };
+    modal.getElementById = (id) => modal.querySelector('#' + id);
+    document.getElementById('btn-fechar-senha').addEventListener('click', fechar);
+    document.getElementById('btn-cancelar-senha').addEventListener('click', fechar);
+    modal.addEventListener('click', e => { if (e.target === modal) fechar(); });
+
+    document.getElementById('form-alterar-senha').addEventListener('submit', async ev => {
+      ev.preventDefault();
+      const alerta = document.getElementById('alerta-senha');
+      const nova    = document.getElementById('as-nova').value;
+      const confirma = document.getElementById('as-confirma').value;
+      const btn     = document.getElementById('btn-as-salvar');
+      alerta.className = 'alerta';
+      alerta.textContent = '';
+      if (nova !== confirma) {
+        alerta.className = 'alerta alerta-erro';
+        alerta.textContent = 'As senhas não coincidem.';
+        return;
+      }
+      btn.disabled = true;
+      try {
+        await Api.post('/auth/alterar-senha', {
+          senha_atual: document.getElementById('as-atual').value,
+          nova_senha: nova,
+        });
+        alerta.className = 'alerta alerta-sucesso';
+        alerta.textContent = 'Senha alterada com sucesso!';
+        document.getElementById('form-alterar-senha').reset();
+        setTimeout(fechar, 1500);
+      } catch (err) {
+        alerta.className = 'alerta alerta-erro';
+        alerta.textContent = err.erro || err.message || 'Erro ao alterar senha.';
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  }
+  document.getElementById('alerta-senha').className = 'alerta';
+  document.getElementById('alerta-senha').textContent = '';
+  document.getElementById('form-alterar-senha').reset();
+  modal.style.display = 'flex';
+}
 
 // ── Geolocalização ────────────────────────────────────────────────────────
 /**
