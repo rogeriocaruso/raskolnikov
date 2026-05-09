@@ -16,7 +16,7 @@ def _check_edot_access(claims, edot_id):
     perfil = claims.get('perfil')
     if perfil == 'cet_admin':
         return True
-    if perfil == 'opo_auditor':
+    if perfil == 'opo':
         edot = EDOT.query.get(edot_id)
         return edot is not None and edot.opo_id == claims.get('opo_id')
     return claims.get('edot_id') == edot_id
@@ -33,7 +33,7 @@ def listar_rondas():
 
     if perfil in ('edot_membro', 'edot_coord'):
         query = query.filter_by(edot_id=claims.get('edot_id'))
-    elif perfil == 'opo_auditor':
+    elif perfil == 'opo':
         edot_ids = [e.id for e in EDOT.query.filter_by(opo_id=claims.get('opo_id')).all()]
         query = query.filter(Ronda.edot_id.in_(edot_ids))
 

@@ -4,7 +4,7 @@ from datetime import datetime
 
 db = SQLAlchemy()
 
-PERFIS = ('cet_admin', 'opo_auditor', 'edot_coord', 'edot_membro')
+PERFIS = ('cet_admin', 'opo', 'edot_coord', 'edot_membro')
 STATUS_PACIENTE = (
     'sedacao_continua',
     'sedacao_pausada',

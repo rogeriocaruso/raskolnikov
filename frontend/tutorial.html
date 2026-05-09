@@ -175,7 +175,7 @@
       <ul>
         <li><strong>Coordenador EDOT</strong> — acesso completo: rondas, pacientes, edição e arquivamento</li>
         <li><strong>Membro EDOT</strong> — mesmo acesso que o coordenador para rondas e pacientes do seu hospital</li>
-        <li><strong>OPO Auditor</strong> — somente leitura nos hospitais da sua OPO</li>
+        <li><strong>OPO</strong> — somente leitura nos hospitais da sua OPO</li>
         <li><strong>CET Admin</strong> — auditoria geral e gestão administrativa do sistema</li>
       </ul>
     </div>
@@ -448,8 +448,8 @@
     const p = u?.perfil || '';
     document.getElementById('sidebar-nome').textContent   = u?.nome  || '—';
     document.getElementById('sidebar-perfil').textContent =
-      ({cet_admin:'CET Admin',opo_auditor:'OPO Auditor',edot_coord:'Coordenador EDOT',edot_membro:'Membro EDOT'})[p] || p;
-    if (['cet_admin','opo_auditor'].includes(p)) document.getElementById('nav-stats').style.display = '';
+      ({cet_admin:'CET Admin',opo:'OPO',edot_coord:'Coordenador EDOT',edot_membro:'Membro EDOT'})[p] || p;
+    if (['cet_admin','opo'].includes(p)) document.getElementById('nav-stats').style.display = '';
     if (p === 'cet_admin') document.getElementById('nav-admin').style.display = '';
   </script>
 </body>

@@ -10,15 +10,15 @@ const perfil  = usuario?.perfil || '';
 document.getElementById('sidebar-nome').textContent  = usuario?.nome  || '—';
 document.getElementById('sidebar-perfil').textContent = labelPerfil(perfil);
 
-if (['cet_admin','opo_auditor'].includes(perfil)) {
+if (['cet_admin','opo'].includes(perfil)) {
   document.getElementById('nav-stats').style.display = '';
 }
-if (['cet_admin','opo_auditor'].includes(perfil)) {
+if (['cet_admin','opo'].includes(perfil)) {
   document.getElementById('nav-admin').style.display = '';
 }
 
 function labelPerfil(p) {
-  const m = { cet_admin:'CET Admin', opo_auditor:'OPO Auditor', edot_coord:'Coordenador EDOT', edot_membro:'Membro EDOT' };
+  const m = { cet_admin:'CET Admin', opo:'OPO', edot_coord:'Coordenador EDOT', edot_membro:'Membro EDOT' };
   return m[p] || p;
 }
 

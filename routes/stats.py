@@ -17,7 +17,7 @@ def _edot_ids_for_claims(claims):
     perfil = claims.get('perfil')
     if perfil == 'cet_admin':
         return [e.id for e in EDOT.query.filter_by(ativo=True).all()]
-    if perfil == 'opo_auditor':
+    if perfil == 'opo':
         return [e.id for e in EDOT.query.filter_by(opo_id=claims.get('opo_id'), ativo=True).all()]
     return [claims.get('edot_id')]
 
@@ -116,10 +116,10 @@ def dashboard_stats():
 @stats_bp.route('/edots', methods=['GET'])
 @jwt_required()
 def stats_por_edot():
-    """Comparativo de estatísticas entre EDOTs (opo_auditor, cet_admin)."""
+    """Comparativo de estatísticas entre EDOTs (opo, cet_admin)."""
     claims = _get_claims()
     perfil = claims.get('perfil')
-    if perfil not in ('cet_admin', 'opo_auditor'):
+    if perfil not in ('cet_admin', 'opo'):
         return jsonify(erro='Sem permissão'), 403
 
     edot_ids = _edot_ids_for_claims(claims)

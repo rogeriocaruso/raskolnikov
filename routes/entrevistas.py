@@ -16,7 +16,7 @@ def _check_acesso(claims, edot_id):
     perfil = claims.get('perfil')
     if perfil == 'cet_admin':
         return True
-    if perfil == 'opo_auditor':
+    if perfil == 'opo':
         edot = EDOT.query.get(edot_id)
         return edot and edot.opo_id == claims.get('opo_id')
     return claims.get('edot_id') == edot_id
@@ -49,7 +49,7 @@ def listar():
 
     if perfil == 'edot_coord' or perfil == 'edot_membro':
         q = q.filter_by(edot_id=claims.get('edot_id'))
-    elif perfil == 'opo_auditor':
+    elif perfil == 'opo':
         edot_ids = [e.id for e in EDOT.query.filter_by(opo_id=claims.get('opo_id')).all()]
         q = q.filter(EntrevistaFamiliar.edot_id.in_(edot_ids))
 
@@ -192,7 +192,7 @@ def stats():
 
     if perfil in ('edot_coord', 'edot_membro'):
         q = q.filter_by(edot_id=claims.get('edot_id'))
-    elif perfil == 'opo_auditor':
+    elif perfil == 'opo':
         edot_ids = [e.id for e in EDOT.query.filter_by(opo_id=claims.get('opo_id')).all()]
         q = q.filter(EntrevistaFamiliar.edot_id.in_(edot_ids))
 

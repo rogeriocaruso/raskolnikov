@@ -15,7 +15,7 @@ def _require_admin(claims):
 
 
 def _require_coord_or_above(claims):
-    return claims.get('perfil') in ('cet_admin', 'edot_coord', 'opo_auditor')
+    return claims.get('perfil') in ('cet_admin', 'edot_coord', 'opo')
 
 
 # ── Usuários ──────────────────────────────────────────────────────────────────
@@ -29,7 +29,7 @@ def listar_usuarios():
     query = Usuario.query
     if perfil == 'edot_coord':
         query = query.filter_by(edot_id=claims.get('edot_id'))
-    elif perfil == 'opo_auditor':
+    elif perfil == 'opo':
         edot_ids = [e.id for e in EDOT.query.filter_by(opo_id=claims.get('opo_id')).all()]
         query = query.filter(Usuario.edot_id.in_(edot_ids))
     elif perfil not in ('cet_admin',):
@@ -44,7 +44,7 @@ def listar_usuarios():
 def criar_usuario():
     claims = _get_claims()
     perfil = claims.get('perfil')
-    if perfil not in ('cet_admin', 'opo_auditor', 'edot_coord'):
+    if perfil not in ('cet_admin', 'opo', 'edot_coord'):
         return jsonify(erro='Sem permissão'), 403
 
     data = request.get_json(silent=True) or {}
@@ -65,10 +65,10 @@ def criar_usuario():
             return jsonify(erro='Você só pode criar membros ou coordenadores'), 403
         data['edot_id'] = claims.get('edot_id')
 
-    # opo_auditor só pode criar edot_coord/edot_membro de EDOTs da sua OPO
-    if perfil == 'opo_auditor':
+    # opo só pode criar edot_coord/edot_membro de EDOTs da sua OPO
+    if perfil == 'opo':
         if data['perfil'] not in ('edot_membro', 'edot_coord'):
-            return jsonify(erro='OPO Auditor só pode criar coordenadores e membros de EDOT'), 403
+            return jsonify(erro='OPO só pode criar coordenadores e membros de EDOT'), 403
         edot = EDOT.query.get(data.get('edot_id'))
         if not edot or edot.opo_id != claims.get('opo_id'):
             return jsonify(erro='EDOT não pertence à sua OPO'), 403
@@ -91,13 +91,13 @@ def criar_usuario():
 def atualizar_usuario(usuario_id):
     claims = _get_claims()
     perfil = claims.get('perfil')
-    if perfil not in ('cet_admin', 'opo_auditor', 'edot_coord'):
+    if perfil not in ('cet_admin', 'opo', 'edot_coord'):
         return jsonify(erro='Sem permissão'), 403
 
     usuario = Usuario.query.get_or_404(usuario_id)
 
-    # opo_auditor só pode editar usuários de EDOTs da sua OPO
-    if perfil == 'opo_auditor':
+    # opo só pode editar usuários de EDOTs da sua OPO
+    if perfil == 'opo':
         edot = EDOT.query.get(usuario.edot_id)
         if not edot or edot.opo_id != claims.get('opo_id'):
             return jsonify(erro='Usuário não pertence a uma EDOT da sua OPO'), 403
@@ -128,12 +128,12 @@ def atualizar_usuario(usuario_id):
 def desativar_usuario(usuario_id):
     claims = _get_claims()
     perfil = claims.get('perfil')
-    if perfil not in ('cet_admin', 'opo_auditor', 'edot_coord'):
+    if perfil not in ('cet_admin', 'opo', 'edot_coord'):
         return jsonify(erro='Sem permissão'), 403
 
     usuario = Usuario.query.get_or_404(usuario_id)
 
-    if perfil == 'opo_auditor':
+    if perfil == 'opo':
         edot = EDOT.query.get(usuario.edot_id)
         if not edot or edot.opo_id != claims.get('opo_id'):
             return jsonify(erro='Usuário não pertence a uma EDOT da sua OPO'), 403
@@ -153,7 +153,7 @@ def listar_edots():
 
     if perfil == 'cet_admin':
         edots = EDOT.query.order_by(EDOT.nome).all()
-    elif perfil == 'opo_auditor':
+    elif perfil == 'opo':
         edots = EDOT.query.filter_by(opo_id=claims.get('opo_id')).order_by(EDOT.nome).all()
     else:
         edot = EDOT.query.get(claims.get('edot_id'))
@@ -167,7 +167,7 @@ def listar_edots():
 def criar_edot():
     claims = _get_claims()
     perfil = claims.get('perfil')
-    if perfil not in ('cet_admin', 'opo_auditor'):
+    if perfil not in ('cet_admin', 'opo'):
         return jsonify(erro='Sem permissão para criar EDOTs'), 403
 
     data = request.get_json(silent=True) or {}
@@ -176,8 +176,8 @@ def criar_edot():
     if missing:
         return jsonify(erro=f'Campos obrigatórios: {", ".join(missing)}'), 400
 
-    # opo_auditor só pode criar EDOTs na sua própria OPO
-    if perfil == 'opo_auditor':
+    # opo só pode criar EDOTs na sua própria OPO
+    if perfil == 'opo':
         opo_id = claims.get('opo_id')
     else:
         opo_id = data.get('opo_id')
@@ -201,7 +201,7 @@ def criar_edot():
 @jwt_required()
 def listar_opos():
     claims = _get_claims()
-    if claims.get('perfil') not in ('cet_admin', 'opo_auditor'):
+    if claims.get('perfil') not in ('cet_admin', 'opo'):
         return jsonify(erro='Sem permissão'), 403
 
     opos = OPO.query.order_by(OPO.nome).all()
@@ -224,7 +224,7 @@ def listar_setores():
 def criar_setor():
     claims = _get_claims()
     perfil = claims.get('perfil')
-    if perfil not in ('cet_admin', 'opo_auditor', 'edot_coord'):
+    if perfil not in ('cet_admin', 'opo', 'edot_coord'):
         return jsonify(erro='Sem permissão'), 403
 
     data = request.get_json(silent=True) or {}
@@ -233,8 +233,8 @@ def criar_setor():
     if missing:
         return jsonify(erro=f'Campos obrigatórios: {", ".join(missing)}'), 400
 
-    # opo_auditor só pode criar setores em EDOTs da sua OPO
-    if perfil == 'opo_auditor':
+    # opo só pode criar setores em EDOTs da sua OPO
+    if perfil == 'opo':
         edot = EDOT.query.get(data['edot_id'])
         if not edot or edot.opo_id != claims.get('opo_id'):
             return jsonify(erro='EDOT não pertence à sua OPO'), 403
