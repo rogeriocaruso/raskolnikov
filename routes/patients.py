@@ -4,7 +4,7 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 from sqlalchemy import or_
 
-from models import db, Paciente, PacienteHistorico, Setor, Usuario, EDOT, STATUS_PACIENTE
+from models import db, Paciente, PacienteHistorico, Setor, EDOT, STATUS_PACIENTE
 
 patients_bp = Blueprint('patients', __name__)
 
@@ -136,11 +136,17 @@ def criar_paciente():
     if status not in STATUS_PACIENTE:
         return jsonify(erro=f'Status inválido: {status}'), 400
 
+    setor_id = data.get('setor_id')
+    if setor_id is not None:
+        setor = Setor.query.get(setor_id)
+        if not setor or setor.edot_id != edot_id:
+            return jsonify(erro='Setor não pertence a esta EDOT'), 400
+
     paciente = Paciente(
         nome=data['nome'],
         prontuario=prontuario,
         edot_id=edot_id,
-        setor_id=data.get('setor_id'),
+        setor_id=setor_id,
         causa_morte=data.get('causa_morte'),
         status=status,
         data_nascimento=_parse_date(data.get('data_nascimento')),
@@ -188,8 +194,16 @@ def atualizar_paciente(paciente_id):
 
         valor_novo = data[campo]
 
-        if campo == 'status' and valor_novo not in STATUS_PACIENTE:
-            return jsonify(erro=f'Status inválido: {valor_novo}'), 400
+        if campo == 'status':
+            if valor_novo not in STATUS_PACIENTE:
+                return jsonify(erro=f'Status inválido: {valor_novo}'), 400
+            if valor_novo == 'arquivado':
+                return jsonify(erro='Use o endpoint /arquivar para arquivar um paciente'), 400
+
+        if campo == 'setor_id' and valor_novo is not None:
+            setor = Setor.query.get(valor_novo)
+            if not setor or setor.edot_id != paciente.edot_id:
+                return jsonify(erro='Setor não pertence à EDOT deste paciente'), 400
 
         if campo == 'data_nascimento':
             valor_novo = _parse_date(valor_novo)
