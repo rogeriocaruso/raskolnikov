@@ -83,6 +83,8 @@ def listar_pacientes():
 
     edot_filter = request.args.get('edot_id', type=int)
     if edot_filter:
+        if not _check_edot_access(claims, edot_filter):
+            return jsonify(erro='Sem acesso a esta EDOT'), 403
         query = query.filter_by(edot_id=edot_filter)
 
     search = request.args.get('search', '').strip()
@@ -188,8 +190,11 @@ def atualizar_paciente(paciente_id):
 
         valor_novo = data[campo]
 
-        if campo == 'status' and valor_novo not in STATUS_PACIENTE:
-            return jsonify(erro=f'Status inválido: {valor_novo}'), 400
+        if campo == 'status':
+            if valor_novo not in STATUS_PACIENTE:
+                return jsonify(erro=f'Status inválido: {valor_novo}'), 400
+            if valor_novo == 'arquivado':
+                return jsonify(erro='Use o endpoint /arquivar para arquivar um paciente'), 400
 
         if campo == 'data_nascimento':
             valor_novo = _parse_date(valor_novo)

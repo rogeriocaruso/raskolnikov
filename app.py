@@ -11,6 +11,9 @@ def create_app(env=None):
     env = env or os.environ.get('FLASK_ENV', 'default')
     app.config.from_object(config_map[env])
 
+    if env == 'production' and not app.config.get('SQLALCHEMY_DATABASE_URI'):
+        raise ValueError('DATABASE_URL environment variable must be set in production')
+
     db.init_app(app)
     JWTManager(app)
     Migrate(app, db)

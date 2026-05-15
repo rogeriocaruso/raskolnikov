@@ -13,6 +13,9 @@ STATUS_PACIENTE = (
     'arquivado',
 )
 
+_PERFIS_CHECK = "', '".join(PERFIS)
+_STATUS_CHECK = "', '".join(STATUS_PACIENTE)
+
 
 class OPO(db.Model):
     __tablename__ = 'opo'
@@ -22,7 +25,7 @@ class OPO(db.Model):
     sigla = db.Column(db.String(20), nullable=False, unique=True)
     estado = db.Column(db.String(2), nullable=False)
     ativo = db.Column(db.Boolean, default=True, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
 
     edots = db.relationship('EDOT', back_populates='opo', lazy='dynamic')
 
@@ -41,11 +44,11 @@ class EDOT(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(120), nullable=False)
-    sigla = db.Column(db.String(20), nullable=False)
+    sigla = db.Column(db.String(20), nullable=False, unique=True)
     hospital_nome = db.Column(db.String(200), nullable=False)
     opo_id = db.Column(db.Integer, db.ForeignKey('opo.id'), nullable=False)
     ativo = db.Column(db.Boolean, default=True, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
 
     opo = db.relationship('OPO', back_populates='edots')
     pacientes = db.relationship('Paciente', back_populates='edot', lazy='dynamic')
@@ -70,6 +73,7 @@ class Setor(db.Model):
     descricao = db.Column(db.Text, nullable=True)
     edot_id = db.Column(db.Integer, db.ForeignKey('edot.id'), nullable=False)
     ativo = db.Column(db.Boolean, default=True, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
 
     edot = db.relationship('EDOT', back_populates='setores')
 
@@ -80,6 +84,7 @@ class Setor(db.Model):
             descricao=self.descricao,
             edot_id=self.edot_id,
             ativo=self.ativo,
+            created_at=self.created_at.isoformat(),
         )
 
 
@@ -94,7 +99,11 @@ class Usuario(db.Model):
     edot_id = db.Column(db.Integer, db.ForeignKey('edot.id'), nullable=True)
     opo_id = db.Column(db.Integer, db.ForeignKey('opo.id'), nullable=True)
     ativo = db.Column(db.Boolean, default=True, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+    __table_args__ = (
+        db.CheckConstraint(f"perfil IN ('{_PERFIS_CHECK}')", name='ck_usuario_perfil'),
+    )
 
     def set_senha(self, senha):
         self.senha_hash = generate_password_hash(senha)
@@ -128,7 +137,7 @@ class Paciente(db.Model):
     data_internacao = db.Column(db.DateTime, nullable=True)
     created_by = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False)
     updated_by = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     arquivado = db.Column(db.Boolean, default=False, nullable=False)
     observacoes = db.Column(db.Text, nullable=True)
@@ -143,6 +152,7 @@ class Paciente(db.Model):
 
     __table_args__ = (
         db.UniqueConstraint('prontuario', 'edot_id', name='uq_prontuario_edot'),
+        db.CheckConstraint(f"status IN ('{_STATUS_CHECK}')", name='ck_paciente_status'),
     )
 
     def to_dict(self, include_historico=False):
@@ -178,7 +188,7 @@ class PacienteHistorico(db.Model):
     valor_anterior = db.Column(db.Text, nullable=True)
     valor_novo = db.Column(db.Text, nullable=True)
     observacao = db.Column(db.Text, nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
 
     paciente = db.relationship('Paciente', back_populates='historico')
     usuario = db.relationship('Usuario')
