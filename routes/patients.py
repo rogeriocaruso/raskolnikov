@@ -133,18 +133,34 @@ def criar_paciente():
         return jsonify(erro='Prontuário já cadastrado nesta EDOT'), 409
 
     status = data.get('status', 'potencial_doador')
-    if status not in STATUS_PACIENTE:
+    if status not in STATUS_PACIENTE or status == 'arquivado':
         return jsonify(erro=f'Status inválido: {status}'), 400
+
+    setor_id = data.get('setor_id')
+    if setor_id is not None:
+        setor = Setor.query.get(setor_id)
+        if not setor or setor.edot_id != edot_id:
+            return jsonify(erro='Setor não pertence a esta EDOT'), 400
+
+    data_nascimento_raw = data.get('data_nascimento')
+    data_nascimento = _parse_date(data_nascimento_raw)
+    if data_nascimento_raw and data_nascimento is None:
+        return jsonify(erro='Formato de data_nascimento inválido (use YYYY-MM-DD)'), 400
+
+    data_internacao_raw = data.get('data_internacao')
+    data_internacao = _parse_datetime(data_internacao_raw)
+    if data_internacao_raw and data_internacao is None:
+        return jsonify(erro='Formato de data_internacao inválido (use ISO 8601)'), 400
 
     paciente = Paciente(
         nome=data['nome'],
         prontuario=prontuario,
         edot_id=edot_id,
-        setor_id=data.get('setor_id'),
+        setor_id=setor_id,
         causa_morte=data.get('causa_morte'),
         status=status,
-        data_nascimento=_parse_date(data.get('data_nascimento')),
-        data_internacao=_parse_datetime(data.get('data_internacao')),
+        data_nascimento=data_nascimento,
+        data_internacao=data_internacao,
         observacoes=data.get('observacoes'),
         created_by=claims['user_id'],
     )
@@ -188,13 +204,25 @@ def atualizar_paciente(paciente_id):
 
         valor_novo = data[campo]
 
-        if campo == 'status' and valor_novo not in STATUS_PACIENTE:
-            return jsonify(erro=f'Status inválido: {valor_novo}'), 400
-
-        if campo == 'data_nascimento':
-            valor_novo = _parse_date(valor_novo)
+        if campo == 'status':
+            if valor_novo not in STATUS_PACIENTE:
+                return jsonify(erro=f'Status inválido: {valor_novo}'), 400
+            if valor_novo == 'arquivado':
+                return jsonify(erro='Use o endpoint /arquivar para arquivar o paciente'), 400
+        elif campo == 'data_nascimento':
+            parsed = _parse_date(valor_novo)
+            if valor_novo and parsed is None:
+                return jsonify(erro='Formato de data_nascimento inválido (use YYYY-MM-DD)'), 400
+            valor_novo = parsed
         elif campo == 'data_internacao':
-            valor_novo = _parse_datetime(valor_novo)
+            parsed = _parse_datetime(valor_novo)
+            if valor_novo and parsed is None:
+                return jsonify(erro='Formato de data_internacao inválido (use ISO 8601)'), 400
+            valor_novo = parsed
+        elif campo == 'setor_id' and valor_novo is not None:
+            setor = Setor.query.get(valor_novo)
+            if not setor or setor.edot_id != paciente.edot_id:
+                return jsonify(erro='Setor não pertence a esta EDOT'), 400
 
         valor_anterior = getattr(paciente, campo)
         if str(valor_anterior) != str(valor_novo):

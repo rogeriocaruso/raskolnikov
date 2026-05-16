@@ -41,7 +41,7 @@ class EDOT(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(120), nullable=False)
-    sigla = db.Column(db.String(20), nullable=False)
+    sigla = db.Column(db.String(20), nullable=False, unique=True)
     hospital_nome = db.Column(db.String(200), nullable=False)
     opo_id = db.Column(db.Integer, db.ForeignKey('opo.id'), nullable=False)
     ativo = db.Column(db.Boolean, default=True, nullable=False)
@@ -96,6 +96,10 @@ class Usuario(db.Model):
     ativo = db.Column(db.Boolean, default=True, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+    __table_args__ = (
+        db.CheckConstraint(f"perfil IN {PERFIS}", name='ck_usuario_perfil'),
+    )
+
     def set_senha(self, senha):
         self.senha_hash = generate_password_hash(senha)
 
@@ -143,6 +147,9 @@ class Paciente(db.Model):
 
     __table_args__ = (
         db.UniqueConstraint('prontuario', 'edot_id', name='uq_prontuario_edot'),
+        db.CheckConstraint(f"status IN {STATUS_PACIENTE}", name='ck_paciente_status'),
+        db.Index('ix_paciente_edot_arquivado', 'edot_id', 'arquivado'),
+        db.Index('ix_paciente_status', 'status'),
     )
 
     def to_dict(self, include_historico=False):
@@ -182,6 +189,10 @@ class PacienteHistorico(db.Model):
 
     paciente = db.relationship('Paciente', back_populates='historico')
     usuario = db.relationship('Usuario')
+
+    __table_args__ = (
+        db.Index('ix_paciente_historico_paciente_id', 'paciente_id'),
+    )
 
     def to_dict(self):
         return dict(
