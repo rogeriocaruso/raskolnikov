@@ -29,7 +29,7 @@ def _check_edot_access(claims, edot_id):
     if perfil == 'cet_admin':
         return True
     if perfil == 'opo_auditor':
-        edot = EDOT.query.get(edot_id)
+        edot = db.session.get(EDOT, edot_id)
         return edot is not None and edot.opo_id == claims.get('opo_id')
     return claims.get('edot_id') == edot_id
 
@@ -52,7 +52,7 @@ def _parse_date(value):
     try:
         return date.fromisoformat(value)
     except (ValueError, TypeError):
-        return None
+        raise ValueError(f'Formato de data inválido: {value!r}. Use YYYY-MM-DD.')
 
 
 def _parse_datetime(value):
@@ -61,7 +61,7 @@ def _parse_datetime(value):
     try:
         return datetime.fromisoformat(value)
     except (ValueError, TypeError):
-        return None
+        raise ValueError(f'Formato de data/hora inválido: {value!r}. Use ISO-8601.')
 
 
 @patients_bp.route('/', methods=['GET'])
@@ -136,15 +136,27 @@ def criar_paciente():
     if status not in STATUS_PACIENTE:
         return jsonify(erro=f'Status inválido: {status}'), 400
 
+    setor_id = data.get('setor_id')
+    if setor_id is not None:
+        setor = db.session.get(Setor, setor_id)
+        if setor is None or setor.edot_id != edot_id:
+            return jsonify(erro='Setor não pertence a esta EDOT'), 400
+
+    try:
+        data_nasc = _parse_date(data.get('data_nascimento'))
+        data_int = _parse_datetime(data.get('data_internacao'))
+    except ValueError as exc:
+        return jsonify(erro=str(exc)), 400
+
     paciente = Paciente(
         nome=data['nome'],
         prontuario=prontuario,
         edot_id=edot_id,
-        setor_id=data.get('setor_id'),
+        setor_id=setor_id,
         causa_morte=data.get('causa_morte'),
         status=status,
-        data_nascimento=_parse_date(data.get('data_nascimento')),
-        data_internacao=_parse_datetime(data.get('data_internacao')),
+        data_nascimento=data_nasc,
+        data_internacao=data_int,
         observacoes=data.get('observacoes'),
         created_by=claims['user_id'],
     )
@@ -160,7 +172,7 @@ def criar_paciente():
 def obter_paciente(paciente_id):
     """Retorna um paciente com histórico completo."""
     claims = _get_claims()
-    paciente = Paciente.query.get_or_404(paciente_id)
+    paciente = db.get_or_404(Paciente, paciente_id)
     if not _check_edot_access(claims, paciente.edot_id):
         return jsonify(erro='Sem acesso'), 403
     return jsonify(paciente=paciente.to_dict(include_historico=True)), 200
@@ -174,7 +186,7 @@ def atualizar_paciente(paciente_id):
     if claims.get('perfil') not in ('cet_admin', 'edot_coord'):
         return jsonify(erro='Sem permissão'), 403
 
-    paciente = Paciente.query.get_or_404(paciente_id)
+    paciente = db.get_or_404(Paciente, paciente_id)
     if not _check_edot_access(claims, paciente.edot_id):
         return jsonify(erro='Sem acesso'), 403
     if paciente.arquivado:
@@ -188,13 +200,24 @@ def atualizar_paciente(paciente_id):
 
         valor_novo = data[campo]
 
-        if campo == 'status' and valor_novo not in STATUS_PACIENTE:
-            return jsonify(erro=f'Status inválido: {valor_novo}'), 400
+        if campo == 'status':
+            if valor_novo not in STATUS_PACIENTE:
+                return jsonify(erro=f'Status inválido: {valor_novo}'), 400
+            if valor_novo == 'arquivado':
+                return jsonify(erro='Use o endpoint /arquivar para arquivar um paciente'), 400
 
-        if campo == 'data_nascimento':
-            valor_novo = _parse_date(valor_novo)
-        elif campo == 'data_internacao':
-            valor_novo = _parse_datetime(valor_novo)
+        if campo == 'setor_id' and valor_novo is not None:
+            setor = db.session.get(Setor, valor_novo)
+            if setor is None or setor.edot_id != paciente.edot_id:
+                return jsonify(erro='Setor não pertence a esta EDOT'), 400
+
+        try:
+            if campo == 'data_nascimento':
+                valor_novo = _parse_date(valor_novo)
+            elif campo == 'data_internacao':
+                valor_novo = _parse_datetime(valor_novo)
+        except ValueError as exc:
+            return jsonify(erro=str(exc)), 400
 
         valor_anterior = getattr(paciente, campo)
         if str(valor_anterior) != str(valor_novo):
@@ -216,7 +239,7 @@ def arquivar_paciente(paciente_id):
     if claims.get('perfil') not in ('cet_admin', 'edot_coord'):
         return jsonify(erro='Sem permissão'), 403
 
-    paciente = Paciente.query.get_or_404(paciente_id)
+    paciente = db.get_or_404(Paciente, paciente_id)
     if not _check_edot_access(claims, paciente.edot_id):
         return jsonify(erro='Sem acesso'), 403
     if paciente.arquivado:
@@ -239,7 +262,7 @@ def arquivar_paciente(paciente_id):
 def historico_paciente(paciente_id):
     """Retorna o histórico de alterações de um paciente."""
     claims = _get_claims()
-    paciente = Paciente.query.get_or_404(paciente_id)
+    paciente = db.get_or_404(Paciente, paciente_id)
     if not _check_edot_access(claims, paciente.edot_id):
         return jsonify(erro='Sem acesso'), 403
 

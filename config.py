@@ -20,6 +20,17 @@ class ProductionConfig(Config):
     DEBUG = False
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
 
+    @staticmethod
+    def validate():
+        missing = [
+            v for v in ('SECRET_KEY', 'JWT_SECRET_KEY', 'DATABASE_URL')
+            if not os.environ.get(v)
+        ]
+        if missing:
+            raise RuntimeError(
+                f'Variáveis de ambiente obrigatórias não definidas: {", ".join(missing)}'
+            )
+
 
 config_map = {
     'development': DevelopmentConfig,

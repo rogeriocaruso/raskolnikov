@@ -47,6 +47,10 @@ class EDOT(db.Model):
     ativo = db.Column(db.Boolean, default=True, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+    __table_args__ = (
+        db.UniqueConstraint('sigla', 'opo_id', name='uq_edot_sigla_opo'),
+    )
+
     opo = db.relationship('OPO', back_populates='edots')
     pacientes = db.relationship('Paciente', back_populates='edot', lazy='dynamic')
     setores = db.relationship('Setor', back_populates='edot', lazy='dynamic')
@@ -96,6 +100,13 @@ class Usuario(db.Model):
     ativo = db.Column(db.Boolean, default=True, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+    __table_args__ = (
+        db.CheckConstraint(
+            "perfil IN ('cet_admin','opo_auditor','edot_coord','edot_membro')",
+            name='ck_usuario_perfil',
+        ),
+    )
+
     def set_senha(self, senha):
         self.senha_hash = generate_password_hash(senha)
 
@@ -143,6 +154,10 @@ class Paciente(db.Model):
 
     __table_args__ = (
         db.UniqueConstraint('prontuario', 'edot_id', name='uq_prontuario_edot'),
+        db.CheckConstraint(
+            "status IN ('potencial_doador','em_avaliacao','doador_confirmado','nao_doador','arquivado')",
+            name='ck_paciente_status',
+        ),
     )
 
     def to_dict(self, include_historico=False):
