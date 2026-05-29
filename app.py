@@ -10,7 +10,7 @@ FRONTEND_DIR = os.path.join(os.path.dirname(__file__), 'frontend')
 
 
 def _migrar_colunas(db):
-    """Adiciona colunas novas a tabelas já existentes (idempotente)."""
+    """Adiciona colunas novas e ajusta constraints em tabelas já existentes (idempotente)."""
     from sqlalchemy import inspect, text
     try:
         inspector = inspect(db.engine)
@@ -34,8 +34,53 @@ def _migrar_colunas(db):
                     if col not in existentes:
                         conn.execute(text(f'ALTER TABLE {tabela} ADD COLUMN {col} {tipo}'))
                         print(f'[migração] {tabela}.{col} adicionada')
+
+            # Migra constraint de unicidade do paciente de (prontuario, edot_id)
+            # para (nome, prontuario, edot_id) — SQLite requer recriar a tabela.
+            _migrar_constraint_paciente(conn, inspector)
     except Exception as e:
         print(f'[migração] erro (ignorado): {e}')
+
+
+def _migrar_constraint_paciente(conn, inspector):
+    """Recria tabela paciente com a nova constraint se ainda usar a antiga."""
+    from sqlalchemy import text
+    try:
+        idxs = {i['name'] for i in inspector.get_indexes('paciente')}
+        if 'uq_nome_prontuario_edot' in idxs or 'uq_prontuario_edot' not in idxs:
+            return  # já migrado ou constraint customizada — nada a fazer
+        print('[migração] atualizando constraint de unicidade da tabela paciente...')
+        conn.execute(text("""
+            CREATE TABLE paciente_new AS SELECT * FROM paciente
+        """))
+        conn.execute(text("DROP TABLE paciente"))
+        # A tabela será recriada por create_all() com a nova constraint
+        # Restaurar dados
+        conn.execute(text("""
+            CREATE TABLE IF NOT EXISTS paciente (
+                id INTEGER NOT NULL PRIMARY KEY,
+                nome VARCHAR(200) NOT NULL,
+                data_nascimento DATE,
+                prontuario VARCHAR(50) NOT NULL,
+                edot_id INTEGER NOT NULL REFERENCES edot(id),
+                setor_id INTEGER REFERENCES setor(id),
+                causa_morte TEXT,
+                status VARCHAR(30) NOT NULL DEFAULT 'potencial_doador',
+                data_internacao DATETIME,
+                created_by INTEGER NOT NULL REFERENCES usuario(id),
+                updated_by INTEGER REFERENCES usuario(id),
+                created_at DATETIME,
+                updated_at DATETIME,
+                arquivado BOOLEAN NOT NULL DEFAULT 0,
+                observacoes TEXT,
+                CONSTRAINT uq_nome_prontuario_edot UNIQUE (nome, prontuario, edot_id)
+            )
+        """))
+        conn.execute(text("INSERT INTO paciente SELECT * FROM paciente_new"))
+        conn.execute(text("DROP TABLE paciente_new"))
+        print('[migração] constraint de unicidade do paciente atualizada.')
+    except Exception as e:
+        print(f'[migração] constraint paciente erro (ignorado): {e}')
 
 
 def create_app(env=None):

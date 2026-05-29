@@ -17,8 +17,9 @@ if (['cet_admin','opo'].includes(perfil)) {
   document.getElementById('nav-admin').style.display = '';
 }
 
-const podeEscrever = ['edot_coord','edot_membro'].includes(perfil);
-if (!podeEscrever) {
+const podeCriar  = ['edot_coord','edot_membro'].includes(perfil);
+const podeEditar = ['edot_coord','edot_membro','opo'].includes(perfil);
+if (!podeCriar) {
   document.getElementById('btn-novo-paciente').style.display = 'none';
 }
 
@@ -73,7 +74,7 @@ async function carregarPacientes() {
         <td>${dataFmt(p.data_internacao)}</td>
         <td>
           <button class="btn btn-secundario btn-sm" onclick="abrirPaciente(${p.id})">
-            ${podeEscrever ? 'Editar' : 'Ver'}
+            ${podeEditar ? 'Editar' : 'Ver'}
           </button>
         </td>
       </tr>`).join('');
@@ -127,7 +128,7 @@ function preencherForm(p) {
 
   const STATUS_ARQUIVAVEIS = ['acompanhamento','me_sem_confirmacao','me_confirmado','me_com_doacao','me_cim','me_naf','pcr_antes_doacao'];
   const btnArq = document.getElementById('btn-arquivar');
-  if (p && STATUS_ARQUIVAVEIS.includes(p.status) && podeEscrever) {
+  if (p && STATUS_ARQUIVAVEIS.includes(p.status) && podeCriar) {
     btnArq.style.display = '';
   } else {
     btnArq.style.display = 'none';
@@ -135,8 +136,8 @@ function preencherForm(p) {
 
   // Desabilitar formulário para leitura
   const campos = document.getElementById('form-paciente').querySelectorAll('input,select,textarea');
-  campos.forEach(el => el.disabled = !podeEscrever);
-  document.getElementById('form-paciente').querySelector('button[type=submit]').style.display = podeEscrever ? '' : 'none';
+  campos.forEach(el => el.disabled = !podeEditar);
+  document.getElementById('form-paciente').querySelector('button[type=submit]').style.display = podeEditar ? '' : 'none';
 }
 
 document.getElementById('btn-novo-paciente').addEventListener('click', () => {

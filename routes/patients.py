@@ -128,16 +128,24 @@ def criar_paciente():
     if not _check_edot_access(claims, edot_id):
         return jsonify(erro='Sem acesso a esta EDOT'), 403
 
+    nome = data['nome'].strip()
     prontuario = data['prontuario'].upper().strip()
-    if Paciente.query.filter_by(prontuario=prontuario, edot_id=edot_id).first():
-        return jsonify(erro='Prontuário já cadastrado nesta EDOT'), 409
+
+    if Paciente.query.filter_by(nome=nome, prontuario=prontuario, edot_id=edot_id).first():
+        return jsonify(erro='Paciente com estas iniciais e prontuário já cadastrado nesta EDOT'), 409
+
+    conflito_pront = Paciente.query.filter_by(prontuario=prontuario, edot_id=edot_id).filter_by(arquivado=False).first()
+    if conflito_pront:
+        return jsonify(
+            erro=f'Prontuário {prontuario} já pertence ao paciente "{conflito_pront.nome}" nesta EDOT'
+        ), 409
 
     status = data.get('status', 'potencial_doador')
     if status not in STATUS_PACIENTE:
         return jsonify(erro=f'Status inválido: {status}'), 400
 
     paciente = Paciente(
-        nome=data['nome'],
+        nome=nome,
         prontuario=prontuario,
         edot_id=edot_id,
         setor_id=data.get('setor_id'),
@@ -171,7 +179,7 @@ def obter_paciente(paciente_id):
 def atualizar_paciente(paciente_id):
     """Atualiza campos do paciente e registra histórico por campo alterado."""
     claims = _get_claims()
-    if claims.get('perfil') not in ('edot_coord', 'edot_membro'):
+    if claims.get('perfil') not in ('edot_coord', 'edot_membro', 'opo'):
         return jsonify(erro='Sem permissão'), 403
 
     paciente = Paciente.query.get_or_404(paciente_id)

@@ -167,7 +167,7 @@ class Paciente(db.Model):
     )
 
     __table_args__ = (
-        db.UniqueConstraint('prontuario', 'edot_id', name='uq_prontuario_edot'),
+        db.UniqueConstraint('nome', 'prontuario', 'edot_id', name='uq_nome_prontuario_edot'),
     )
 
     def to_dict(self, include_historico=False):
@@ -178,6 +178,7 @@ class Paciente(db.Model):
             prontuario=self.prontuario,
             edot_id=self.edot_id,
             setor_id=self.setor_id,
+            setor_nome=self.setor.nome if self.setor else None,
             causa_morte=self.causa_morte,
             status=self.status,
             data_internacao=self.data_internacao.isoformat() if self.data_internacao else None,
