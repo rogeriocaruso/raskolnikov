@@ -92,9 +92,11 @@ async function carregarPacientes() {
 
 window.abrirPaciente = async function(id) {
   try {
-    const p = await Api.obterPaciente(id);
+    const resp = await Api.obterPaciente(id);
+    const p = resp.paciente;
     preencherForm(p);
     mostrarForm();
+    await carregarSetoresForm(p.setor_id);
     await carregarHistorico(id);
   } catch(e) {
     alert('Erro ao carregar paciente.');
@@ -214,18 +216,6 @@ async function abrirPacienteComSetores(p) {
   await carregarSetoresForm(p.setor_id);
 }
 
-// Override abrirPaciente para carregar setores também
-window.abrirPaciente = async function(id) {
-  try {
-    const p = await Api.obterPaciente(id);
-    preencherForm(p);
-    mostrarForm();
-    await carregarSetoresForm(p.setor_id);
-    await carregarHistorico(id);
-  } catch(e) {
-    alert('Erro ao carregar paciente.');
-  }
-};
 
 // ── Arquivar ────────────────────────────────────────────────────────────────
 document.getElementById('btn-arquivar').addEventListener('click', () => {
