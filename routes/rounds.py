@@ -127,3 +127,25 @@ def encerrar_ronda(ronda_id):
     ronda.geo_precisao_fim = data.get('geo_precisao')
     db.session.commit()
     return jsonify(ronda=ronda.to_dict()), 200
+
+
+@rounds_bp.route('/<int:ronda_id>', methods=['PUT'])
+@jwt_required()
+def corrigir_ronda(ronda_id):
+    """Corrige campos de uma ronda encerrada. Restrito a cet_admin e opo."""
+    claims = _get_claims()
+    if claims.get('perfil') not in ('cet_admin', 'opo'):
+        return jsonify(erro='Sem permissão'), 403
+
+    ronda = Ronda.query.get_or_404(ronda_id)
+    if not _check_edot_access(claims, ronda.edot_id):
+        return jsonify(erro='Sem acesso'), 403
+
+    data = request.get_json(silent=True) or {}
+    campos_editaveis = ('leitos_visitados', 'potenciais_encontrados', 'observacoes', 'turno')
+    for campo in campos_editaveis:
+        if campo in data:
+            setattr(ronda, campo, data[campo])
+
+    db.session.commit()
+    return jsonify(ronda=ronda.to_dict()), 200
