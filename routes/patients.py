@@ -1,10 +1,12 @@
+import csv
+import io
 from datetime import date, datetime
 
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, make_response
 from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 from sqlalchemy import or_
 
-from models import db, Paciente, PacienteHistorico, Setor, Usuario, EDOT, STATUS_PACIENTE
+from models import db, Paciente, PacienteHistorico, Setor, Usuario, EDOT, OPO, STATUS_PACIENTE
 
 patients_bp = Blueprint('patients', __name__)
 
@@ -232,6 +234,209 @@ def arquivar_paciente(paciente_id):
     paciente.updated_by = claims['user_id']
     db.session.commit()
     return jsonify(mensagem='Paciente arquivado com sucesso'), 200
+
+
+def _build_export_query(claims):
+    """Monta query de pacientes para exportação aplicando filtros e controle de acesso."""
+    perfil = claims.get('perfil')
+    query = Paciente.query
+
+    if perfil in ('edot_membro', 'edot_coord'):
+        query = query.filter_by(edot_id=claims.get('edot_id'))
+    elif perfil == 'opo_auditor':
+        edot_ids = [
+            e.id for e in EDOT.query.filter_by(opo_id=claims.get('opo_id')).all()
+        ]
+        query = query.filter(Paciente.edot_id.in_(edot_ids))
+    elif perfil == 'cet_admin':
+        opo_id = request.args.get('opo_id', type=int)
+        if opo_id:
+            edot_ids = [e.id for e in EDOT.query.filter_by(opo_id=opo_id).all()]
+            query = query.filter(Paciente.edot_id.in_(edot_ids))
+
+    edot_id = request.args.get('edot_id', type=int)
+    if edot_id:
+        query = query.filter_by(edot_id=edot_id)
+
+    status_filter = request.args.get('status')
+    if status_filter and status_filter in STATUS_PACIENTE:
+        query = query.filter_by(status=status_filter)
+
+    data_inicio = _parse_datetime(request.args.get('data_inicio'))
+    data_fim = _parse_datetime(request.args.get('data_fim'))
+    campo_data = request.args.get('campo_data', 'created_at')
+    col_data = getattr(Paciente, campo_data, Paciente.created_at)
+    if data_inicio:
+        query = query.filter(col_data >= data_inicio)
+    if data_fim:
+        query = query.filter(col_data <= data_fim)
+
+    return query.order_by(Paciente.created_at.desc())
+
+
+def _paciente_row(p):
+    edot = EDOT.query.get(p.edot_id)
+    opo = OPO.query.get(edot.opo_id) if edot else None
+    return {
+        'ID': p.id,
+        'Nome': p.nome,
+        'Prontuário': p.prontuario,
+        'Data Nascimento': p.data_nascimento.isoformat() if p.data_nascimento else '',
+        'Data Internação': p.data_internacao.isoformat() if p.data_internacao else '',
+        'Status': p.status,
+        'Causa Morte': p.causa_morte or '',
+        'Hospital (EDOT)': edot.nome if edot else '',
+        'OPO': opo.nome if opo else '',
+        'Arquivado': 'Sim' if p.arquivado else 'Não',
+        'Criado em': p.created_at.isoformat() if p.created_at else '',
+        'Atualizado em': p.updated_at.isoformat() if p.updated_at else '',
+    }
+
+
+EXPORT_COLUMNS = [
+    'ID', 'Nome', 'Prontuário', 'Data Nascimento', 'Data Internação',
+    'Status', 'Causa Morte', 'Hospital (EDOT)', 'OPO', 'Arquivado',
+    'Criado em', 'Atualizado em',
+]
+
+
+def _export_csv(rows):
+    buf = io.StringIO()
+    writer = csv.DictWriter(buf, fieldnames=EXPORT_COLUMNS)
+    writer.writeheader()
+    writer.writerows(rows)
+    output = buf.getvalue().encode('utf-8-sig')
+    resp = make_response(output)
+    resp.headers['Content-Type'] = 'text/csv; charset=utf-8'
+    resp.headers['Content-Disposition'] = 'attachment; filename=relatorio_pacientes.csv'
+    return resp
+
+
+def _export_xlsx(rows):
+    from openpyxl import Workbook
+    from openpyxl.styles import Font, PatternFill, Alignment
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = 'Pacientes'
+
+    header_font = Font(bold=True, color='FFFFFF')
+    header_fill = PatternFill(fill_type='solid', fgColor='1F4E79')
+
+    for col_idx, col_name in enumerate(EXPORT_COLUMNS, start=1):
+        cell = ws.cell(row=1, column=col_idx, value=col_name)
+        cell.font = header_font
+        cell.fill = header_fill
+        cell.alignment = Alignment(horizontal='center')
+
+    for row_idx, row in enumerate(rows, start=2):
+        for col_idx, col_name in enumerate(EXPORT_COLUMNS, start=1):
+            ws.cell(row=row_idx, column=col_idx, value=row.get(col_name, ''))
+
+    for col in ws.columns:
+        max_len = max(len(str(c.value or '')) for c in col)
+        ws.column_dimensions[col[0].column_letter].width = min(max_len + 4, 40)
+
+    buf = io.BytesIO()
+    wb.save(buf)
+    buf.seek(0)
+    resp = make_response(buf.read())
+    resp.headers['Content-Type'] = (
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    resp.headers['Content-Disposition'] = 'attachment; filename=relatorio_pacientes.xlsx'
+    return resp
+
+
+def _export_pdf(rows, filtros_desc):
+    from reportlab.lib.pagesizes import A4, landscape
+    from reportlab.lib import colors
+    from reportlab.lib.units import cm
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+    from reportlab.lib.styles import getSampleStyleSheet
+
+    buf = io.BytesIO()
+    doc = SimpleDocTemplate(buf, pagesize=landscape(A4), leftMargin=1 * cm, rightMargin=1 * cm,
+                            topMargin=1.5 * cm, bottomMargin=1.5 * cm)
+    styles = getSampleStyleSheet()
+    elements = []
+
+    elements.append(Paragraph('Relatório de Pacientes', styles['Title']))
+    if filtros_desc:
+        elements.append(Paragraph(f'Filtros: {filtros_desc}', styles['Normal']))
+    elements.append(Paragraph(
+        f'Gerado em: {datetime.now().strftime("%d/%m/%Y %H:%M")}', styles['Normal']
+    ))
+    elements.append(Spacer(1, 0.4 * cm))
+
+    visible_cols = ['Nome', 'Prontuário', 'Status', 'Hospital (EDOT)', 'OPO',
+                    'Data Internação', 'Arquivado']
+    table_data = [visible_cols]
+    for row in rows:
+        table_data.append([str(row.get(c, '')) for c in visible_cols])
+
+    col_widths = [5 * cm, 3 * cm, 3.5 * cm, 5 * cm, 3.5 * cm, 3.5 * cm, 2 * cm]
+    table = Table(table_data, colWidths=col_widths, repeatRows=1)
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1F4E79')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 9),
+        ('FONTSIZE', (0, 1), (-1, -1), 8),
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#EBF3FB')]),
+        ('GRID', (0, 0), (-1, -1), 0.4, colors.HexColor('#CCCCCC')),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('LEFTPADDING', (0, 0), (-1, -1), 4),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 4),
+        ('TOPPADDING', (0, 0), (-1, -1), 3),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
+    ]))
+    elements.append(table)
+    elements.append(Spacer(1, 0.3 * cm))
+    elements.append(Paragraph(f'Total de registros: {len(rows)}', styles['Normal']))
+
+    doc.build(elements)
+    buf.seek(0)
+    resp = make_response(buf.read())
+    resp.headers['Content-Type'] = 'application/pdf'
+    resp.headers['Content-Disposition'] = 'attachment; filename=relatorio_pacientes.pdf'
+    return resp
+
+
+@patients_bp.route('/export', methods=['GET'])
+@jwt_required()
+def exportar_pacientes():
+    """Exporta pacientes em CSV, XLSX ou PDF com filtros por período, OPO e hospital."""
+    claims = _get_claims()
+    fmt = request.args.get('formato', 'csv').lower()
+    if fmt not in ('csv', 'xlsx', 'pdf'):
+        return jsonify(erro='Formato inválido. Use: csv, xlsx ou pdf'), 400
+
+    query = _build_export_query(claims)
+    pacientes = query.all()
+    rows = [_paciente_row(p) for p in pacientes]
+
+    filtros = []
+    if request.args.get('opo_id'):
+        opo = OPO.query.get(request.args.get('opo_id', type=int))
+        filtros.append(f'OPO: {opo.nome if opo else request.args.get("opo_id")}')
+    if request.args.get('edot_id'):
+        edot = EDOT.query.get(request.args.get('edot_id', type=int))
+        filtros.append(f'Hospital: {edot.nome if edot else request.args.get("edot_id")}')
+    if request.args.get('data_inicio'):
+        filtros.append(f'De: {request.args.get("data_inicio")}')
+    if request.args.get('data_fim'):
+        filtros.append(f'Até: {request.args.get("data_fim")}')
+    if request.args.get('status'):
+        filtros.append(f'Status: {request.args.get("status")}')
+    filtros_desc = ' | '.join(filtros) if filtros else 'Nenhum'
+
+    if fmt == 'csv':
+        return _export_csv(rows)
+    elif fmt == 'xlsx':
+        return _export_xlsx(rows)
+    else:
+        return _export_pdf(rows, filtros_desc)
 
 
 @patients_bp.route('/<int:paciente_id>/historico', methods=['GET'])
