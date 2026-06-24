@@ -3,10 +3,10 @@ import io
 from datetime import date, datetime
 
 from flask import Blueprint, request, jsonify, make_response
-from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
+from flask_jwt_extended import jwt_required, get_jwt
 from sqlalchemy import or_
 
-from models import db, Paciente, PacienteHistorico, Setor, Usuario, EDOT, OPO, STATUS_PACIENTE
+from models import db, Paciente, PacienteHistorico, EDOT, OPO, STATUS_PACIENTE
 
 patients_bp = Blueprint('patients', __name__)
 
