@@ -60,6 +60,32 @@ const Api = {
     return dados;
   },
 
+  // ── Download autenticado (relatórios) ───────────────────────────────────────
+  async baixar(caminho) {
+    const token = this.getToken();
+    const resp = await fetch(API_BASE + caminho, {
+      headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+    });
+    if (resp.status === 401) { this.limparSessao(); window.location.href = '/'; return; }
+    if (!resp.ok) {
+      let msg = 'Erro ao gerar relatório.';
+      try { msg = (await resp.json()).erro || msg; } catch (e) {}
+      throw { status: resp.status, erro: msg };
+    }
+    const blob = await resp.blob();
+    const cd = resp.headers.get('Content-Disposition') || '';
+    const m = cd.match(/filename="?([^"]+)"?/);
+    const nome = m ? m[1] : 'relatorio';
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = nome;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  },
+
   // ── Auth ───────────────────────────────────────────────────────────────────
   login(email, senha)   { return this.post('/auth/login', { email, senha }); },
 
@@ -87,6 +113,7 @@ const Api = {
 
   // ── Stats ──────────────────────────────────────────────────────────────────
   dashboardStats(dias = 30) { return this.get(`/stats/?dias=${dias}`); },
+  dashboardStatsQ(qs)       { return this.get('/stats/' + (qs ? '?' + qs : '')); },
   statsEdots()              { return this.get('/stats/edots'); },
 
   // ── Admin ──────────────────────────────────────────────────────────────────

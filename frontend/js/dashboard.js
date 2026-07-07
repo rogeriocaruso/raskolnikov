@@ -33,9 +33,12 @@ function set(id, val) {
 }
 
 // ── Indicadores ─────────────────────────────────────────────────────────────
-async function carregarStats(dias) {
+async function carregarStats() {
   try {
-    const d = await Api.dashboardStats(dias);
+    const base = filtros ? filtros.getParams() : '';
+    const dias = selDias ? selDias.value : 30;
+    const qs = base + (base ? '&' : '') + 'dias=' + dias;
+    const d = await Api.dashboardStatsQ(qs);
 
     // Captação de Órgãos
     set('s-possiveis',    d.possiveis_doadores);
@@ -147,11 +150,15 @@ function esc(str) {
   return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
-// ── Filtro de período (afeta apenas métricas operacionais) ─────────────────
+// ── Filtros globais (OPO, Hospital, período) + exportação ──────────────────
 const selDias = document.getElementById('sel-dias');
-selDias.addEventListener('change', () => carregarStats(+selDias.value));
+const filtros = montarFiltros(document.getElementById('barra-filtros'), {
+  exportBase: '/reports/dashboard',
+  onChange: () => carregarStats(),
+});
+if (selDias) selDias.addEventListener('change', () => carregarStats());
 
 // ── Init ────────────────────────────────────────────────────────────────────
-carregarStats(30);
+carregarStats();
 carregarPacientes();
 carregarRondas();

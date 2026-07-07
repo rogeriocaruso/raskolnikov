@@ -45,13 +45,22 @@ def listar():
     arquivado = request.args.get('arquivado', 'false').lower() == 'true'
     search  = request.args.get('search', '').strip()
 
-    q = EntrevistaFamiliar.query.filter_by(arquivado=arquivado)
+    from routes.report_utils import resolver_edot_ids, resolver_periodo
 
-    if perfil == 'edot_coord' or perfil == 'edot_membro':
-        q = q.filter_by(edot_id=claims.get('edot_id'))
-    elif perfil == 'opo':
-        edot_ids = [e.id for e in EDOT.query.filter_by(opo_id=claims.get('opo_id')).all()]
-        q = q.filter(EntrevistaFamiliar.edot_id.in_(edot_ids))
+    opo_id  = request.args.get('opo_id', type=int)
+    edot_id = request.args.get('edot_id', type=int)
+    edot_ids = resolver_edot_ids(claims, opo_id=opo_id, edot_id=edot_id)
+    if not edot_ids:
+        edot_ids = [-1]
+
+    q = EntrevistaFamiliar.query.filter_by(arquivado=arquivado)
+    q = q.filter(EntrevistaFamiliar.edot_id.in_(edot_ids))
+
+    desde, ate, _ = resolver_periodo(request.args)
+    if desde:
+        q = q.filter(EntrevistaFamiliar.created_at >= desde)
+    if ate:
+        q = q.filter(EntrevistaFamiliar.created_at <= ate)
 
     if resultado:
         q = q.filter_by(resultado=resultado)

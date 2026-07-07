@@ -25,21 +25,23 @@ def _check_edot_access(claims, edot_id):
 @rounds_bp.route('/', methods=['GET'])
 @jwt_required()
 def listar_rondas():
-    """Lista rondas filtradas por perfil."""
+    """Lista rondas filtradas por perfil, OPO, Hospital e período."""
+    from routes.report_utils import resolver_edot_ids, resolver_periodo
+
     claims = _get_claims()
-    perfil = claims.get('perfil')
+    opo_id  = request.args.get('opo_id', type=int)
+    edot_id = request.args.get('edot_id', type=int)
+    edot_ids = resolver_edot_ids(claims, opo_id=opo_id, edot_id=edot_id)
+    if not edot_ids:
+        edot_ids = [-1]
 
-    query = Ronda.query
+    query = Ronda.query.filter(Ronda.edot_id.in_(edot_ids))
 
-    if perfil in ('edot_membro', 'edot_coord'):
-        query = query.filter_by(edot_id=claims.get('edot_id'))
-    elif perfil == 'opo':
-        edot_ids = [e.id for e in EDOT.query.filter_by(opo_id=claims.get('opo_id')).all()]
-        query = query.filter(Ronda.edot_id.in_(edot_ids))
-
-    edot_filter = request.args.get('edot_id', type=int)
-    if edot_filter:
-        query = query.filter_by(edot_id=edot_filter)
+    desde, ate, _ = resolver_periodo(request.args)
+    if desde:
+        query = query.filter(Ronda.data_inicio >= desde)
+    if ate:
+        query = query.filter(Ronda.data_inicio <= ate)
 
     page = request.args.get('page', 1, type=int)
     per_page = min(request.args.get('per_page', 20, type=int), 100)

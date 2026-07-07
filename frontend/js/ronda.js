@@ -40,7 +40,8 @@ async function carregarRondas() {
   wrapper.style.display = 'none';
   vazio.style.display   = 'none';
   try {
-    const d = await Api.listarRondas({ per_page: 50 });
+    const extra = (typeof filtrosRondas !== 'undefined' && filtrosRondas) ? filtrosRondas.getParams() : '';
+    const d = await Api.listarRondas('per_page=50' + (extra ? '&' + extra : ''));
     const itens = d.rondas || d.items || [];
     loading.style.display = 'none';
     if (!itens.length) { vazio.style.display = ''; return; }
@@ -601,6 +602,16 @@ function labelTurno(t) {
 function esc(str) {
   if (!str) return '—';
   return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+// ── Filtros (OPO, Hospital, período) + exportação ──────────────────────────
+let filtrosRondas = null;
+const _barraRondas = document.getElementById('barra-filtros-rondas');
+if (_barraRondas) {
+  filtrosRondas = montarFiltros(_barraRondas, {
+    exportBase: '/reports/rondas',
+    onChange: () => carregarRondas(),
+  });
 }
 
 // ── Init ─────────────────────────────────────────────────────────────────────

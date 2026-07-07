@@ -107,12 +107,14 @@ def create_app(env=None):
     from routes.stats import stats_bp
     from routes.admin import admin_bp
     from routes.entrevistas import entrevistas_bp
+    from routes.reports import reports_bp
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(patients_bp, url_prefix='/patients')
     app.register_blueprint(rounds_bp, url_prefix='/rounds')
     app.register_blueprint(stats_bp, url_prefix='/stats')
     app.register_blueprint(admin_bp, url_prefix='/admin')
     app.register_blueprint(entrevistas_bp, url_prefix='/entrevistas')
+    app.register_blueprint(reports_bp, url_prefix='/reports')
 
     @app.route('/health')
     def health():

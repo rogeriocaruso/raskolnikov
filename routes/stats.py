@@ -5,6 +5,7 @@ from flask_jwt_extended import jwt_required, get_jwt
 from sqlalchemy import func, distinct
 
 from models import db, Paciente, PacienteHistorico, Ronda, EDOT, EntrevistaFamiliar
+from routes.report_utils import resolver_edot_ids, resolver_periodo
 
 stats_bp = Blueprint('stats', __name__)
 
@@ -22,9 +23,9 @@ def _edot_ids_for_claims(claims):
     return [claims.get('edot_id')]
 
 
-def _contar_status_historico(edot_ids, status):
+def _contar_status_historico(edot_ids, status, desde=None, ate=None):
     """Conta pacientes distintos que já atingiram este status (via histórico)."""
-    return (
+    q = (
         db.session.query(func.count(distinct(PacienteHistorico.paciente_id)))
         .join(Paciente, Paciente.id == PacienteHistorico.paciente_id)
         .filter(
@@ -32,8 +33,12 @@ def _contar_status_historico(edot_ids, status):
             PacienteHistorico.campo_alterado == 'status',
             PacienteHistorico.valor_novo == status,
         )
-        .scalar() or 0
     )
+    if desde:
+        q = q.filter(PacienteHistorico.created_at >= desde)
+    if ate:
+        q = q.filter(PacienteHistorico.created_at <= ate)
+    return q.scalar() or 0
 
 
 def _taxa(num, den):
@@ -43,43 +48,54 @@ def _taxa(num, den):
 @stats_bp.route('/', methods=['GET'])
 @jwt_required()
 def dashboard_stats():
-    """Estatísticas do dashboard escaladas por perfil do usuário."""
+    """Estatísticas do dashboard escaladas por perfil e filtros (OPO, Hospital, período)."""
     claims = _get_claims()
-    edot_ids = _edot_ids_for_claims(claims)
+    opo_id  = request.args.get('opo_id', type=int)
+    edot_id = request.args.get('edot_id', type=int)
+    edot_ids = resolver_edot_ids(claims, opo_id=opo_id, edot_id=edot_id)
+    if not edot_ids:
+        edot_ids = [-1]  # nenhum acesso → resultados vazios
 
+    # Período: data_inicio/data_fim explícitos ou `dias` (compat). Aplicado a tudo.
+    desde, ate, _rot = resolver_periodo(request.args)
     dias = request.args.get('dias', 30, type=int)
-    desde = datetime.utcnow() - timedelta(days=dias)
 
-    # ── Indicadores clínicos — acumulado (sem filtro de período) ──────────────
-    possiveis_doadores = Paciente.query.filter(
-        Paciente.edot_id.in_(edot_ids)
+    # ── Captação de órgãos ──────────────────────────────────────────────────────
+    qp = Paciente.query.filter(Paciente.edot_id.in_(edot_ids))
+    if desde:
+        qp = qp.filter(Paciente.created_at >= desde)
+    if ate:
+        qp = qp.filter(Paciente.created_at <= ate)
+    possiveis_doadores = qp.count()
+
+    notificacoes_me = _contar_status_historico(edot_ids, 'protocolo_me', desde, ate)
+    me_com_doacao   = _contar_status_historico(edot_ids, 'me_com_doacao', desde, ate)
+    total_pcr       = _contar_status_historico(edot_ids, 'pcr_antes_doacao', desde, ate)
+    total_cim       = _contar_status_historico(edot_ids, 'me_cim', desde, ate)
+    total_naf       = _contar_status_historico(edot_ids, 'me_naf', desde, ate)
+
+    # ── Tecidos / BTOH ──────────────────────────────────────────────────────────
+    qe = EntrevistaFamiliar.query.filter(EntrevistaFamiliar.edot_id.in_(edot_ids))
+    if desde:
+        qe = qe.filter(EntrevistaFamiliar.created_at >= desde)
+    if ate:
+        qe = qe.filter(EntrevistaFamiliar.created_at <= ate)
+    total_entrevistas = qe.count()
+    autorizacoes_btoh = qe.filter(
+        EntrevistaFamiliar.resultado == 'autorizacao'
     ).count()
 
-    notificacoes_me = _contar_status_historico(edot_ids, 'protocolo_me')
-    me_com_doacao   = _contar_status_historico(edot_ids, 'me_com_doacao')
-    total_pcr       = _contar_status_historico(edot_ids, 'pcr_antes_doacao')
-    total_cim       = _contar_status_historico(edot_ids, 'me_cim')
-    total_naf       = _contar_status_historico(edot_ids, 'me_naf')
-
-    # ── Tecidos / BTOH — acumulado ─────────────────────────────────────────────
-    total_entrevistas = EntrevistaFamiliar.query.filter(
-        EntrevistaFamiliar.edot_id.in_(edot_ids),
-    ).count()
-    autorizacoes_btoh = EntrevistaFamiliar.query.filter(
-        EntrevistaFamiliar.edot_id.in_(edot_ids),
-        EntrevistaFamiliar.resultado == 'autorizacao',
-    ).count()
-
-    # ── Métricas operacionais — filtradas pelo período selecionado ─────────────
-    rondas_periodo = (
-        Ronda.query
-        .filter(Ronda.edot_id.in_(edot_ids), Ronda.data_inicio >= desde)
-        .count()
-    )
+    # ── Métricas operacionais ───────────────────────────────────────────────────
+    # Se não há período explícito, usa `dias` (comportamento anterior).
+    desde_op = desde if (desde or ate) else (datetime.utcnow() - timedelta(days=dias))
+    qr = Ronda.query.filter(Ronda.edot_id.in_(edot_ids))
+    if desde_op:
+        qr = qr.filter(Ronda.data_inicio >= desde_op)
+    if ate:
+        qr = qr.filter(Ronda.data_inicio <= ate)
+    rondas_periodo = qr.count()
     total_leitos = (
-        db.session.query(func.sum(Ronda.leitos_visitados))
-        .filter(Ronda.edot_id.in_(edot_ids), Ronda.data_inicio >= desde)
-        .scalar() or 0
+        qr.with_entities(func.sum(Ronda.leitos_visitados)).scalar() or 0
     )
 
     por_status = (

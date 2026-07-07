@@ -5,6 +5,7 @@ let entrevistaAtual = null;
 let paginaAtual     = 1;
 let totalPaginas    = 1;
 let filtroAtual     = { resultado: '', arquivado: false, search: '' };
+let filtrosTecidos  = null;
 
 const usuario = Api.getUsuario();
 const perfil  = usuario?.perfil || '';
@@ -42,6 +43,14 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('form-entrevista')?.addEventListener('submit', salvar);
   document.getElementById('btn-arquivar')?.addEventListener('click', abrirModalArquivar);
   document.getElementById('btn-confirmar-arquivar')?.addEventListener('click', confirmarArquivar);
+
+  const _barraTecidos = document.getElementById('barra-filtros-tecidos');
+  if (_barraTecidos) {
+    filtrosTecidos = montarFiltros(_barraTecidos, {
+      exportBase: '/reports/tecidos',
+      onChange: () => buscar(1),
+    });
+  }
 
   carregarStats();
   buscar(1);
@@ -89,6 +98,8 @@ async function buscar(pagina = 1) {
       arquivado: filtroAtual.arquivado,
       search: filtroAtual.search,
     });
+    const extra = (typeof filtrosTecidos !== 'undefined' && filtrosTecidos) ? filtrosTecidos.getParams() : '';
+    if (extra) extra.split('&').forEach(kv => { const [k, v] = kv.split('='); if (k) params.set(k, decodeURIComponent(v || '')); });
     const d = await Api.request(`/entrevistas/?${params}`);
     totalPaginas = d.pages || 1;
     if (loading) loading.style.display = 'none';
