@@ -32,6 +32,7 @@ function labelPerfil(p) {
 let pagina = 1;
 let totalPaginas = 1;
 let pacienteAtual = null;
+let filtrosPacientes = null;
 
 // ── Lista de pacientes ──────────────────────────────────────────────────────
 async function carregarPacientes() {
@@ -52,6 +53,9 @@ async function carregarPacientes() {
   const status = document.getElementById('filtro-status').value;
   if (busca)  params.search = busca;
   if (status) params.status = status;
+
+  const extra = (typeof filtrosPacientes !== 'undefined' && filtrosPacientes) ? filtrosPacientes.getParams() : '';
+  if (extra) extra.split('&').forEach(kv => { const [k, v] = kv.split('='); if (k) params[k] = decodeURIComponent(v || ''); });
 
   try {
     const d = await Api.listarPacientes(params);
@@ -316,6 +320,15 @@ function badgeStatus(s) {
 function esc(str) {
   if (!str) return '—';
   return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ── Filtros (OPO, Hospital, período) + exportação ──────────────────────────
+const _barraPacientes = document.getElementById('barra-filtros-pacientes');
+if (_barraPacientes) {
+  filtrosPacientes = montarFiltros(_barraPacientes, {
+    exportBase: '/reports/pacientes',
+    onChange: () => { pagina = 1; carregarPacientes(); },
+  });
 }
 
 // ── Verificar se veio de link direto com ?id= ───────────────────────────────
