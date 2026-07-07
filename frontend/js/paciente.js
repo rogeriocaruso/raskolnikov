@@ -68,6 +68,7 @@ async function carregarPacientes() {
       <tr>
         <td>${esc(p.nome)}</td>
         <td>${esc(p.prontuario)}</td>
+        <td>${esc(p.edot_sigla || p.edot_nome || '—')}</td>
         <td>${dataFmt(p.data_nascimento)}</td>
         <td>${badgeStatus(p.status)}</td>
         <td>${esc(p.setor_nome || '—')}</td>
@@ -127,6 +128,17 @@ function preencherForm(p) {
   document.getElementById('p-status').value     = p?.status || 'sedacao_continua';
   document.getElementById('p-causa').value      = p?.causa_morte || '';
   document.getElementById('p-obs').value        = p?.observacoes || '';
+
+  // Hospital / EDOT — exibido apenas ao abrir um paciente existente
+  const grupoHosp = document.getElementById('grupo-hospital');
+  const hospNome = p ? (p.edot_nome || p.edot_sigla || '') : '';
+  if (p && hospNome) {
+    document.getElementById('p-hospital').value = hospNome;
+    grupoHosp.style.display = '';
+  } else {
+    document.getElementById('p-hospital').value = '';
+    grupoHosp.style.display = 'none';
+  }
 
   const STATUS_ARQUIVAVEIS = ['acompanhamento','me_sem_confirmacao','me_confirmado','me_com_doacao','me_cim','me_naf','pcr_antes_doacao'];
   const btnArq = document.getElementById('btn-arquivar');

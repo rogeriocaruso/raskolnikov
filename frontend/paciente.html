@@ -105,6 +105,7 @@
               <tr>
                 <th>Iniciais</th>
                 <th>Prontuário</th>
+                <th>Hospital</th>
                 <th>Nascimento</th>
                 <th>Status</th>
                 <th>Setor</th>
@@ -136,6 +137,10 @@
         <div id="alerta-form" class="alerta"></div>
         <form id="form-paciente">
           <input type="hidden" id="p-id">
+          <div class="form-grupo" id="grupo-hospital" style="display:none">
+            <label for="p-hospital">Hospital / EDOT</label>
+            <input type="text" id="p-hospital" readonly style="background:var(--cinza-claro,#f5f5f5);cursor:default">
+          </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
             <div class="form-grupo">
               <label for="p-nome">Iniciais do Paciente * <span style="font-weight:400;font-size:.8rem;color:var(--texto-leve)">(LGPD — não registrar nome completo)</span></label>

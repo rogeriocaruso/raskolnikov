@@ -177,6 +177,8 @@ class Paciente(db.Model):
             data_nascimento=self.data_nascimento.isoformat() if self.data_nascimento else None,
             prontuario=self.prontuario,
             edot_id=self.edot_id,
+            edot_nome=self.edot.hospital_nome if self.edot else None,
+            edot_sigla=self.edot.sigla if self.edot else None,
             setor_id=self.setor_id,
             setor_nome=self.setor.nome if self.setor else None,
             causa_morte=self.causa_morte,
