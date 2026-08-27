@@ -14,13 +14,14 @@ from datetime import datetime
 
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt
-from sqlalchemy import func, distinct
+from sqlalchemy import func
 
 from models import (
-    db, Paciente, PacienteHistorico, Ronda, EDOT, EntrevistaFamiliar,
+    db, Paciente, Ronda, EDOT, EntrevistaFamiliar,
 )
 from routes.report_utils import (
     resolver_edot_ids, resolver_periodo, rotulo_escopo, gerar_relatorio,
+    contar_pacientes_status, ME_STAGE_STATUSES,
 )
 
 reports_bp = Blueprint('reports', __name__)
@@ -200,23 +201,6 @@ def relatorio_tecidos(fmt):
 # ─────────────────────────────────────────────────────────────────────────────
 # Dashboard (resumo de indicadores)
 # ─────────────────────────────────────────────────────────────────────────────
-def _contar_status_hist(edot_ids, status, desde, ate):
-    q = (
-        db.session.query(func.count(distinct(PacienteHistorico.paciente_id)))
-        .join(Paciente, Paciente.id == PacienteHistorico.paciente_id)
-        .filter(
-            Paciente.edot_id.in_(edot_ids),
-            PacienteHistorico.campo_alterado == 'status',
-            PacienteHistorico.valor_novo == status,
-        )
-    )
-    if desde:
-        q = q.filter(PacienteHistorico.created_at >= desde)
-    if ate:
-        q = q.filter(PacienteHistorico.created_at <= ate)
-    return q.scalar() or 0
-
-
 def _taxa(num, den):
     return f'{round(num / den * 100, 1)}%' if den > 0 else '—'
 
@@ -239,11 +223,11 @@ def relatorio_dashboard(fmt):
         qp = qp.filter(Paciente.created_at <= ate)
     possiveis = qp.count()
 
-    notif_me = _contar_status_hist(edot_ids, 'protocolo_me', desde, ate)
-    doacao   = _contar_status_hist(edot_ids, 'me_com_doacao', desde, ate)
-    pcr      = _contar_status_hist(edot_ids, 'pcr_antes_doacao', desde, ate)
-    cim      = _contar_status_hist(edot_ids, 'me_cim', desde, ate)
-    naf      = _contar_status_hist(edot_ids, 'me_naf', desde, ate)
+    notif_me = contar_pacientes_status(edot_ids, ME_STAGE_STATUSES, desde, ate)
+    doacao   = contar_pacientes_status(edot_ids, 'me_com_doacao', desde, ate)
+    pcr      = contar_pacientes_status(edot_ids, 'pcr_antes_doacao', desde, ate)
+    cim      = contar_pacientes_status(edot_ids, 'me_cim', desde, ate)
+    naf      = contar_pacientes_status(edot_ids, 'me_naf', desde, ate)
 
     qe = EntrevistaFamiliar.query.filter(EntrevistaFamiliar.edot_id.in_(edot_ids))
     if desde:

@@ -12,8 +12,54 @@ import io
 from datetime import datetime, timedelta
 
 from flask import Response
+from sqlalchemy import func, distinct
 
-from models import EDOT, OPO
+from models import db, EDOT, OPO, Paciente, PacienteHistorico
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Contagem de funil clínico (coorte por data de cadastro do paciente)
+# ─────────────────────────────────────────────────────────────────────────────
+# Um paciente é "notificado de M.E." se em algum momento esteve em qualquer
+# status da fase de M.E. — seja no cadastro (campo 'criacao') ou numa transição
+# (campo 'status'). Os desfechos terminais são subconjuntos dessa fase, então o
+# funil sempre fecha: notificações ≥ (efetivação + PCR + NAF + CIM + em andamento).
+ME_STAGE_STATUSES = (
+    'protocolo_me',
+    'me_sem_confirmacao',
+    'me_confirmado',
+    'me_com_doacao',
+    'me_cim',
+    'me_naf',
+    'pcr_antes_doacao',
+)
+
+
+def contar_pacientes_status(edot_ids, statuses, desde=None, ate=None):
+    """Conta pacientes distintos que já atingiram QUALQUER um dos `statuses`.
+
+    Considera tanto o status de cadastro ('criacao') quanto transições
+    ('status'), evitando subcontagem de pacientes já cadastrados em protocolo.
+    O período filtra a COORTE pela data de cadastro do paciente
+    (Paciente.created_at), garantindo que o funil feche dentro do intervalo.
+    """
+    if isinstance(statuses, str):
+        statuses = (statuses,)
+    q = (
+        db.session.query(func.count(distinct(Paciente.id)))
+        .join(PacienteHistorico, PacienteHistorico.paciente_id == Paciente.id)
+        .filter(
+            Paciente.edot_id.in_(edot_ids),
+            PacienteHistorico.campo_alterado.in_(('status', 'criacao')),
+            PacienteHistorico.valor_novo.in_(tuple(statuses)),
+        )
+    )
+    if desde:
+        q = q.filter(Paciente.created_at >= desde)
+    if ate:
+        q = q.filter(Paciente.created_at <= ate)
+    return q.scalar() or 0
+
 
 
 # ─────────────────────────────────────────────────────────────────────────────

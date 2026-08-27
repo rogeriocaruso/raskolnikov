@@ -2,10 +2,13 @@ from datetime import datetime, timedelta
 
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt
-from sqlalchemy import func, distinct
+from sqlalchemy import func
 
-from models import db, Paciente, PacienteHistorico, Ronda, EDOT, EntrevistaFamiliar
-from routes.report_utils import resolver_edot_ids, resolver_periodo
+from models import db, Paciente, Ronda, EDOT, EntrevistaFamiliar
+from routes.report_utils import (
+    resolver_edot_ids, resolver_periodo, contar_pacientes_status,
+    ME_STAGE_STATUSES,
+)
 
 stats_bp = Blueprint('stats', __name__)
 
@@ -21,24 +24,6 @@ def _edot_ids_for_claims(claims):
     if perfil == 'opo':
         return [e.id for e in EDOT.query.filter_by(opo_id=claims.get('opo_id'), ativo=True).all()]
     return [claims.get('edot_id')]
-
-
-def _contar_status_historico(edot_ids, status, desde=None, ate=None):
-    """Conta pacientes distintos que já atingiram este status (via histórico)."""
-    q = (
-        db.session.query(func.count(distinct(PacienteHistorico.paciente_id)))
-        .join(Paciente, Paciente.id == PacienteHistorico.paciente_id)
-        .filter(
-            Paciente.edot_id.in_(edot_ids),
-            PacienteHistorico.campo_alterado == 'status',
-            PacienteHistorico.valor_novo == status,
-        )
-    )
-    if desde:
-        q = q.filter(PacienteHistorico.created_at >= desde)
-    if ate:
-        q = q.filter(PacienteHistorico.created_at <= ate)
-    return q.scalar() or 0
 
 
 def _taxa(num, den):
@@ -68,11 +53,13 @@ def dashboard_stats():
         qp = qp.filter(Paciente.created_at <= ate)
     possiveis_doadores = qp.count()
 
-    notificacoes_me = _contar_status_historico(edot_ids, 'protocolo_me', desde, ate)
-    me_com_doacao   = _contar_status_historico(edot_ids, 'me_com_doacao', desde, ate)
-    total_pcr       = _contar_status_historico(edot_ids, 'pcr_antes_doacao', desde, ate)
-    total_cim       = _contar_status_historico(edot_ids, 'me_cim', desde, ate)
-    total_naf       = _contar_status_historico(edot_ids, 'me_naf', desde, ate)
+    # Notificação de M.E. = paciente que atingiu qualquer status da fase de M.E.
+    # (inclui status de cadastro). Desfechos são subconjuntos → funil fecha.
+    notificacoes_me = contar_pacientes_status(edot_ids, ME_STAGE_STATUSES, desde, ate)
+    me_com_doacao   = contar_pacientes_status(edot_ids, 'me_com_doacao', desde, ate)
+    total_pcr       = contar_pacientes_status(edot_ids, 'pcr_antes_doacao', desde, ate)
+    total_cim       = contar_pacientes_status(edot_ids, 'me_cim', desde, ate)
+    total_naf       = contar_pacientes_status(edot_ids, 'me_naf', desde, ate)
 
     # ── Tecidos / BTOH ──────────────────────────────────────────────────────────
     qe = EntrevistaFamiliar.query.filter(EntrevistaFamiliar.edot_id.in_(edot_ids))
@@ -146,7 +133,7 @@ def stats_por_edot():
         if not edot:
             continue
         ativos   = Paciente.query.filter_by(edot_id=edot_id, arquivado=False).count()
-        doadores = _contar_status_historico([edot_id], 'me_com_doacao')
+        doadores = contar_pacientes_status([edot_id], 'me_com_doacao')
         rondas   = Ronda.query.filter_by(edot_id=edot_id).count()
         leitos   = (
             db.session.query(func.sum(Ronda.leitos_visitados))
