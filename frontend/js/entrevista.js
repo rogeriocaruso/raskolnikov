@@ -115,6 +115,7 @@ async function buscar(pagina = 1) {
     d.entrevistas.forEach(e => {
       const tr = document.createElement('tr');
       tr.innerHTML = `
+        <td>${e.edot_nome || '—'}</td>
         <td>${e.iniciais}</td>
         <td>${e.prontuario}</td>
         <td>${e.idade ?? '—'}</td>
