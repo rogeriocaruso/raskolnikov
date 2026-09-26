@@ -151,7 +151,7 @@ function renderPaginacao(pagina, total, count) {
 // ── Formulário ───────────────────────────────────────────────────────────────
 function abrirFormNovo() {
   entrevistaAtual = null;
-  document.getElementById('form-titulo').textContent = 'Nova Entrevista';
+  document.getElementById('form-titulo').textContent = 'Novo Registro';
   document.getElementById('form-entrevista').reset();
   document.getElementById('e-id').value = '';
 
@@ -175,7 +175,7 @@ async function abrirDetalhe(id) {
     const e = d.entrevista;
     entrevistaAtual = e;
 
-    document.getElementById('form-titulo').textContent = 'Editar Entrevista';
+    document.getElementById('form-titulo').textContent = 'Editar Registro';
     document.getElementById('e-id').value = e.id;
     document.getElementById('e-edot-id').value = e.edot_id;
     document.getElementById('e-iniciais').value = e.iniciais || '';

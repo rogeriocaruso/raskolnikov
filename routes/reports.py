@@ -193,7 +193,7 @@ def relatorio_tecidos(fmt):
 
     subtitulo = ' · '.join(filter(None, [rotulo_escopo(claims, **filtros), rot_periodo]))
     return gerar_relatorio(
-        fmt, 'relatorio_tecidos', 'Relatório de Tecidos — Entrevistas Familiares',
+        fmt, 'relatorio_tecidos', 'Relatório de Doação de Tecidos em PCR',
         subtitulo, colunas, linhas
     )
 
