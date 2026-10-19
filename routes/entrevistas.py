@@ -94,14 +94,29 @@ def criar():
         return jsonify(erro='Sem permissão para registrar entrevistas'), 403
 
     dados = request.get_json() or {}
-    obrig = ('iniciais', 'prontuario', 'resultado', 'edot_id')
+    obrig = ('iniciais', 'prontuario', 'edot_id')
     falt  = [c for c in obrig if not dados.get(c)]
     if falt:
         return jsonify(erro=f'Campos obrigatórios: {", ".join(falt)}'), 400
-    if dados['resultado'] not in RESULTADO_ENTREVISTA:
-        return jsonify(erro='resultado inválido: use autorizacao ou naf'), 400
     if not _check_acesso(claims, dados['edot_id']):
         return jsonify(erro='Sem acesso a este EDOT'), 403
+
+    cim_absoluta = bool(dados.get('cim_absoluta'))
+    cim_motivo = (dados.get('cim_motivo') or '').strip() or None
+    if cim_absoluta:
+        # CIM absoluta encerra o processo: sem entrevista familiar.
+        if not cim_motivo:
+            return jsonify(erro='Informe o motivo da CIM absoluta'), 400
+        resultado = 'cim'
+        data_entrevista = None
+        tecidos = None
+    else:
+        resultado = dados.get('resultado')
+        if resultado not in ('autorizacao', 'naf'):
+            return jsonify(erro='resultado inválido: use autorizacao ou naf'), 400
+        cim_motivo = None
+        data_entrevista = _parse_dt(dados.get('data_entrevista'))
+        tecidos = dados.get('tecidos', '').strip() or None
 
     e = EntrevistaFamiliar(
         edot_id=dados['edot_id'],
@@ -111,9 +126,11 @@ def criar():
         diagnostico=dados.get('diagnostico', '').strip() or None,
         local_obito=dados.get('local_obito', '').strip() or None,
         data_obito=_parse_dt(dados.get('data_obito')),
-        data_entrevista=_parse_dt(dados.get('data_entrevista')),
-        resultado=dados['resultado'],
-        tecidos=dados.get('tecidos', '').strip() or None,
+        data_entrevista=data_entrevista,
+        resultado=resultado,
+        cim_absoluta=cim_absoluta,
+        cim_motivo=cim_motivo,
+        tecidos=tecidos,
         observacoes=dados.get('observacoes', '').strip() or None,
         created_by=claims.get('user_id'),
     )
@@ -148,7 +165,7 @@ def atualizar(eid):
 
     dados = request.get_json() or {}
     campos = ('iniciais', 'prontuario', 'idade', 'diagnostico', 'local_obito',
-              'resultado', 'tecidos', 'observacoes')
+              'observacoes')
     for campo in campos:
         if campo in dados:
             val = dados[campo]
@@ -157,10 +174,39 @@ def atualizar(eid):
             setattr(e, campo, val)
     if 'data_obito' in dados:
         e.data_obito = _parse_dt(dados['data_obito'])
-    if 'data_entrevista' in dados:
-        e.data_entrevista = _parse_dt(dados['data_entrevista'])
-    if 'resultado' in dados and dados['resultado'] not in RESULTADO_ENTREVISTA:
-        return jsonify(erro='resultado inválido'), 400
+
+    # CIM absoluta / resultado / entrevista
+    if 'cim_absoluta' in dados:
+        cim_absoluta = bool(dados.get('cim_absoluta'))
+        e.cim_absoluta = cim_absoluta
+        if cim_absoluta:
+            cim_motivo = (dados.get('cim_motivo') or '').strip() or None
+            if not cim_motivo:
+                return jsonify(erro='Informe o motivo da CIM absoluta'), 400
+            e.cim_motivo = cim_motivo
+            e.resultado = 'cim'
+            e.data_entrevista = None
+            e.tecidos = None
+        else:
+            e.cim_motivo = None
+            resultado = dados.get('resultado')
+            if resultado not in ('autorizacao', 'naf'):
+                return jsonify(erro='resultado inválido: use autorizacao ou naf'), 400
+            e.resultado = resultado
+            if 'data_entrevista' in dados:
+                e.data_entrevista = _parse_dt(dados['data_entrevista'])
+            if 'tecidos' in dados:
+                e.tecidos = (dados.get('tecidos') or '').strip() or None
+    else:
+        # Compatibilidade com payloads sem a etapa de CIM
+        if 'resultado' in dados:
+            if dados['resultado'] not in RESULTADO_ENTREVISTA:
+                return jsonify(erro='resultado inválido'), 400
+            e.resultado = dados['resultado']
+        if 'data_entrevista' in dados:
+            e.data_entrevista = _parse_dt(dados['data_entrevista'])
+        if 'tecidos' in dados:
+            e.tecidos = (dados.get('tecidos') or '').strip() or None
 
     e.updated_by = claims.get('user_id')
     e.updated_at = datetime.utcnow()

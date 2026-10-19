@@ -182,7 +182,28 @@
               <input type="datetime-local" id="e-data-obito">
             </div>
 
+            <!-- Contraindicação Médica (CIM) Absoluta -->
+            <div style="grid-column:1/-1;margin-top:.25rem">
+              <p style="font-size:.8rem;font-weight:600;color:var(--texto-leve);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem">Contraindicação Médica (CIM) Absoluta</p>
+            </div>
+            <div class="form-grupo" style="grid-column:1/-1">
+              <label>Há CIM Absoluta? *</label>
+              <div style="display:flex;gap:1.5rem;align-items:center;margin-top:.35rem">
+                <label style="display:flex;align-items:center;gap:.4rem;font-weight:400;cursor:pointer">
+                  <input type="radio" name="e-cim" value="nao" checked> NÃO
+                </label>
+                <label style="display:flex;align-items:center;gap:.4rem;font-weight:400;cursor:pointer">
+                  <input type="radio" name="e-cim" value="sim"> SIM
+                </label>
+              </div>
+            </div>
+            <div class="form-grupo" id="grupo-cim-motivo" style="grid-column:1/-1;display:none">
+              <label for="e-cim-motivo">Motivo da CIM Absoluta *</label>
+              <textarea id="e-cim-motivo" placeholder="Descreva a contraindicação médica absoluta..."></textarea>
+            </div>
+
             <!-- Dados da entrevista -->
+            <div id="secao-entrevista" style="display:contents">
             <div style="grid-column:1/-1;margin-top:.25rem">
               <p style="font-size:.8rem;font-weight:600;color:var(--texto-leve);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem">Entrevista Familiar</p>
             </div>
@@ -215,6 +236,7 @@
               <label for="e-obs">Observações</label>
               <textarea id="e-obs" placeholder="Informações relevantes sobre a entrevista..."></textarea>
             </div>
+            </div><!-- /secao-entrevista -->
           </div>
 
           <div style="display:flex;gap:.75rem;justify-content:flex-end;margin-top:.5rem">

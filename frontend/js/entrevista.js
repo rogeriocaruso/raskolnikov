@@ -43,6 +43,8 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('form-entrevista')?.addEventListener('submit', salvar);
   document.getElementById('btn-arquivar')?.addEventListener('click', abrirModalArquivar);
   document.getElementById('btn-confirmar-arquivar')?.addEventListener('click', confirmarArquivar);
+  document.querySelectorAll('input[name="e-cim"]').forEach(r =>
+    r.addEventListener('change', aplicarToggleCim));
 
   const _barraTecidos = document.getElementById('barra-filtros-tecidos');
   if (_barraTecidos) {
@@ -149,6 +151,32 @@ function renderPaginacao(pagina, total, count) {
 }
 
 // ── Formulário ───────────────────────────────────────────────────────────────
+
+// Mostra/oculta a seção de Entrevista Familiar vs. o motivo de CIM absoluta,
+// e alterna o atributo `required` para não bloquear o submit de campos ocultos.
+function aplicarToggleCim() {
+  const simMarcado = !!document.querySelector('input[name="e-cim"][value="sim"]')?.checked;
+  const grupoMotivo = document.getElementById('grupo-cim-motivo');
+  const secaoEntrev = document.getElementById('secao-entrevista');
+  const motivo      = document.getElementById('e-cim-motivo');
+  const dataEntrev  = document.getElementById('e-data-entrevista');
+  const resultado   = document.getElementById('e-resultado');
+
+  if (simMarcado) {
+    if (grupoMotivo) grupoMotivo.style.display = '';
+    if (motivo)      motivo.required = true;
+    if (secaoEntrev) secaoEntrev.style.display = 'none';
+    if (dataEntrev)  dataEntrev.required = false;
+    if (resultado)   resultado.required = false;
+  } else {
+    if (grupoMotivo) grupoMotivo.style.display = 'none';
+    if (motivo)      motivo.required = false;
+    if (secaoEntrev) secaoEntrev.style.display = 'contents';
+    if (dataEntrev)  dataEntrev.required = true;
+    if (resultado)   resultado.required = true;
+  }
+}
+
 function abrirFormNovo() {
   entrevistaAtual = null;
   document.getElementById('form-titulo').textContent = 'Novo Registro';
@@ -162,6 +190,12 @@ function abrirFormNovo() {
   const agora = new Date();
   const local = agora.toISOString().slice(0, 16);
   document.getElementById('e-data-entrevista').value = local;
+
+  // CIM absoluta: padrão NÃO
+  const naoRadio = document.querySelector('input[name="e-cim"][value="nao"]');
+  if (naoRadio) naoRadio.checked = true;
+  document.getElementById('e-cim-motivo').value = '';
+  aplicarToggleCim();
 
   document.getElementById('btn-arquivar-form').style.display = 'none';
   document.getElementById('alerta-form').className = 'alerta';
@@ -189,16 +223,25 @@ async function abrirDetalhe(id) {
     document.getElementById('e-tecidos').value = e.tecidos || '';
     document.getElementById('e-obs').value = e.observacoes || '';
 
+    // CIM absoluta
+    const cim = !!e.cim_absoluta;
+    const cimRadio = document.querySelector(`input[name="e-cim"][value="${cim ? 'sim' : 'nao'}"]`);
+    if (cimRadio) cimRadio.checked = true;
+    document.getElementById('e-cim-motivo').value = e.cim_motivo || '';
+    aplicarToggleCim();
+
     const btnArq = document.getElementById('btn-arquivar-form');
     btnArq.style.display = (!e.arquivado && podeEscrever) ? '' : 'none';
 
     // campos editáveis somente se pode escrever e não arquivado
     const soLeitura = !podeEscrever || e.arquivado;
     ['e-iniciais','e-prontuario','e-idade','e-diagnostico','e-local-obito',
-     'e-data-obito','e-data-entrevista','e-resultado','e-tecidos','e-obs'].forEach(id => {
+     'e-data-obito','e-data-entrevista','e-resultado','e-tecidos','e-obs',
+     'e-cim-motivo'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.disabled = soLeitura;
     });
+    document.querySelectorAll('input[name="e-cim"]').forEach(r => r.disabled = soLeitura);
     const submitBtn = document.querySelector('#form-entrevista [type=submit]');
     if (submitBtn) submitBtn.style.display = soLeitura ? 'none' : '';
 
@@ -231,6 +274,8 @@ async function salvar(ev) {
     data_obito:     document.getElementById('e-data-obito').value || null,
     data_entrevista:document.getElementById('e-data-entrevista').value || null,
     resultado:      document.getElementById('e-resultado').value,
+    cim_absoluta:   !!document.querySelector('input[name="e-cim"][value="sim"]')?.checked,
+    cim_motivo:     document.getElementById('e-cim-motivo').value.trim(),
     tecidos:        document.getElementById('e-tecidos').value.trim(),
     observacoes:    document.getElementById('e-obs').value.trim(),
   };
@@ -293,6 +338,8 @@ function badgeResultado(resultado) {
     return '<span class="badge badge-me-com-doacao">Autorização</span>';
   if (resultado === 'naf')
     return '<span class="badge badge-me-sem-doacao">NAF</span>';
+  if (resultado === 'cim')
+    return '<span class="badge badge-me-cim">CIM</span>';
   return resultado;
 }
 

@@ -43,7 +43,11 @@ STATUS_LABEL = {
     'potencial_doador':   'Potencial Doador',
 }
 TURNO_LABEL = {'manha': 'Manhã', 'tarde': 'Tarde', 'noite': 'Noite', 'plantao': 'Plantão'}
-RESULTADO_LABEL = {'autorizacao': 'Autorização', 'naf': 'Não Autorização Familiar'}
+RESULTADO_LABEL = {
+    'autorizacao': 'Autorização',
+    'naf': 'Não Autorização Familiar',
+    'cim': 'CIM Absoluta',
+}
 
 
 def _fmt_data(dt, com_hora=False):

@@ -23,6 +23,10 @@ def _migrar_colunas(db):
                 ('geo_lng_fim',       'FLOAT'),
                 ('geo_precisao_fim',  'FLOAT'),
             ],
+            'entrevista_familiar': [
+                ('cim_absoluta', 'BOOLEAN'),
+                ('cim_motivo',   'TEXT'),
+            ],
         }
         with db.engine.begin() as conn:
             for tabela, colunas in novas.items():

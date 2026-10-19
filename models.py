@@ -224,7 +224,7 @@ class PacienteHistorico(db.Model):
         )
 
 
-RESULTADO_ENTREVISTA = ('autorizacao', 'naf')
+RESULTADO_ENTREVISTA = ('autorizacao', 'naf', 'cim')
 TECIDOS_ENTREVISTA   = ('corneas', 'pele', 'ossos')
 
 
@@ -240,7 +240,9 @@ class EntrevistaFamiliar(db.Model):
     local_obito = db.Column(db.String(150), nullable=True)
     data_obito  = db.Column(db.DateTime,    nullable=True)
     data_entrevista = db.Column(db.DateTime, nullable=True)
-    resultado   = db.Column(db.String(20),  nullable=False)   # 'autorizacao' | 'naf'
+    resultado   = db.Column(db.String(20),  nullable=False)   # 'autorizacao' | 'naf' | 'cim'
+    cim_absoluta = db.Column(db.Boolean, default=False)       # etapa anterior à entrevista
+    cim_motivo   = db.Column(db.Text, nullable=True)          # motivo quando há CIM absoluta
     tecidos     = db.Column(db.String(100), nullable=True)    # texto livre / lista csv
     observacoes = db.Column(db.Text,        nullable=True)
     arquivado   = db.Column(db.Boolean, default=False, nullable=False)
@@ -266,6 +268,8 @@ class EntrevistaFamiliar(db.Model):
             data_obito=self.data_obito.isoformat() if self.data_obito else None,
             data_entrevista=self.data_entrevista.isoformat() if self.data_entrevista else None,
             resultado=self.resultado,
+            cim_absoluta=bool(self.cim_absoluta),
+            cim_motivo=self.cim_motivo,
             tecidos=self.tecidos,
             observacoes=self.observacoes,
             arquivado=self.arquivado,
