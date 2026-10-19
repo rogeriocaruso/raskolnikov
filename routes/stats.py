@@ -71,6 +71,8 @@ def dashboard_stats():
     autorizacoes_btoh = qe.filter(
         EntrevistaFamiliar.resultado == 'autorizacao'
     ).count()
+    # Não efetivados = tudo que não é autorização (NAF + CIM).
+    nao_efetivados_tecidos = total_entrevistas - autorizacoes_btoh
 
     # ── Métricas operacionais ───────────────────────────────────────────────────
     # Se não há período explícito, usa `dias` (comportamento anterior).
@@ -105,10 +107,12 @@ def dashboard_stats():
         taxa_pcr=_taxa(total_pcr, notificacoes_me),
         taxa_cim=_taxa(total_cim, notificacoes_me),
         taxa_naf=_taxa(total_naf, notificacoes_me),
+        nao_efetivados_me=max(notificacoes_me - me_com_doacao, 0),
         # Tecidos
         total_entrevistas=total_entrevistas,
         autorizacoes_btoh=autorizacoes_btoh,
         taxa_btoh=_taxa(autorizacoes_btoh, total_entrevistas),
+        nao_efetivados_tecidos=nao_efetivados_tecidos,
         # Operacional
         rondas_no_periodo=rondas_periodo,
         total_leitos_visitados=int(total_leitos),

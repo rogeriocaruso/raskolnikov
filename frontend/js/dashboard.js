@@ -44,6 +44,7 @@ async function carregarStats() {
     set('s-possiveis',    d.possiveis_doadores);
     set('s-notif-me',     d.notificacoes_me);
     set('s-me-doacao',    d.me_com_doacao);
+    set('s-me-nao-efetiv', d.nao_efetivados_me);
     set('s-taxa-efetiv',  fmtTaxa(d.taxa_efetivacao));
 
     // Desfechos sem Doação
@@ -57,6 +58,7 @@ async function carregarStats() {
     // Tecidos — BTOH
     set('s-entrev-total',  d.total_entrevistas);
     set('s-entrev-autor',  d.autorizacoes_btoh);
+    set('s-tec-nao-efetiv', d.nao_efetivados_tecidos);
     set('s-taxa-btoh',     fmtTaxa(d.taxa_btoh));
 
     // Operacional (período)
