@@ -10,78 +10,92 @@ FRONTEND_DIR = os.path.join(os.path.dirname(__file__), 'frontend')
 
 
 def _migrar_colunas(db):
-    """Adiciona colunas novas e ajusta constraints em tabelas já existentes (idempotente)."""
+    """Adiciona colunas novas em tabelas já existentes (idempotente).
+
+    Cada ALTER roda em sua PRÓPRIA transação: no PostgreSQL uma transação
+    abortada invalida o commit inteiro, então uma migração que falha não pode
+    desfazer as demais. (Era essa a causa de as colunas de CIM sumirem: o
+    DROP TABLE do SQLite abortava a transação compartilhada no Postgres.)
+    """
     from sqlalchemy import inspect, text
     try:
         inspector = inspect(db.engine)
-        novas = {
-            'ronda': [
-                ('geo_lat_inicio',    'FLOAT'),
-                ('geo_lng_inicio',    'FLOAT'),
-                ('geo_precisao_inicio', 'FLOAT'),
-                ('geo_lat_fim',       'FLOAT'),
-                ('geo_lng_fim',       'FLOAT'),
-                ('geo_precisao_fim',  'FLOAT'),
-            ],
-            'entrevista_familiar': [
-                ('cim_absoluta', 'BOOLEAN'),
-                ('cim_motivo',   'TEXT'),
-            ],
-        }
-        with db.engine.begin() as conn:
-            for tabela, colunas in novas.items():
-                try:
-                    existentes = {c['name'] for c in inspector.get_columns(tabela)}
-                except Exception:
-                    continue
-                for col, tipo in colunas:
-                    if col not in existentes:
-                        conn.execute(text(f'ALTER TABLE {tabela} ADD COLUMN {col} {tipo}'))
-                        print(f'[migração] {tabela}.{col} adicionada')
-
-            # Migra constraint de unicidade do paciente de (prontuario, edot_id)
-            # para (nome, prontuario, edot_id) — SQLite requer recriar a tabela.
-            _migrar_constraint_paciente(conn, inspector)
     except Exception as e:
-        print(f'[migração] erro (ignorado): {e}')
+        print(f'[migração] inspeção falhou (ignorado): {e}')
+        return
+
+    novas = {
+        'ronda': [
+            ('geo_lat_inicio',    'FLOAT'),
+            ('geo_lng_inicio',    'FLOAT'),
+            ('geo_precisao_inicio', 'FLOAT'),
+            ('geo_lat_fim',       'FLOAT'),
+            ('geo_lng_fim',       'FLOAT'),
+            ('geo_precisao_fim',  'FLOAT'),
+        ],
+        'entrevista_familiar': [
+            ('cim_absoluta', 'BOOLEAN'),
+            ('cim_motivo',   'TEXT'),
+        ],
+    }
+    for tabela, colunas in novas.items():
+        try:
+            existentes = {c['name'] for c in inspector.get_columns(tabela)}
+        except Exception:
+            continue  # tabela ainda não existe
+        for col, tipo in colunas:
+            if col in existentes:
+                continue
+            try:
+                with db.engine.begin() as conn:
+                    conn.execute(text(f'ALTER TABLE {tabela} ADD COLUMN {col} {tipo}'))
+                print(f'[migração] {tabela}.{col} adicionada')
+            except Exception as e:
+                print(f'[migração] {tabela}.{col} falhou (ignorado): {e}')
+
+    _migrar_constraint_paciente(db, inspector)
 
 
-def _migrar_constraint_paciente(conn, inspector):
-    """Recria tabela paciente com a nova constraint se ainda usar a antiga."""
+def _migrar_constraint_paciente(db, inspector):
+    """Atualiza a constraint de unicidade do paciente para (nome, prontuario,
+    edot_id). A recriação de tabela só é válida no SQLite; no PostgreSQL esse
+    DROP TABLE quebra as FKs e aborta a transação, então NÃO deve rodar — a
+    constraint antiga (prontuario, edot_id) permanece, mais restritiva e
+    inofensiva (a duplicidade por iniciais já é checada em routes/patients.py).
+    """
     from sqlalchemy import text
+    if db.engine.dialect.name != 'sqlite':
+        return
     try:
         idxs = {i['name'] for i in inspector.get_indexes('paciente')}
         if 'uq_nome_prontuario_edot' in idxs or 'uq_prontuario_edot' not in idxs:
             return  # já migrado ou constraint customizada — nada a fazer
         print('[migração] atualizando constraint de unicidade da tabela paciente...')
-        conn.execute(text("""
-            CREATE TABLE paciente_new AS SELECT * FROM paciente
-        """))
-        conn.execute(text("DROP TABLE paciente"))
-        # A tabela será recriada por create_all() com a nova constraint
-        # Restaurar dados
-        conn.execute(text("""
-            CREATE TABLE IF NOT EXISTS paciente (
-                id INTEGER NOT NULL PRIMARY KEY,
-                nome VARCHAR(200) NOT NULL,
-                data_nascimento DATE,
-                prontuario VARCHAR(50) NOT NULL,
-                edot_id INTEGER NOT NULL REFERENCES edot(id),
-                setor_id INTEGER REFERENCES setor(id),
-                causa_morte TEXT,
-                status VARCHAR(30) NOT NULL DEFAULT 'potencial_doador',
-                data_internacao DATETIME,
-                created_by INTEGER NOT NULL REFERENCES usuario(id),
-                updated_by INTEGER REFERENCES usuario(id),
-                created_at DATETIME,
-                updated_at DATETIME,
-                arquivado BOOLEAN NOT NULL DEFAULT 0,
-                observacoes TEXT,
-                CONSTRAINT uq_nome_prontuario_edot UNIQUE (nome, prontuario, edot_id)
-            )
-        """))
-        conn.execute(text("INSERT INTO paciente SELECT * FROM paciente_new"))
-        conn.execute(text("DROP TABLE paciente_new"))
+        with db.engine.begin() as conn:
+            conn.execute(text("CREATE TABLE paciente_new AS SELECT * FROM paciente"))
+            conn.execute(text("DROP TABLE paciente"))
+            conn.execute(text("""
+                CREATE TABLE IF NOT EXISTS paciente (
+                    id INTEGER NOT NULL PRIMARY KEY,
+                    nome VARCHAR(200) NOT NULL,
+                    data_nascimento DATE,
+                    prontuario VARCHAR(50) NOT NULL,
+                    edot_id INTEGER NOT NULL REFERENCES edot(id),
+                    setor_id INTEGER REFERENCES setor(id),
+                    causa_morte TEXT,
+                    status VARCHAR(30) NOT NULL DEFAULT 'potencial_doador',
+                    data_internacao DATETIME,
+                    created_by INTEGER NOT NULL REFERENCES usuario(id),
+                    updated_by INTEGER REFERENCES usuario(id),
+                    created_at DATETIME,
+                    updated_at DATETIME,
+                    arquivado BOOLEAN NOT NULL DEFAULT 0,
+                    observacoes TEXT,
+                    CONSTRAINT uq_nome_prontuario_edot UNIQUE (nome, prontuario, edot_id)
+                )
+            """))
+            conn.execute(text("INSERT INTO paciente SELECT * FROM paciente_new"))
+            conn.execute(text("DROP TABLE paciente_new"))
         print('[migração] constraint de unicidade do paciente atualizada.')
     except Exception as e:
         print(f'[migração] constraint paciente erro (ignorado): {e}')
@@ -160,9 +174,15 @@ def create_app(env=None):
             return jsonify(erro=str(e)), 500
 
     # ── Frontend estático ──────────────────────────────────────────────────
+    def _sem_cache(resp):
+        # Força revalidação por ETag a cada carga, para que HTML e JS/CSS nunca
+        # fiquem dessincronizados em cache do navegador/CDN após um deploy.
+        resp.headers['Cache-Control'] = 'no-cache'
+        return resp
+
     @app.route('/')
     def index():
-        return send_from_directory(FRONTEND_DIR, 'index.html')
+        return _sem_cache(send_from_directory(FRONTEND_DIR, 'index.html'))
 
     @app.route('/dashboard')
     @app.route('/ronda')
@@ -174,15 +194,15 @@ def create_app(env=None):
     @app.route('/treinamento')
     def frontend_pages():
         page = request.path.lstrip('/') or 'dashboard'
-        return send_from_directory(FRONTEND_DIR, f'{page}.html')
+        return _sem_cache(send_from_directory(FRONTEND_DIR, f'{page}.html'))
 
     @app.route('/static/css/<path:filename>')
     def static_css(filename):
-        return send_from_directory(os.path.join(FRONTEND_DIR, 'css'), filename)
+        return _sem_cache(send_from_directory(os.path.join(FRONTEND_DIR, 'css'), filename))
 
     @app.route('/static/js/<path:filename>')
     def static_js(filename):
-        return send_from_directory(os.path.join(FRONTEND_DIR, 'js'), filename)
+        return _sem_cache(send_from_directory(os.path.join(FRONTEND_DIR, 'js'), filename))
 
     @app.route('/rodar-seed')
     def rodar_seed():

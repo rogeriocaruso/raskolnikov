@@ -191,10 +191,11 @@ function abrirFormNovo() {
   const local = agora.toISOString().slice(0, 16);
   document.getElementById('e-data-entrevista').value = local;
 
-  // CIM absoluta: padrão NÃO
+  // CIM absoluta: padrão NÃO (null-safe para tolerar HTML antigo em cache)
   const naoRadio = document.querySelector('input[name="e-cim"][value="nao"]');
   if (naoRadio) naoRadio.checked = true;
-  document.getElementById('e-cim-motivo').value = '';
+  const motivoEl = document.getElementById('e-cim-motivo');
+  if (motivoEl) motivoEl.value = '';
   aplicarToggleCim();
 
   document.getElementById('btn-arquivar-form').style.display = 'none';
@@ -223,11 +224,12 @@ async function abrirDetalhe(id) {
     document.getElementById('e-tecidos').value = e.tecidos || '';
     document.getElementById('e-obs').value = e.observacoes || '';
 
-    // CIM absoluta
+    // CIM absoluta (null-safe para tolerar HTML antigo em cache)
     const cim = !!e.cim_absoluta;
     const cimRadio = document.querySelector(`input[name="e-cim"][value="${cim ? 'sim' : 'nao'}"]`);
     if (cimRadio) cimRadio.checked = true;
-    document.getElementById('e-cim-motivo').value = e.cim_motivo || '';
+    const motivoDet = document.getElementById('e-cim-motivo');
+    if (motivoDet) motivoDet.value = e.cim_motivo || '';
     aplicarToggleCim();
 
     const btnArq = document.getElementById('btn-arquivar-form');
