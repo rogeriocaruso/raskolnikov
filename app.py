@@ -111,13 +111,17 @@ def create_app(env=None):
     Migrate(app, db)
     CORS(app)
 
-    # Cria tabelas que ainda não existem e adiciona colunas novas
+    # Cria tabelas que ainda não existem e adiciona colunas novas.
+    # Try/except SEPARADOS: se create_all falhar, a migração de colunas ainda roda.
     with app.app_context():
         try:
             db.create_all()
+        except Exception as e:
+            print(f'[startup] create_all erro (ignorado): {e}')
+        try:
             _migrar_colunas(db)
         except Exception as e:
-            print(f'[startup] db setup erro (ignorado): {e}')
+            print(f'[startup] migração erro (ignorado): {e}')
 
     from routes.auth import auth_bp
     from routes.patients import patients_bp
@@ -203,6 +207,23 @@ def create_app(env=None):
     @app.route('/static/js/<path:filename>')
     def static_js(filename):
         return _sem_cache(send_from_directory(os.path.join(FRONTEND_DIR, 'js'), filename))
+
+    @app.route('/rodar-migracao')
+    def rodar_migracao():
+        """Força a migração de colunas e retorna o estado atual da tabela
+        entrevista_familiar — gatilho manual/verificação (idempotente)."""
+        try:
+            _migrar_colunas(db)
+            from sqlalchemy import inspect
+            cols = sorted(c['name'] for c in inspect(db.engine).get_columns('entrevista_familiar'))
+            tem_cim = 'cim_absoluta' in cols and 'cim_motivo' in cols
+            return jsonify(
+                mensagem='Migração executada',
+                entrevista_familiar_colunas=cols,
+                cim_ok=tem_cim,
+            ), 200
+        except Exception as e:
+            return jsonify(erro=str(e)), 500
 
     @app.route('/rodar-seed')
     def rodar_seed():
